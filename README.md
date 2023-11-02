@@ -110,7 +110,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
       - ✅ Adaptive  
     - ✅ Code  
 - ❌ **Automatic Review Generation**  
-- ❌ **Function Invocation**  
+- ❌ **Calling a functions**  
 - ❌ **Math Problem Solving**  
 - ❌ **Document-based Q&A**  
 - ❌ **Image Description**  
