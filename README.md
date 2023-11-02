@@ -14,7 +14,7 @@
 
 ### ✨ **Key Features**:
 - 🖥️ **Cross-platform** C# library for working with LLMs.
-- 🤖 Integration with **ChatGPT**, **GigaChat**, and our project **"FractalGPT"**.
+- 🤖 Integration with **ChatGPT**, **GigaChat**, and our project **"[FractalGPT](https://fractalgpt.ru/)"**.
 - 📝 Hallucination checking, extractive summarization, text vectorization, and more.
 - 🔍 Search system, QAAgent, MathAgent, TextProcessor, and image description.
 - 🛠️ **AI Framework**: create your own projects, customize our client for your tasks!
