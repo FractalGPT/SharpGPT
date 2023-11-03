@@ -11,7 +11,7 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT;
 /// Class for interacting with ChatGPT through API.
 /// </summary>
 [Serializable]
-public class ChatGptApi : IText2TextAPI
+public class ChatGptApi : IText2TextChatAPI
 {
     private readonly HttpClient _httpClient;
     private readonly SendDataChatGPT _sendData;

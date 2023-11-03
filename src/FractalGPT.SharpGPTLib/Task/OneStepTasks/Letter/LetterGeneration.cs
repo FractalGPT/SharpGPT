@@ -14,7 +14,7 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Letter
         /// Initializes a new instance of the <see cref="LetterGeneration"/> class with a predefined prompt for letter generation.
         /// </summary>
         /// <param name="text2Text">The text-to-text API implementation to be used for letter generation.</param>
-        public LetterGeneration(IText2TextAPI text2Text)
+        public LetterGeneration(IText2TextChatAPI text2Text)
             : base(text2Text, PromptManager.SystemPrompts["letter_generation_en"])
         {
             // The constructor is intentionally left blank.

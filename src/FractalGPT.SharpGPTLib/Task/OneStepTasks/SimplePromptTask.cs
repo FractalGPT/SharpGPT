@@ -10,14 +10,14 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks
     [Serializable]
     public class SimplePromptTaskChatModel
     {
-        private readonly IText2TextAPI _text2Text; // Use readonly as this field is only set in constructor
+        private readonly IText2TextChatAPI _text2Text; // Use readonly as this field is only set in constructor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SimplePromptTaskChatModel"/> class.
         /// </summary>
         /// <param name="text2Text">The text-to-text API implementation.</param>
         /// <param name="prompt">The initial prompt to set for the chat model.</param>
-        public SimplePromptTaskChatModel(IText2TextAPI text2Text, string prompt)
+        public SimplePromptTaskChatModel(IText2TextChatAPI text2Text, string prompt)
         {
             _text2Text = text2Text ?? throw new ArgumentNullException(nameof(text2Text));
             _text2Text.SetPrompt(prompt);

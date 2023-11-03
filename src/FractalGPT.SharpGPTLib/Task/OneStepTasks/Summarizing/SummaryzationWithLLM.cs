@@ -12,14 +12,14 @@ namespace FractalGPT.SharpGPTLib.Task.Summarizing
     [Serializable]
     public class SummarizationService
     {
-        private readonly IText2TextAPI _textToTextApi;
+        private readonly IText2TextChatAPI _textToTextApi;
         private readonly string _lang;
 
         /// <summary>
         /// Creates a new instance of the summarization service.
         /// </summary>
         /// <param name="text2TextApi">API for text-to-text transformation.</param>
-        public SummarizationService(IText2TextAPI text2TextApi, string lang = "en")
+        public SummarizationService(IText2TextChatAPI text2TextApi, string lang = "en")
         {
             _lang = lang;
             _textToTextApi = text2TextApi ?? throw new ArgumentNullException(nameof(text2TextApi));
