@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.API.AI21
 {
@@ -49,8 +47,8 @@ namespace FractalGPT.SharpGPTLib.API.AI21
             if (response.IsSuccessStatusCode)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
-                var responseData = JsonSerializer.Deserialize<dynamic>(responseString);
-                return ((JsonElement)responseData).GetProperty("completions")[0].GetProperty("data").GetProperty("text").GetString();
+                var responseData = JsonSerializer.Deserialize<ResponseData>(responseString);
+                return responseData.Completions[0].Data.Text;
             }
             else
             {
@@ -80,8 +78,8 @@ namespace FractalGPT.SharpGPTLib.API.AI21
             if (response.IsSuccessStatusCode)
             {
                 var responseString = response.Content.ReadAsStringAsync().Result;
-                var responseData = JsonSerializer.Deserialize<dynamic>(responseString);
-                return ((JsonElement)responseData).GetProperty("completions")[0].GetProperty("data").GetProperty("text").GetString();
+                var responseData = JsonSerializer.Deserialize<ResponseData>(responseString);
+                return responseData.Completions[0].Data.Text;
             }
             else
             {
@@ -103,4 +101,5 @@ namespace FractalGPT.SharpGPTLib.API.AI21
             _generationParametrs = new AI21GenerationParameters(numResults, maxTokens, stopSequences, temperature, topKReturn, presencePenaltyScale);
         }
     }
+
 }
