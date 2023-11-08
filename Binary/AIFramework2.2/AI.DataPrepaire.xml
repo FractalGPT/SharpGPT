@@ -1,0 +1,2004 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>AI.DataPrepaire</name>
+    </assembly>
+    <members>
+        <member name="T:AI.DataPrepaire.DataLoader.DataItem">
+            <summary>
+            Столбец данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.DataItem.Name">
+            <summary>
+            Имя колонки
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.DataItem.TypeColum">
+            <summary>
+            Тип данных
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.DataItem.Data">
+            <summary>
+            Данные
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.#ctor(System.String,System.Collections.Generic.List{System.Object})">
+            <summary>
+            Столбец данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.ToType``1">
+            <summary>
+            Преобразовать в определенный тип
+            </summary>
+            <typeparam name="T"></typeparam>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.ToVector">
+            <summary>
+            Перевод данных в вектор
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.TypeDetected">
+            <summary>
+            Определяет тип
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.Convert">
+            <summary>
+            Преобразовывает данные (Служебный метод)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.TransformSelf(System.Func{System.Object,System.Object})">
+            <summary>
+            Изменение столбца
+            </summary>
+            <param name="transformFunc">Функция трансформации</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.GetCategoryIndex">
+            <summary>
+            Метод возвращает словарь с индексами и объектами категорий, ключ - объект
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataItem.SelfCategoryToIndex">
+            <summary>
+            Заменяет категории на соот. индексы и возвращает словарь для преобразования
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.TypeData">
+            <summary>
+            Тип данных
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.TypeData.DigitC">
+            <summary>
+            Число строка(Разделитель запятая)
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.TypeData.DigitP">
+            <summary>
+            Число строка (Разделитель точка)
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.TypeData.String">
+            <summary>
+            Строка
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.DataLoader.TypeData.UnDef">
+            <summary>
+            Неопределен
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.DataTable">
+            <summary>
+            Блок данных (по мотивам pandas)
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.DataTable.Len">
+            <summary>
+            Число строк
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.DataTable.Item(System.String)">
+            <summary>
+            Добавление/получение/изменение набора данных по имени
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.Add(System.String,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Добавить данные
+            </summary>
+            <param name="name">Имя</param>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.Add(AI.DataPrepaire.DataLoader.DataItem)">
+            <summary>
+            Добавить данные
+            </summary>
+            <param name="dataItem"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.GetColums">
+            <summary>
+            Отдает имена столбцов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.ToMatrix">
+            <summary>
+            Преобразование участка данных в матрицу
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.GetSubTable(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Выдать подмножество определенных столбцов
+            </summary>
+            <param name="colums">Список столбцов</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.GetRow(System.Int32)">
+            <summary>
+            Получить строку по индексу
+            </summary>
+            <param name="rowIndex">Индекс строки</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.GetRow``1(System.Int32)">
+            <summary>
+            Получить строку по индексу с приведением к типу
+            </summary>
+            <param name="rowIndex">Индекс строки</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.RowToVector(System.Int32)">
+            <summary>
+            Получить строку по индексу с представлением в виде вектора
+            </summary>
+            <param name="rowIndex">Индекс строки</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.ColumnToCategorical(System.Int32)">
+            <summary>
+            Преобразование категорий в индексы (возвращает словарь для преобразования)
+            </summary>
+            <param name="colIndex">Индекс столбца</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.ColumnToCategorical(System.String)">
+            <summary>
+            Преобразование категорий в индексы (возвращает словарь для преобразования)
+            </summary>
+            <param name="colName">Имя столбца</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.GetSlice(System.Int32,System.Int32)">
+            <summary>
+            Получить срез по глубине(строкам)
+            </summary>
+            <param name="indStart">Начальный индекс</param>
+            <param name="len">Конечный индекс</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.DataTable.ToString">
+            <summary>
+            Отображение таблицы строкой
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Formats.CSVLoader">
+            <summary>
+            Загрузчик CSV файлов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.Read(System.String,System.String)">
+            <summary>
+            Загрузка csv
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.Read(System.IO.StreamReader,System.Char)">
+            <summary>
+            Загрузка csv из потока
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.Read(System.IO.StreamReader,System.String)">
+            <summary>
+            Загрузка csv из потока
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.Read(System.String,System.Char)">
+            <summary>
+            Загрузка csv
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.Reader(System.String,System.String)">
+            <summary>
+            Чтение CSV
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVLoader.ToTable(AI.DataPrepaire.DataLoader.DataItem[])">
+            <summary>
+            Получение таблицы
+            </summary>
+            <param name="dataItems"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Formats.CSVValuesParser">
+            <summary>
+            Рекурсивный парсер значений таблицы
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.Formats.CSVValuesParser.Values">
+            <summary>
+            Значения
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Formats.CSVValuesParser.#ctor(System.String,System.String)">
+            <summary>
+            Рекурсивный парсер значений таблицы
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Formats.JSONLoader">
+            <summary>
+            Загрузка JSON файлов
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataNormalizers.EmptyNormalizer">
+            <summary>
+            Нормализатор который ничего не делает
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.EmptyNormalizer.Denormalize(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Восстановление данных
+            </summary>
+            <param name="normalizeData"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.EmptyNormalizer.Train(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Ничего не делает
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.EmptyNormalizer.Transform(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Преобразование данных
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer">
+            <summary>
+            Минимаксная нормализация
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.Min">
+            <summary>
+            Минимумы по столбцам
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.Max">
+            <summary>
+            Максимумы по столбцам
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.MaxMinusMin">
+            <summary>
+            Размах по столбцам
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.Denormalize(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Восстановление нормализованных данных (Перезапись значений алгебраической структуры)
+            </summary>
+            <param name="normalizeData">Нормализованные данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.Train(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Обучение преобразователя
+            </summary>
+            <param name="data">Набор данных</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.MinimaxNomalizer.Transform(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Использование преобразователя (Перезапись значений алгебраической структуры)
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataNormalizers.Normalizer">
+            <summary>
+            Нормализатор данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.Normalizer.Train(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Обучение преобразователя
+            </summary>
+            <param name="data">Набор данных</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.Normalizer.Transform(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Использование преобразователя (Перезапись значений алгебраической структуры)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.Normalizer.Transform(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Использование преобразователя (Перезапись значений алгебраической структуры)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.Normalizer.Denormalize(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Восстановление нормализованных данных (Перезапись значений алгебраической структуры)
+            </summary>
+            <param name="normalizeData">Нормализованные данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.Normalizer.Denormalize(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Восстановление нормализованных данных (Перезапись значений алгебраической структуры)
+            </summary>
+            <param name="normalizeData">Нормализованные данные</param>
+        </member>
+        <member name="T:AI.DataPrepaire.DataNormalizers.ZNormalizer">
+            <summary>
+            Z - нормализация (Мат. ожидание = 0, СКО = 1)
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataNormalizers.ZNormalizer.Mean">
+            <summary>
+            Среднее
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataNormalizers.ZNormalizer.Std">
+            <summary>
+            СКО
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.ZNormalizer.Train(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double}})">
+            <summary>
+            Обучение преобразователя
+            </summary>
+            <param name="data">Набор данных</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.ZNormalizer.Transform(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Использование преобразователя (Перезапись значений алгебраической структуры)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataNormalizers.ZNormalizer.Denormalize(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Восстановление нормализованных данных (Перезапись значений алгебраической структуры)
+            </summary>
+            <param name="normalizeData">Нормализованные данные</param>
+        </member>
+        <member name="T:AI.DataPrepaire.FeatureExtractors.FeaturesExtractor`1">
+            <summary>
+            Извлечение признаков из объектов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.FeaturesExtractor`1.GetFeatures(`0)">
+            <summary>
+            Получение признаков из данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.FeaturesExtractor`1.GetFeatures(`0[])">
+            <summary>
+            Получение признаков из данных
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.FeatureExtractors.NoExtractor">
+            <summary>
+            Заглушка для извлечения признаков
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.NoExtractor.GetFeatures(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Копирует вектор с входа на выход
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.FeatureExtractors.TimeSeq.FilterExtractor">
+            <summary>
+            Экстрактор признаков на базе фильтрации
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.FeatureExtractors.TimeSeq.FilterExtractor.Transformer">
+            <summary>
+            Функция преобразование фильрованного сигнала в число
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.FeatureExtractors.TimeSeq.FilterExtractor.IIRs">
+            <summary>
+            Банк БИХ фильтров
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.TimeSeq.FilterExtractor.#ctor(System.Double[],System.Double[],System.Double,System.Int32)">
+            <summary>
+            Экстрактор признаков на базе фильтрации
+            </summary>
+            <param name="fCutDown">Нижние частоты среза</param>
+            <param name="fCutUp">Верхние частоты среза</param>
+            <param name="sr">Частота дискретизации</param>
+            <param name="order">Порядок фильтров</param>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.TimeSeq.FilterExtractor.GetFeatures(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Возвращает признаки после банка фильтров
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.FeatureExtractors.TimeSeq.TSExtractor">
+            <summary>
+            Извлечение признаков из временных рядов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.FeatureExtractors.TimeSeq.TSExtractor.GetFeatures(AI.DataStructs.Algebraic.Vector,System.Int32)">
+            <summary>
+            Получение признаков из временной последовательности
+            </summary>
+            <param name="timeSeq">Последовательность</param>
+            <param name="cropSize">Размер участка данных</param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.CompareStringMethods">
+            <summary>
+            Методы сравнения строк
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.LevenshteinDistance(System.Int32[],System.Int32[])">
+            <summary>
+            Схожесть последовательностей выраженая через расстояние Левенштейна
+            </summary>
+            <param name="input">Входные данные</param>
+            <param name="target">Целевое значение</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.LevenshteinDistance(System.String,System.String)">
+            <summary>
+            Схожесть строк выраженая через расстояние Левенштейна
+            </summary>
+            <param name="input">Входные данные</param>
+            <param name="target">Целевое значение</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.WordCorellation(System.String,System.String)">
+            <summary>
+            Корреляция строк выраженая через расстояние Левенштейна
+            </summary>
+            <param name="input">Входные данные</param>
+            <param name="target">Целевое значение</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.HistogramCos(System.String,System.String,System.Int32)">
+            <summary>
+            Сравнение текста по n-граммам
+            </summary>
+            <param name="input">Строка входа</param>
+            <param name="target">Целевая строка</param>
+            <param name="n">Количество слов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.HistogramCrossEntropy(System.String,System.String,System.Int32)">
+            <summary>
+            Сравнение текста по n-граммам
+            </summary>
+            <param name="input">Строка входа</param>
+            <param name="target">Целевая строка</param>
+            <param name="n">Количество слов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.HistogramCrossEntropy(System.String,System.String)">
+            <summary>
+            Сравнение текста по n-граммам
+            </summary>
+            <param name="input">Строка входа</param>
+            <param name="target">Целевая строка</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.CompareStringMethods.HistogramCos(System.String,System.String)">
+            <summary>
+            Сравнение текста по n-граммам
+            </summary>
+            <param name="input">Строка входа</param>
+            <param name="target">Целевая строка</param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier">
+            <summary>
+            Классификатор текста на базе правил
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.classifier">
+            <summary>
+            Классификатор
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.CountRules">
+            <summary>
+            Число правил
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.#ctor(System.Int32,System.Double,System.Int32)">
+            <summary>
+            Классификатор текста на базе правил
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.Train(System.String[],System.Int32[])">
+            <summary>
+            Обучение 
+            </summary>
+            <param name="texts">Тексты</param>
+            <param name="cls">Классы</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.Predict(System.String)">
+            <summary>
+            Классификация
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier.AddRule(System.String,System.Int32)">
+            <summary>
+            Добавление правила
+            </summary>
+            <param name="rull"></param>
+            <param name="class_mark"></param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast">
+            <summary>
+            Быстрые марковские цепи
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.NGram">
+            <summary>
+            N-граммы
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.ProbabilityVector">
+            <summary>
+            Вектор вероятностей
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.#ctor(AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer,AI.ML.HMM.MCFast)">
+            <summary>
+            Быстрые марковские цепи
+            </summary>
+            <param name="tokenizer">Токенизатор</param>
+            <param name="mc">Марковская цепь</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.#ctor">
+            <summary>
+            Быстрые марковские цепи
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.Train(System.String,System.Boolean)">
+            <summary>
+            Обучение языковой модели
+            </summary>
+            <param name="trainText">Тренировочный текст</param>
+            <param name="addStart">Добавлять ли старт вначале</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.Generate(System.Int32)">
+            <summary>
+            Генерация текста
+            </summary>
+            <param name="num">число слов</param>
+            <returns>сгенерированная строка</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.Generate(System.Int32,System.String[])">
+            <summary>
+            Генерация текста
+            </summary>
+            <param name="num">число слов</param>
+            <param name="strs">начальное состояние</param>
+            <returns>сгенерированная строка</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.Generate(System.Int32,System.String[],System.Random)">
+            <summary>
+            Генерация текста
+            </summary>
+            <param name="num">число слов</param>
+            <param name="strs">начальное состояние</param>
+            <param name="rnd">Генератор псевдо-случайных чисел</param>
+            <returns>сгенерированная строка</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.TextGeneration.HMMFast.TextToVector(System.String)">
+            <summary>
+            Преобразование текста в вектор + изменение модели
+            </summary>
+            <param name="text">текст</param>
+            <returns>вектор</returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.LSHPipeline`1">
+            <summary>
+            LSH Конвейер
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.Extractor">
+            <summary>
+            Извлечение признаков из данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.Normalizer">
+            <summary>
+            Нормализация данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.ProbRegr">
+            <summary>
+            Регрессия
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.Detector">
+            <summary>
+            Детектор аномальных и/или неподходящих данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetProb(`0)">
+            <summary>
+            Запуск регрессора (Возвращает вектор вероятностей)
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetProb(`0[])">
+            <summary>
+            Запуск регрессора (Возвращает вектор вероятностей)
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetHash(`0,System.Double)">
+            <summary>
+            Хэширование объектов
+            </summary>
+            <param name="input">Вход</param>
+            /// <param name="tr">Порог</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetHash(`0[],System.Double)">
+            <summary>
+            Хэширование объектов
+            </summary>
+            <param name="input">Вход</param>
+            <param name="tr">Порог</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetStoсhasticHash(`0)">
+            <summary>
+            Стохастическое хэширование объектов
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.GetStoсhasticHash(`0[])">
+            <summary>
+            Стохастическое кэширование объектов
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.Train(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector})">
+            <summary>
+            Обучение ковейера
+            </summary>
+            <param name="data"></param>
+            <param name="target">Целевое значение</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.ClearData(`0[],AI.DataStructs.Algebraic.Vector[])">
+            <summary>
+            Очистка данных
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.#ctor">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.#ctor(System.Int32)">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+            <param name="cap">Емкость коллекции</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.ShuffleData">
+            <summary>
+            Перемешать датасет
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.ReturnData">
+            <summary>
+            Вернуть данные
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.ReturnClasses">
+            <summary>
+            Вернуть метки классов
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DatasetForMR.Add(`0,AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Добавление объекта в выборку
+            </summary>
+            <param name="obj">Признаковое описание</param>
+            <param name="probs">Индекс</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.LSHPipeline`1.DataSampleMR">
+            <summary>
+            Элемент датасета
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.DataSampleMR.Probs">
+            <summary>
+            Вектор вероятностей
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.LSHPipeline`1.DataSampleMR.Obj">
+            <summary>
+            Признаковое описание
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DataSampleMR.#ctor">
+            <summary>
+            Элемент датасета
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.LSHPipeline`1.DataSampleMR.#ctor(`0,AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Элемент датасета
+            </summary>
+            <param name="probs">Вектор вероятностей</param>
+            <param name="obj">Признаковое описание</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1">
+            <summary>
+            Конвейер обработки данных, преобразование объекта в вектор
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1.Extractor">
+            <summary>
+            Извлечение признаков из данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1.Normalizer">
+            <summary>
+            Нормализация данных
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1.Transformer">
+            <summary>
+            Преобразование вектор -> вектор
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1.#ctor">
+            <summary>
+            Конвейер обработки данных, преобразование объекта в вектор
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Object2VectorPipeline`1.Run(`0)">
+            <summary>
+            Запуск преобразования
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1">
+            <summary>
+            Конвейер обработки данных, классификация объекта
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataAugmetation">
+            <summary>
+            Метод аугметации данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataRestavration">
+            <summary>
+            Метод реставрации данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.UnknowClass">
+            <summary>
+            Индекс неизвестного класса
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Extractor">
+            <summary>
+            Извлечение признаков из данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Normalizer">
+            <summary>
+            Нормализация данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Classifier">
+            <summary>
+            Классификатор
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Detector">
+            <summary>
+            Детектор аномальных и/или неподходящих данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.#ctor">
+            <summary>
+            Конвейер обработки данных, классификация объекта
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Classify(`0)">
+            <summary>
+            Запуск классификатора
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Classify(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Запуск классификатора
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.ClassifyProb(`0)">
+            <summary>
+            Запуск классификатора (Возвращает вектор)
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.ClassifyProb(`0[])">
+            <summary>
+            Запуск классификатора (Возвращает векторы распределений)
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.StoсhasticClassify(`0,System.Double)">
+            <summary>
+            Классификация объекта на базе распределения
+            </summary>
+            <param name="input">Входной объект</param>
+            <param name="temp">Температура</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.StoсhasticClassify(`0[],System.Double)">
+            <summary>
+            Классификация объекта на базе распределения
+            </summary>
+            <param name="input">Входной объект</param>
+            <param name="temp">Температура</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.Train(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Обучение ковейера
+            </summary>
+            <param name="data"></param>
+            <param name="labels"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.TrainTest(`0[],System.Int32[],System.Double,System.Int32,System.Boolean)">
+            <summary>
+            Обучение и тестирование
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.ClearData(`0[],System.Int32[])">
+            <summary>
+            Очистка данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataArrayResvration(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Восстановление массива данных
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.GetFeatures(`0)">
+            <summary>
+            Получение признаков из данных
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.#ctor">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.#ctor(System.Int32)">
+            <summary>
+            Датасет для конвейера классификации
+            </summary>
+            <param name="cap">Емкость коллекции</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.ShuffleData">
+            <summary>
+            Перемешать датасет
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.ReturnData">
+            <summary>
+            Вернуть данные
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.ReturnClasses">
+            <summary>
+            Вернуть метки классов
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DatasetForClassifier.Add(`0,System.Int32)">
+            <summary>
+            Добавление объекта в выборку
+            </summary>
+            <param name="obj">Классифицируемый объект </param>
+            <param name="clIndex">Индекс</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataSample">
+            <summary>
+            Элемент датасета
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataSample.ClassN">
+            <summary>
+            Индекс класса
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataSample.Obj">
+            <summary>
+            Классифицируемый объект
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataSample.#ctor">
+            <summary>
+            Элемент датасета
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectClassifierPipeline`1.DataSample.#ctor(`0,System.Int32)">
+            <summary>
+            Элемент датасета
+            </summary>
+            <param name="classN">Индекс класса</param>
+            <param name="obj">Классифицируемый объект</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1">
+            <summary>
+            Конвейер обработки данных, регрессия на базе объекта
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Extractor">
+            <summary>
+            Извлечение признаков из данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Detector">
+            <summary>
+            Детектор аномальных и/или неподходящих данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataAugmetation">
+            <summary>
+            Метод аугметации данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataRestavration">
+            <summary>
+            Метод реставрации данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.NormalizerX">
+            <summary>
+            Нормализация входных данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.MeanY">
+            <summary>
+            Среднее выхода
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.StdY">
+            <summary>
+            Среднеквадратичное отклонение выхода
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Regression">
+            <summary>
+            Классификатор
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.#ctor">
+            <summary>
+            Конвейер обработки данных, регрессия на базе объекта
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Predict(`0)">
+            <summary>
+            Запуск регрессии
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Predict(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Запуск регрессии
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.Train(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEnumerable{System.Double},System.Boolean)">
+            <summary>
+            Обучение конвейера
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.TrainTest(`0[],System.Double[],System.Double,System.Int32,System.Boolean)">
+            <summary>
+            Обучение и тестирование
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.GetFeatures(`0)">
+            <summary>
+            Получение признаков из данных
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataArrayResvration(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Восстановление массива данных
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.ClearData(`0[],System.Double[])">
+            <summary>
+            Очистка данных
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression">
+            <summary>
+            Датасет для конвейера регрессии
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.#ctor">
+            <summary>
+            Датасет для конвейера регрессии
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.#ctor(System.Int32)">
+            <summary>
+            Датасет для конвейера регрессии
+            </summary>
+            <param name="cap">Емкость коллекции</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.ShuffleData">
+            <summary>
+            Перемешать датасет
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.ReturnData">
+            <summary>
+            Вернуть данные
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.ReturnClasses">
+            <summary>
+            Вернуть целевые значения
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DatasetForRegression.Add(`0,System.Double)">
+            <summary>
+            Добавление объекта в выборку
+            </summary>
+            <param name="obj">Классифицируемый объект</param>
+            <param name="target">Целевое значение</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataSampleR">
+            <summary>
+            Элемент датасета регрессии
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataSampleR.Target">
+            <summary>
+            Целевое значение
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataSampleR.Obj">
+            <summary>
+            Классифицируемый объект
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataSampleR.#ctor">
+            <summary>
+            Элемент датасета
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.ObjectRegressionPipeline`1.DataSampleR.#ctor(`0,System.Double)">
+            <summary>
+            Элемент датасета
+            </summary>
+            <param name="target">Целевое значение</param>
+            <param name="obj">Классифицируемый объект</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.RL.CriticPipeline`1">
+            <summary>
+            Конвейер создания критика (Оценщика состояний)
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1">
+            <summary>
+            Классификатор с обучением с подкреплением и с использованием критика
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.Critic">
+            <summary>
+            Критик
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.#ctor">
+            <summary>
+            Классификатор с обучением с подкреплением и с использованием критика
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.#ctor(AI.DataPrepaire.Pipelines.ObjectClassifierPipeline{`0},AI.DataPrepaire.Pipelines.RL.CriticPipeline{`0})">
+            <summary>
+            Классификатор с обучением с подкреплением и с использованием критика
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.ExpendedReward(`0[])">
+            <summary>
+            Оценка выигрыша в данной партии при помощи критика
+            </summary>
+            <param name="states">Состояния</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.Train(System.Int32)">
+            <summary>
+            Обучение 
+            </summary>
+            <param name="topK"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithCriticPipeline`1.CriticTrain">
+            <summary>
+            Обучение критика
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1">
+            <summary>
+            Конвейер обучения с подкреплением  (без критика)
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.Actor">
+            <summary>
+            Актор, алгоритм принятия решений
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.RewardData">
+            <summary>
+            Подкрепления и действия
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.States">
+            <summary>
+            Состояния внутри партии
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.Actions">
+            <summary>
+            Принятые решения внутри партии
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.#ctor(AI.DataPrepaire.Pipelines.ObjectClassifierPipeline{`0})">
+            <summary>
+            Модель обучения с подкреплением  (без критика)
+            </summary>
+            <param name="actor"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.#ctor">
+            <summary>
+            Модель обучения с подкреплением  (без критика)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.GetAction(`0,System.Double,System.Double)">
+            <summary>
+            Выполнить действие
+            </summary>
+            <param name="state">Состояние</param>
+            <param name="conf">Уверенность</param>
+            <param name="t">Температура</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.SetReward(System.Double)">
+            <summary>
+            Установка реварда / скора (Конец партии)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.Train(System.Int32)">
+            <summary>
+            Обучение
+            </summary>
+            <param name="topK">Топ К лучших партий</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.RL.RLWithoutCriticPipeline`1.ClearData">
+            <summary>
+            Очистка таблицы наград
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1">
+            <summary>
+            Аугментация данных
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.KAug">
+            <summary>
+            Восколько раз расширить данные
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.#ctor(System.Int32)">
+            <summary>
+            Аугментация данных
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(`0)">
+            <summary>
+            Создание набора из одного примера
+            </summary>
+            <param name="sample">Пример</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(`0,System.Int32)">
+            <summary>
+            Создание набора для классификации из одного примера
+            </summary>
+            <param name="sample"></param>
+            <param name="classInd"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(`0,System.Double)">
+            <summary>
+            Создание набора для классификации из одного примера
+            </summary>
+            <param name="sample"></param>
+            <param name="target">Целевое значение</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Аугментация нескольких примеров
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Аугментация нескольких примеров, для классификатора
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.DataAugmetation`1.Augmetation(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEnumerable{System.Double})">
+            <summary>
+            Аугментация нескольких примеров, для классификатора
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.IDetector`1">
+            <summary>
+            Детектор событий/объектов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.IDetector`1.IsDetected(`0)">
+            <summary>
+            Является ли данный объект элементом целевой группы
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.NoAugmentation`1">
+            <summary>
+            Заглушка для аугментации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.NoAugmentation`1.#ctor">
+            <summary>
+            Заглушка для аугментации
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.NoAugmentation`1.Augmetation(`0)">
+            <summary>
+            Аугментация
+            </summary>
+            <param name="sample"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.NoDetector`1">
+            <summary>
+            Не детектор (простой детектор - заглушка, который всегда возвращает false)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.NoDetector`1.IsDetected(`0)">
+            <summary>
+            Всегла возвращает false
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.NormalAugmentation">
+            <summary>
+            Аугментация на базе гауссового распределения
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.NormalAugmentation.#ctor(System.Int32,System.Double,System.Double)">
+            <summary>
+            Аугментация на базе гауссового распределения (Вокруг каждой точки рисует окружность радиусом 3*std)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.NormalAugmentation.Augmetation(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Аугментация данных
+            </summary>
+            <param name="sample">Реальные данные</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1">
+            <summary>
+            Таблица результатов
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.#ctor">
+            <summary>
+            Таблица результатов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.#ctor(System.Collections.Generic.IEnumerable{AI.DataPrepaire.Pipelines.Utils.ScoreElCl{`0}})">
+            <summary>
+            Таблица результатов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.#ctor(AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier{`0})">
+            <summary>
+            Таблица результатов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.#ctor(System.Int32)">
+            <summary>
+            Таблица результатов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.TopK(System.Int32)">
+            <summary>
+            Возвращает Top-k
+            </summary>
+            <param name="k"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.TopKToTbl(System.Int32)">
+            <summary>
+            Возвращает Top-k
+            </summary>
+            <param name="k"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Pipelines.Utils.ScoreTableClassifier`1.GetDataset">
+            <summary>
+            Возвращает датасет
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Pipelines.Utils.ScoreElCl`1">
+            <summary>
+            Партия и ее результат
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Utils.ScoreElCl`1.States">
+            <summary>
+            Состояния
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Utils.ScoreElCl`1.Actions">
+            <summary>
+            Классы
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Pipelines.Utils.ScoreElCl`1.Score">
+            <summary>
+            Оценка качества партии (Reward)
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.ITokenizer`1">
+            <summary>
+            Интерфейс токенизатора
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.ITokenizer`1.UnknowToken">
+            <summary>
+            Неизвестный токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.ITokenizer`1.PadToken">
+            <summary>
+            Токен заполнения
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.ITokenizer`1.StartToken">
+            <summary>
+            Токен начала
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.ITokenizer`1.EndToken">
+            <summary>
+            Токен окончания
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.ITokenizer`1.MaxSize">
+            <summary>
+            Максимальная длинна последовательности токенов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.Encode(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Кодирование токенов
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.Encode(`0)">
+            <summary>
+            Кодирование токенов
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.EncodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{`0}})">
+            <summary>
+            Кодирование батча
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.EncodeBatch(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Кодирование батча
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.Decode(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование токенов
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование токенов в один объект
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.DecodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Декодирование батча токенов
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.ITokenizer`1.DecodeBatchObj(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Декодирование батча токенов
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TokenizerPadStratege">
+            <summary>
+            Стратегия заполнения батча
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TokenizerPadStratege.MaximumSeq">
+            <summary>
+            Максимальная длинна в батче
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TokenizerPadStratege.MaxSize">
+            <summary>
+            Максимально возможная длинна последовательности
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.UnknowToken">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.PadToken">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.StartToken">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.EndToken">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.MaxSize">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.Decode(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.DecodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.DecodeBatchObj(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.Encode(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Matrix})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.Encode(AI.DataStructs.Algebraic.Matrix)">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.EncodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Matrix}})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.MatrixTokenizer.SimpleMatrixTokenizer.EncodeBatch(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Matrix})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1">
+            <summary>
+            Токенизация на уровне байт
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.encoder">
+            <summary>
+            Словарь значение -> токен
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.decoder">
+            <summary>
+            Массив для декодирования
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.#ctor(`0[],System.Collections.Generic.Dictionary{`0,System.Int32})">
+            <summary>
+            Токенизатор
+            </summary>
+            <param name="decoder">Массив токенов для декодирования</param>
+            <param name="encoder">Словарь для кодирования</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.#ctor">
+            <summary>
+            Токенизатор
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.UnknowToken">
+            <summary>
+            Неизвестный токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.PadToken">
+            <summary>
+            Токен заполнения
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.StartToken">
+            <summary>
+            Токен начала
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.EndToken">
+            <summary>
+            Токен окончания
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.MaxSize">
+            <summary>
+            Максимальная длинна последовательности токенов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.Decode(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование токенов
+            </summary>
+            <param name="ids">Индексы</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.DecodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Декодирование батча токенов
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.Encode(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Кодирование токенов
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.DecodeBatchObj(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Не реализовано
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.Encode(`0)">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.EncodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{`0}})">
+            <summary>
+            Токенизация батча
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPE`1.EncodeBatch(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Не реализовано
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore">
+            <summary>
+            Ядро (логика) BPE
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.MaxNGrammSize">
+            <summary>
+            Максимальный размер n-граммы
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.#ctor">
+            <summary>
+            Ядро (логика) BPE
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.TrainBPE(System.Byte[][])">
+            <summary>
+            Обучение BPE
+            </summary>
+            <param name="bytes">Массив байт</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.GetBytes(System.String)">
+            <summary>
+            Преобразование строки в байты
+            </summary>
+            <param name="str">Строка</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.Tokenize(System.Byte[])">
+            <summary>
+            Токенизация на уровне байт
+            </summary>
+            <param name="bytes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.BPECore.Tokenize(System.String)">
+            <summary>
+            Токенизация строки
+            </summary>
+            <param name="str"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.CharTokenizer">
+            <summary>
+            Токенизация на уровне букв
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.CharTokenizer.#ctor(System.String[],System.Collections.Generic.Dictionary{System.String,System.Int32})">
+            <summary>
+            Токенизация на уровне букв
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer">
+            <summary>
+            Токенизатор окончаний для русского языка
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.#ctor(System.String[],System.Collections.Generic.Dictionary{System.String,System.Int32})">
+            <summary>
+            Токенизатор окончаний для русского языка 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.#ctor(System.String)">
+            <summary>
+            Токенизатор окончаний для русского языка
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.Encode(System.String)">
+            <summary>
+            Кодирование текста
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование массива индексов в строку
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.TrainFromTextFile(System.String)">
+            <summary>
+            Обучение/создание токенизатора
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer.TrainFromText(System.String)">
+            <summary>
+            Обучение/создание токенизатора
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer">
+            <summary>
+            Токенизатор на уровне слов
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.IsLower">
+            <summary>
+            Переводить ли в нижний регистр
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.DictLen">
+            <summary>
+            Длинна словаря
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.TransformerStr">
+            <summary>
+            Трансформация строки
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.#ctor(System.String[],System.Collections.Generic.Dictionary{System.String,System.Int32},System.Func{System.String,System.String})">
+            <summary>
+            Токенизатор на уровне слов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.#ctor(System.String,System.Boolean,System.Func{System.String,System.String})">
+            <summary>
+            Токенизатор на уровне слов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.#ctor(System.Boolean,System.Func{System.String,System.String})">
+            <summary>
+            Токенизатор на уровне слов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.Encode(System.String)">
+            <summary>
+            Кодирование текста
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование массива индексов в строку
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.TrainFromTextFile(System.String)">
+            <summary>
+            Обучение/создание токенизатора
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.WordTokenizer.TrainFromText(System.String)">
+            <summary>
+            Обучение/создание токенизатора
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TokenizerBase`1">
+            <summary>
+            Базовый класс для токенизаторов
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TokenizerBase`1.encoder">
+            <summary>
+            Словарь значение -> токен
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.TokenizerBase`1.decoder">
+            <summary>
+            Массив для декодирования
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.#ctor(`0[],System.Collections.Generic.Dictionary{`0,System.Int32})">
+            <summary>
+            Токенизатор
+            </summary>
+            <param name="decoder">Массив токенов для декодирования</param>
+            <param name="encoder">Словарь для кодирования</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.#ctor">
+            <summary>
+            Токенизатор
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TokenizerBase`1.UnknowToken">
+            <summary>
+            Неизвестный токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TokenizerBase`1.PadToken">
+            <summary>
+            Токен заполнения
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TokenizerBase`1.StartToken">
+            <summary>
+            Токен начала
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TokenizerBase`1.EndToken">
+            <summary>
+            Токен окончания
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TokenizerBase`1.MaxSize">
+            <summary>
+            Максимальная длинна последовательности токенов 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.Decode(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Декодирование токенов
+            </summary>
+            <param name="ids">Индексы</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.DecodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Декодирование батча токенов
+            </summary>
+            <param name="ids">Индексы токенов</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.Encode(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Кодирование токенов
+            </summary>
+            <param name="data">Данные</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.DecodeBatchObj(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Не реализовано
+            </summary>
+            <param name="ids"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.Encode(`0)">
+            <summary>
+            Не реализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.EncodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{`0}})">
+            <summary>
+            Токенизация батча
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TokenizerBase`1.EncodeBatch(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Не реализовано
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer">
+            <summary>
+            Токенизация векторов
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.UnknowToken">
+            <summary>
+            Неизвестный токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.PadToken">
+            <summary>
+            Токен заполнения
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.StartToken">
+            <summary>
+            Токен начала
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.EndToken">
+            <summary>
+            Токен конца
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.MaxSize">
+            <summary>
+            Максимальное число токенов
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.VectorTransformer">
+            <summary>
+            Функция векторного преобразования
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.ActivationFunction">
+            <summary>
+            Функция формирующая бинарный код
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.Decode(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Нереализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.DecodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Нереализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.DecodeBatchObj(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{System.Int32}})">
+            <summary>
+            Нереализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.DecodeObj(System.Collections.Generic.IEnumerable{System.Int32})">
+            <summary>
+            Нереализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.Encode(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector})">
+            <summary>
+            Токенизация последовательности векторов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.Encode(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Нереализовано
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.EncodeBatch(System.Collections.Generic.IEnumerable{System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector}})">
+            <summary>
+            Токенизация батча
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.EncodeBatch(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector})">
+            <summary>
+            Нереализовано
+            </summary>
+            <param name="data"></param>
+            <returns></returns>
+            <exception cref="T:System.NotImplementedException"></exception>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.VectorTokenizer.SimpleVectorTokenizer.EncodeObj(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Токенизация вектора
+            </summary>
+            <param name="data">Вектор</param>
+        </member>
+    </members>
+</doc>
