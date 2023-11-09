@@ -1,0 +1,29 @@
+﻿<Window x:Class="FractalGPT.GUI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FractalGPT.GUI"
+        mc:Ignorable="d"
+        Title="Api Settings" Height="181" Width="313">
+    <Grid Margin="0,0,0,4">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="44*"/>
+            <RowDefinition Height="44*"/>
+            <RowDefinition Height="44*"/>
+            <RowDefinition Height="51*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="145*"/>
+            <ColumnDefinition Width="168*"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="FractalGPT Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28"/>
+        <Label Content="OpenAI Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28" Grid.Row="1"/>
+        <Label Content="GigaChat Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28" Grid.Row="2"/>
+        <PasswordBox Grid.Column="1" x:Name="fractalKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Background="#FFEBEDFF" BorderBrush="#FF9AA2B9"/>
+        <PasswordBox Grid.Column="1" x:Name="openAIKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Grid.Row="1" Background="#FFDCDEF5" BorderBrush="#FF9AA2B9"/>
+        <PasswordBox Grid.Column="1" x:Name="sberKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Grid.Row="2" Background="#FFC8CAE4" BorderBrush="#FF9AA2B9"/>
+        <Button Content="Ok" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Grid.Column="1" Click="Button_Click" Height="35" Width="148"/>
+
+    </Grid>
+</Window>

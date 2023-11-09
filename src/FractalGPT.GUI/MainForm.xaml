@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FractalGPT.GUI"
         mc:Ignorable="d"
-        Title="MainForm" Height="650" Width="450" MaxHeight="900" MaxWidth="800" MinHeight="600" MinWidth="300" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize" SnapsToDevicePixels="True">
+        Title="MainForm" Height="750" Width="550" MaxHeight="900" MaxWidth="800" MinHeight="600" MinWidth="300" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize" SnapsToDevicePixels="True">
 
     <Window.Resources>
         <Style TargetType="{x:Type Button}" x:Key="WindowButtonStyle">
@@ -279,7 +279,7 @@
                 <!--<TextBox Name="Message" Style="{StaticResource MessageBox}">
                 </TextBox>-->
                 <Components:PlaceHolderTextBox KeyDown="MessageBox_KeyDown" x:Name="TextMessage" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" TextWrapping="Wrap" Style="{StaticResource TextBoxBorder}" CaretBrush="White"  Background="{x:Null}" PlaceHolderText="Введите текст" Foreground="#FFF9F9F9" Margin="22,9,99,9" BorderBrush="{x:Null}" FontSize="14" />
-                <Button Click="SelectFile_Click" Style="{StaticResource SendButton}" Background="Transparent" Width="30" Height="30" Margin="256,14,70,14">
+                <Button Click="SelectFile_Click" Style="{StaticResource SendButton}" Background="Transparent" Width="30" Height="30" Margin="356,14,70,14">
                     <Viewbox Width="26" Height="40">
                         <Canvas Width="24" Height="24">
                             <Path Data="M27.5 14C27.5 21.4558 21.4558 27.5 14 27.5C6.54416 27.5 0.5 21.4558 0.5 14C0.5 6.54416 6.54416 0.5 14 0.5C21.4558 0.5 27.5 6.54416 27.5 14ZM15 15V21.5H13V15H6.5V13H13V6.5H15V13H21.5V15H15Z" 
@@ -288,7 +288,7 @@
                         </Canvas>
                     </Viewbox>
                 </Button>
-                <Button Click="SendButton_Click" Style="{StaticResource SendButton}" Background="#6669F0" Width="60" Height="60" Margin="298,-1,-2,-1">
+                <Button Click="SendButton_Click" Style="{StaticResource SendButton}" Background="#6669F0" Width="60" Height="60" Margin="398,-1,-2,-1">
                     <Viewbox Width="26" Height="40">
                         <Canvas Width="24" Height="24">
                             <Path Data="M14.5 4.83331L14.5 24.1666M14.5 4.83331L21.75 12.0833M14.5 4.83331L7.25 12.0833" 

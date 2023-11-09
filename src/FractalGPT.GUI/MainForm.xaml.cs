@@ -17,6 +17,8 @@ namespace FractalGPT.GUI
         private readonly string _apiKey = "api_key"; // Ключ API для доступа к ChatGpt
 
         private readonly ChatGptApi _chatGptApi; // Клиент API для взаимодействия с ChatGpt
+        SettingsWindow _settingsWindow;
+
 
         /// <summary>
         /// Конструктор, инициализирующий компоненты формы и API клиента.
@@ -25,6 +27,7 @@ namespace FractalGPT.GUI
         {
             InitializeComponent();
             _openFileDialog = new OpenFileDialog();
+            _settingsWindow = new SettingsWindow();
             _chatGptApi = new ChatGptApi(_apiKey);
         }
 
@@ -74,7 +77,7 @@ namespace FractalGPT.GUI
                 return;
 
             string question = TextMessage.Text;
-            string answer = await _chatGptApi.SendAsyncReturnText(question);
+            string answer = question;// await _chatGptApi.SendAsyncReturnText(question);
 
             // Добавление сообщений в список сообщений
             MessagesList.Items.Add(new Message(question, Sender.User, filePath: _filePath));
