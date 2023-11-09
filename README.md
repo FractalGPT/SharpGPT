@@ -116,19 +116,23 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 - ❌ **Image Description**  
 - ❌ **Image-based Q&A**  
 - ❌ **Forecasting**  
-- ❌ **Fast-trainable Classifiers**  
+- ❌ **Fast-trainable Classifiers**
     - ❌ Signals  
     - ❌ Sounds  
     - ❌ Music  
     - ❌ Speaker Recognition  
-- ❌ **PC Control**  
+- ❌ **PC Control**
+   - ✅ ASR
+   - ❌ TTS
+   - ❌ Software-controlled task manager  
 
 ---
 
 ### 🛠️ **Additional Modules**
 
 - ✅ **FractalGPT Graphical Interface**  
-- ❌ **AIFramework**  
+- ✅ **AIFramework**
+- ✅ **Vosk**  
 
 ---
 
