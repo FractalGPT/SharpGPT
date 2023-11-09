@@ -12952,6 +12952,14 @@
             <param name="smoothParam">Параметр сглаживания</param>
             <returns>Вектор пиков</returns>
         </member>
+        <member name="M:AI.DSP.Analyse.WelchFormantFinder.SignalSmooth(AI.DataStructs.Algebraic.Vector,System.Int32)">
+            <summary>
+            Сглаживание сигнала методом Надарая-Ватсона
+            </summary>
+            <param name="signal">Сигнал</param>
+            <param name="k">Число соседей</param>
+            <returns></returns>
+        </member>
         <member name="T:AI.DSP.Channel">
             <summary>
             Канал
@@ -25480,8 +25488,8 @@
             <summary>
             Обучение регрессии
             </summary>
-            <param name="tData">Входные данные</param>
-            <param name="targs">Данные выходов</param>
+            <param name="tData">Входные данные (Каждое значение вектора отдельная точка)</param>
+            <param name="targs">Данные выходов (Предсказания)</param>
         </member>
         <member name="M:AI.ML.Regression.KNNReg.Predict(AI.DataStructs.Algebraic.Vector)">
             <summary>

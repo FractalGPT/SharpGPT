@@ -252,6 +252,98 @@
             Загрузка JSON файлов
             </summary>
         </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Sound.AudioHelper">
+            <summary>
+            A helper class for audio data conversion.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioHelper.ConvertByteToShort(System.Byte[])">
+            <summary>
+            Converts a byte array to an array of shorts, assuming 16-bit mono audio.
+            </summary>
+            <param name="buffer">The byte array containing 16-bit audio data.</param>
+            <returns>An array of shorts representing the audio data.</returns>
+            <remarks>
+            This method assumes that each pair of bytes in the input array represents a single audio sample in little-endian format.
+            </remarks>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioHelper.ConvertShortToFloat(System.Int16[])">
+            <summary>
+            Converts an array of shorts to an array of floats.
+            </summary>
+            <param name="shortArray">The array of shorts representing audio data.</param>
+            <returns>An array of floats normalized to the range of -1.0f to 1.0f.</returns>
+            <remarks>
+            This method normalizes the 16-bit audio samples to the range of -1.0f to 1.0f suitable for processing or playback.
+            </remarks>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Sound.AudioRecorder">
+            <summary>
+            A class that manages audio recording from a microphone input using NAudio library.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.IsRecording">
+            <summary>
+            Is start record
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.SampleRate">
+            <summary>
+            Sample rate
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.AudioDataReceivedEventHandler">
+            <summary>
+            Delegate for handling audio data received events.
+            </summary>
+            <param name="buffer">The buffer containing audio data.</param>
+            <param name="bytesRecorded">The number of bytes recorded in the buffer.</param>
+        </member>
+        <member name="E:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.OnBufferReceived">
+            <summary>
+            Event triggered when a buffer of audio data has been received.
+            </summary>
+        </member>
+        <member name="E:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.NewSignalPart">
+            <summary>
+            Event triggered when a buffer of audio data has been received (Vector ret)
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.#ctor">
+            <summary>
+            A class that manages audio recording from a microphone input using NAudio library.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.StartRecording(System.Int32)">
+            <summary>
+            Starts recording audio from the default input device.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.waveSource_DataAvailable(System.Object,NAudio.Wave.WaveInEventArgs)">
+            <summary>
+            Handles the data available event from the WaveIn device and writes to the wave file.
+            Also, raises the OnBufferReceived event with the audio data.
+            </summary>
+            <param name="sender">The sender object.</param>
+            <param name="e">WaveInEventArgs containing the buffer and bytes recorded.</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.waveSource_RecordingStopped(System.Object,NAudio.Wave.StoppedEventArgs)">
+            <summary>
+            Handles the recording stopped event, cleans up resources.
+            </summary>
+            <param name="sender">The sender object.</param>
+            <param name="e">StoppedEventArgs containing event data.</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.StopRecording">
+            <summary>
+            Stops the recording process.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.Sound.AudioRecorder.StartAndStop(System.Int32)">
+            <summary>
+            Если запись не идет - начинает ее, если идет - останавливает
+            </summary>
+        </member>
         <member name="T:AI.DataPrepaire.DataNormalizers.EmptyNormalizer">
             <summary>
             Нормализатор который ничего не делает
