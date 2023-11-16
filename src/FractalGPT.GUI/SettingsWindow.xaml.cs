@@ -22,81 +22,116 @@ namespace FractalGPT.GUI
     /// </summary>
     public partial class SettingsWindow : Window
     {
-
         private string _path = "settings-api.json";
-        ApiSettings apiSettings;
+        private ApiSettings _apiSettings;
 
         public SettingsWindow()
         {
             InitializeComponent();
-
-            if (File.Exists(_path)) 
-            {
-                string json = File.ReadAllText(_path);
-                apiSettings = JsonSerializer.Deserialize<ApiSettings>(json);
-            }
-
-            else 
-            {
-                apiSettings = new ApiSettings();
-                ShowDialog();
-            }
-
+            LoadSettings();
         }
 
+        /// <summary>
+        /// Loads the API settings from a file if it exists, otherwise initializes new settings.
+        /// </summary>
+        private void LoadSettings()
+        {
+            if (File.Exists(_path))
+            {
+                string json = File.ReadAllText(_path);
+                _apiSettings = JsonSerializer.Deserialize<ApiSettings>(json) ?? new ApiSettings();
+            }
+            else
+            {
+                _apiSettings = new ApiSettings();
+                ShowDialog(); // Consider moving the ShowDialog() call out of the constructor
+            }
+        }
 
         /// <summary>
-        /// Save settings
+        /// Saves the current API settings to a file.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        private void SaveSettings()
+        {
+            string json = JsonSerializer.Serialize(_apiSettings);
+            File.WriteAllText(_path, json);
+        }
+
+        /// <summary>
+        /// Handles the click event of the save settings button.
+        /// </summary>
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            apiSettings.KeyFractal = fractalKey.Password;
-            apiSettings.KeyOpenAI = openAIKey.Password;
-            apiSettings.KeyGigaChat = sberKey.Password;
+            _apiSettings.KeyFractal = fractalKey.Password;
+            _apiSettings.KeyOpenAI = openAIKey.Password;
+            _apiSettings.KeyGigaChat = sberKey.Password;
 
-            string json = JsonSerializer.Serialize(apiSettings);
-            File.WriteAllText(_path, json);
+            SaveSettings();
             Close();
         }
 
-        public string GetFractalKey()
+        /// <summary>
+        /// Retrieves the stored Fractal API key, or requests it if it is missing.
+        /// </summary>
+        public string GetFractalKey() => GetApiKey(_apiSettings.KeyFractal, nameof(_apiSettings.KeyFractal));
+
+        /// <summary>
+        /// Retrieves the stored OpenAI key, or requests it if it is missing.
+        /// </summary>
+        public string GetOpenAIKey() => GetApiKey(_apiSettings.KeyOpenAI, nameof(_apiSettings.KeyOpenAI));
+
+        /// <summary>
+        /// Retrieves the stored GigaChat API key, or requests it if it is missing.
+        /// </summary>
+        public string GetGigaChatKey() => GetApiKey(_apiSettings.KeyGigaChat, nameof(_apiSettings.KeyGigaChat));
+
+        /// <summary>
+        /// A helper method to retrieve an API key from settings or prompt for it if it's missing.
+        /// </summary>
+        /// <param name="key">The API key from the settings.</param>
+        /// <param name="keyName">The name of the key property for logging or error messages.</param>
+        private string GetApiKey(string key, string keyName)
         {
-            var key = apiSettings.KeyFractal;
-            if (string.IsNullOrEmpty(key)) ShowDialog();
+            if (string.IsNullOrEmpty(key))
+            {
+                ShowDialog(); // A more refined logic may be required to prompt the user for the key
+                              // After the dialog is closed, we need to get the updated key value
+                key = keyName switch
+                {
+                    nameof(_apiSettings.KeyFractal) => _apiSettings.KeyFractal,
+                    nameof(_apiSettings.KeyOpenAI) => _apiSettings.KeyOpenAI,
+                    nameof(_apiSettings.KeyGigaChat) => _apiSettings.KeyGigaChat,
+                    _ => key
+                };
+            }
 
-            return apiSettings.KeyFractal;
+            return key;
         }
-
-        public string GetOpenAIKey()
-        {
-            var key = apiSettings.KeyOpenAI;
-            if (string.IsNullOrEmpty(key)) ShowDialog();
-
-            return apiSettings.KeyOpenAI;
-        }
-
-        public string GetGigaChatKey()
-        {
-            var key = apiSettings.KeyGigaChat;
-            if (string.IsNullOrEmpty(key)) ShowDialog();
-
-            return apiSettings.KeyGigaChat;
-        }
-
     }
 
-    [Serializable]
-    public class ApiSettings 
+
+    /// <summary>
+    /// Represents the API settings for the application.
+    /// This class holds the keys necessary to interact with various APIs.
+    /// </summary>
+    public class ApiSettings
     {
-        [JsonPropertyName("fractal-gpt key")]
+        /// <summary>
+        /// Gets or sets the API key for the Fractal GPT service.
+        /// </summary>
+        [JsonPropertyName("fractalGptKey")]
         public string KeyFractal { get; set; }
 
-        [JsonPropertyName("open-ai api key")]
+        /// <summary>
+        /// Gets or sets the API key for the OpenAI service.
+        /// </summary>
+        [JsonPropertyName("openAiApiKey")]
         public string KeyOpenAI { get; set; }
 
-        [JsonPropertyName("giga-chat key")]
+        /// <summary>
+        /// Gets or sets the API key for the GigaChat service.
+        /// </summary>
+        [JsonPropertyName("gigaChatKey")]
         public string KeyGigaChat { get; set; }
     }
 }

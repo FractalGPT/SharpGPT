@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using FractalGPT.GUI.Models;
 using FractalGPT.SharpGPTLib.API.ChatGPT;
+using FractalGPT.SharpGPTLib.MLWithLLM.Speech;
 using Microsoft.Win32;
 
 namespace FractalGPT.GUI
@@ -12,12 +13,13 @@ namespace FractalGPT.GUI
     /// </summary>
     public partial class MainForm : Window
     {
+        
         private readonly OpenFileDialog _openFileDialog; // Диалог для выбора файлов
         private string _filePath; // Путь к выбранному файлу
-        private readonly string _apiKey = "api_key"; // Ключ API для доступа к ChatGpt
 
         private readonly ChatGptApi _chatGptApi; // Клиент API для взаимодействия с ChatGpt
         SettingsWindow _settingsWindow;
+        SpeechSynthesizerWrapper speechSynthesizer = new SpeechSynthesizerWrapper();
 
 
         /// <summary>
@@ -28,8 +30,14 @@ namespace FractalGPT.GUI
             InitializeComponent();
             _openFileDialog = new OpenFileDialog();
             _settingsWindow = new SettingsWindow();
-            _chatGptApi = new ChatGptApi(_apiKey);
+            
+            string apiKey = _settingsWindow.GetOpenAIKey();
+            _chatGptApi = new ChatGptApi(apiKey);
+            _chatGptApi.Answer += _chatGptApi_Answer;
+            speechSynthesizer.SetVoice(0);
         }
+
+       
 
         // Обработчик события клика по кнопке отправки сообщения
         private void SendButton_Click(object sender, RoutedEventArgs e) => Send();
@@ -68,6 +76,10 @@ namespace FractalGPT.GUI
                 DragMove();
         }
 
+
+
+
+
         /// <summary>
         /// Отправляет текстовое сообщение в ChatGpt и выводит ответ.
         /// </summary>
@@ -77,15 +89,24 @@ namespace FractalGPT.GUI
                 return;
 
             string question = TextMessage.Text;
-            string answer = question;// await _chatGptApi.SendAsyncReturnText(question);
+            _chatGptApi.SendAsyncText(question); // Запрос
 
             // Добавление сообщений в список сообщений
             MessagesList.Items.Add(new Message(question, Sender.User, filePath: _filePath));
-            MessagesList.Items.Add(new Message(answer, Sender.GPT));
             MessagesList.ScrollIntoView(MessagesList.Items[^1]); // Прокрутка до последнего сообщения
 
             _filePath = string.Empty; // Очистка пути файла после отправки
             TextMessage.Clear(); // Очистка текстового поля
+        }
+
+        /// <summary>
+        /// Получает ответ от чат gpt
+        /// </summary>
+        private void _chatGptApi_Answer(string obj)
+        {
+            MessagesList.Items.Add(new Message(obj, Sender.GPT));
+            MessagesList.ScrollIntoView(MessagesList.Items[^1]); // Прокрутка до последнего сообщения
+            //speechSynthesizer.Speak(obj);
         }
     }
 }

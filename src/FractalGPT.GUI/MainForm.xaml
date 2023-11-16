@@ -8,168 +8,11 @@
         Title="MainForm" Height="750" Width="550" MaxHeight="900" MaxWidth="800" MinHeight="600" MinWidth="300" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize" SnapsToDevicePixels="True">
 
     <Window.Resources>
-        <Style TargetType="{x:Type Button}" x:Key="WindowButtonStyle">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type ButtonBase}">
-                        <Border
-                            x:Name="Chrome"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            Margin="0"
-                            Background="{TemplateBinding Background}"
-                            SnapsToDevicePixels="True">
-                            <ContentPresenter
-                                ContentTemplate="{TemplateBinding ContentTemplate}"
-                                Content="{TemplateBinding Content}"
-                                ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                Margin="{TemplateBinding Padding}"
-                                RecognizesAccessKey="True"
-                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"
-                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="FontFamily" Value="Webdings"/>
-            <Setter Property="FontSize" Value="16" />
-            <Setter Property="Foreground" Value="#fff" />
-            <!--<Setter Property="Margin" Value="0,2,3,0"/>-->
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Foreground" Value="Red" />
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-        <Style x:Key="TextBoxBase">
-            <Style.Setters>
-                <!--<Setter Property="TextBox.Foreground" Value="#f6f6f6" />-->
-                <Setter Property="TextBox.Margin" Value="5"/>
-                <Setter Property="TextBox.Padding" Value="15 10"/>
-                <Setter Property="TextBox.HorizontalAlignment" Value="Center" />
-                <Setter Property="TextBox.Width" Value="250" />
-            </Style.Setters>
-        </Style>
-        <Style x:Key="MessageBox" BasedOn="{StaticResource TextBoxBase}" >
-            <Style.Setters>
-                <Setter Property="TextBox.HorizontalAlignment" Value="Stretch" />
-                <Setter Property="TextBox.Width" Value="Auto" />
-                <Setter Property="TextBox.Background" Value="Transparent" />
-                <Setter Property="TextBox.BorderBrush" Value="Transparent" />
-            </Style.Setters>
-        </Style>
-        <Style TargetType="TextBox" x:Key="TextBoxBorder">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type TextBox}">
-                        <Border x:Name="border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost" Focusable="false" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <!--<Trigger Property="IsEnabled" Value="false">
-                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
-                            </Trigger>-->
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
-                            </Trigger>
-                            <Trigger Property="IsFocused" Value="true">
-                                <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Button" x:Key="TabButton">
-            <!--<Setter Property="Background" Value="{TemplateBinding Background}" />-->
-            <Setter Property="TextBlock.TextAlignment" Value="Center" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border CornerRadius="{TemplateBinding Border.CornerRadius}" 
-                        Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" 
-                        BorderThickness="0,0,0,0" >
-                            <ContentPresenter x:Name="contentPresenter" 
-                                      ContentTemplate="{TemplateBinding ContentTemplate}" 
-                                      Content="{TemplateBinding Content}" 
-                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                      Margin="{TemplateBinding Padding}" 
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style TargetType="Button" x:Key="SendButton" BasedOn="{StaticResource TabButton}">
-            <Setter Property="Border.CornerRadius" Value="50" />
-        </Style>
-        <Style x:Key="MessageBorder">
-            <Style.Setters>
-                <!--<Setter Property="Border.Background" Value="#FF160032" />-->
-                <Setter Property="Border.CornerRadius" Value="25" />
-                <Setter Property="Border.MinWidth" Value="200" />
-                <Setter Property="Border.MaxWidth" Value="300" />
-                <Setter Property="Border.MinHeight" Value="49" />
-                <Setter Property="Border.Padding" Value="26, 8" />
-            </Style.Setters>
-        </Style>
-        <Style x:Key="MessageText">
-            <Style.Setters>
-                <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
-                <Setter Property="TextBlock.Margin" Value="0" />
-                <Setter Property="TextBlock.FontSize" Value="14" />
-                <Setter Property="TextBlock.Foreground" Value="#FFDDDDDD" />
-            </Style.Setters>
-        </Style>
-        <Style x:Key="MessageDate">
-            <Style.Setters>
-                <Setter Property="TextBlock.HorizontalAlignment" Value="Right" />
-                <Setter Property="TextBlock.FontSize" Value="11" />
-                <Setter Property="TextBlock.Margin" Value="0" />
-                <Setter Property="TextBlock.Foreground" Value="#FFDDDDDD" />
-            </Style.Setters>
-        </Style>
-        <Style x:Key="RepeatButtonTransparent" TargetType="{x:Type RepeatButton}">
-            <Setter Property="OverridesDefaultStyle" Value="true"/>
-            <Setter Property="Background" Value="#505050"/>
-            <Setter Property="Focusable" Value="false"/>
-            <Setter Property="IsTabStop" Value="false"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type RepeatButton}">
-                        <Border Background="{TemplateBinding Background}" Height="{TemplateBinding Height}" Width="{TemplateBinding Width}" CornerRadius="10"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style x:Key="ScrollBarThumbVertical" TargetType="{x:Type Thumb}">
-            <Setter Property="OverridesDefaultStyle" Value="true"/>
-            <Setter Property="Background">
-                <Setter.Value>
-                    <SolidColorBrush Color="#C4C4C4" Opacity="0.5"/>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Focusable" Value="false"/>
-            <!--<Setter Property="Margin" Value="3"/>-->
-            <Setter Property="IsTabStop" Value="false"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Thumb}">
-                        <Border x:Name="rectangle" Background="#FFC6C6C6" Height="{TemplateBinding Height}" SnapsToDevicePixels="True" Width="{TemplateBinding Width}" CornerRadius="5"/>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="rectangle" Value="#FFC6C6C6"/>
-                            </Trigger>
-                            <Trigger Property="IsDragging" Value="true">
-                                <Setter Property="Background" TargetName="rectangle" Value="#FFC6C6C6"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles/Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -180,7 +23,7 @@
                     <GradientStop Color="#FF1C3453" Offset="1"/>
                 </LinearGradientBrush>
             </Border.Background>
-            <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Width="446" Height="57" Margin="0,-6,0,0">
+            <Grid VerticalAlignment="Top" HorizontalAlignment="Center" Width="446" Height="57" Margin="0,-8,-100,0">
                 <Border MouseDown="MovingForm" Margin="0,0,84,0" BorderBrush="Transparent">
                     <Border.Background>
                         <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -188,7 +31,7 @@
                             <GradientStop Color="Transparent" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
-                    <Grid Margin="173,2,0,-5" HorizontalAlignment="Left">
+                    <Grid Margin="130,2,0,-5" HorizontalAlignment="Left">
                         <Label Content="SharpGPT" Foreground="White" FontSize="18" Margin="0,10,0,5" FontWeight="Bold" HorizontalAlignment="Center"/>
                         <Grid HorizontalAlignment="Center" Width="82" Margin="0,5,0,-7">
                             <Label Content="Chat bot" Foreground="White" Margin="4,31,-4,-5" FontWeight="Bold"/>

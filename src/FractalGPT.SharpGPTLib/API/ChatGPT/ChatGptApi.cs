@@ -66,6 +66,15 @@ public class ChatGptApi : IText2TextChatAPI
     }
 
     /// <summary>
+    /// Asynchronous method for sending text
+    /// </summary>
+    public async void SendAsyncText(string text)
+    {
+        var chatCompletionsResponse = await SendAsync(text);
+        Answer(chatCompletionsResponse.Choices[0].Message.Content);
+    }
+
+    /// <summary>
     /// Synchronous method for sending text and receiving a response from ChatGPT, maintaining the context of the dialogue.
     /// </summary>
     public ChatCompletionsResponse Send(string text)
@@ -110,4 +119,7 @@ public class ChatGptApi : IText2TextChatAPI
         _sendData.Prompt = prompt;
         _sendData.Clear();
     }
+
+
+    public event Action<string> Answer;
 }

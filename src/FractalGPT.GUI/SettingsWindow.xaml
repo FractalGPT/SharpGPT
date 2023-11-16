@@ -5,25 +5,40 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FractalGPT.GUI"
         mc:Ignorable="d"
-        Title="Api Settings" Height="181" Width="313">
-    <Grid Margin="0,0,0,4">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="44*"/>
-            <RowDefinition Height="44*"/>
-            <RowDefinition Height="44*"/>
-            <RowDefinition Height="51*"/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="145*"/>
-            <ColumnDefinition Width="168*"/>
-        </Grid.ColumnDefinitions>
-        <Label Content="FractalGPT Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28"/>
-        <Label Content="OpenAI Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28" Grid.Row="1"/>
-        <Label Content="GigaChat Key" HorizontalAlignment="Center" VerticalAlignment="Center" Width="94" Height="28" Grid.Row="2"/>
-        <PasswordBox Grid.Column="1" x:Name="fractalKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Background="#FFEBEDFF" BorderBrush="#FF9AA2B9"/>
-        <PasswordBox Grid.Column="1" x:Name="openAIKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Grid.Row="1" Background="#FFDCDEF5" BorderBrush="#FF9AA2B9"/>
-        <PasswordBox Grid.Column="1" x:Name="sberKey" HorizontalAlignment="Center" VerticalAlignment="Center" Width="168" Height="24" Grid.Row="2" Background="#FFC8CAE4" BorderBrush="#FF9AA2B9"/>
-        <Button Content="Ok" HorizontalAlignment="Center" Grid.Row="3" VerticalAlignment="Center" Grid.Column="1" Click="Button_Click" Height="35" Width="148"/>
-
-    </Grid>
+        Title="API Settings" Height="304" Width="350" ResizeMode="NoResize">
+    <Window.Resources>
+        <Style x:Key="LabelStyle" TargetType="Label">
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10,5"/>
+        </Style>
+        <Style x:Key="InputStyle" TargetType="PasswordBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10,5"/>
+            <Setter Property="Background" Value="#FFEBEDFF"/>
+            <Setter Property="BorderBrush" Value="#FF9AA2B9"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        <Style x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="10,5"/>
+            <Setter Property="Width" Value="80"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Background" Value="#FF4E72B2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+    </Window.Resources>
+    <StackPanel>
+        <Label Content="FractalGPT Key" Style="{StaticResource LabelStyle}"/>
+        <PasswordBox x:Name="fractalKey" Style="{StaticResource InputStyle}" ToolTip="Enter your FractalGPT API key here."/>
+        <Label Content="OpenAI Key" Style="{StaticResource LabelStyle}" />
+        <PasswordBox x:Name="openAIKey" Style="{StaticResource InputStyle}" ToolTip="Enter your OpenAI API key here."/>
+        <Label Content="GigaChat Key" Style="{StaticResource LabelStyle}"/>
+        <PasswordBox x:Name="sberKey" Style="{StaticResource InputStyle}" ToolTip="Enter your GigaChat API key here."/>
+        <Button Content="OK" Style="{StaticResource ButtonStyle}" Click="Button_Click"/>
+    </StackPanel>
 </Window>
