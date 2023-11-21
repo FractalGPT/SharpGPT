@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FractalGPT.GUI"
         mc:Ignorable="d"
+        Closing="Window_Closing"
         Title="MainForm" Height="750" Width="550" MaxHeight="900" MaxWidth="800" MinHeight="600" MinWidth="300" WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize" SnapsToDevicePixels="True">
 
     <Window.Resources>

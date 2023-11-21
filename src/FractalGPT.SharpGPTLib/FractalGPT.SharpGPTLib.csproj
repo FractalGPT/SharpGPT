@@ -9,4 +9,10 @@
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AI">
+      <HintPath>..\..\Binary\AIFramework2.2\AI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

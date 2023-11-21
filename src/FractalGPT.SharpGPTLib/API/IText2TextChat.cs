@@ -1,11 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.API
 {
     /// <summary>
-    /// The task of transforming text to text
+    /// The task of transforming text to text with chat model
     /// </summary>
-    public interface Text2TextAPI
+    public interface IText2TextChat
     {
         /// <summary>
         /// Main asynchronous handler
@@ -20,5 +23,16 @@ namespace FractalGPT.SharpGPTLib.API
         /// <param name="text">Input text</param>
         /// <returns></returns>
         string SendReturnText(string text);
+
+        /// <summary>
+        /// Setting the prompt
+        /// </summary>
+        /// <param name="prompt"></param>
+        void SetPrompt(string prompt);
+
+        /// <summary>
+        /// Clearing the context
+        /// </summary>
+        void ClearContext();
     }
 }

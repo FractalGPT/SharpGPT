@@ -14,7 +14,7 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Code
         /// Initializes a new instance of the <see cref="CodeGeneration"/> class with a predefined prompt for code generation.
         /// </summary>
         /// <param name="text2Text">The text-to-text API implementation to be used for code generation.</param>
-        public CodeGeneration(IText2TextChatAPI text2Text)
+        public CodeGeneration(IText2TextChat text2Text)
             : base(text2Text, PromptManager.SystemPrompts["code_generation_en"])
         {
             // The constructor is intentionally left blank.

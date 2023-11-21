@@ -12,7 +12,7 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Description
     [Serializable]
     public class DescriptionGeneration
     {
-        private readonly IText2TextChatAPI _textToTextApi;
+        private readonly IText2TextChat _textToTextApi;
         private readonly string _lang;
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Description
         /// </summary>
         /// <param name="text2TextApi">API for text-to-text transformation.</param>
         /// <param name="lang">The language for generating the description (default is English).</param>
-        public DescriptionGeneration(IText2TextChatAPI text2TextApi, string lang = "en")
+        public DescriptionGeneration(IText2TextChat text2TextApi, string lang = "en")
         {
             _lang = lang;
             _textToTextApi = text2TextApi ?? throw new ArgumentNullException(nameof(text2TextApi));

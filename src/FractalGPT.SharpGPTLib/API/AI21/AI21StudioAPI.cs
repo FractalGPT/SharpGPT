@@ -10,7 +10,7 @@ namespace FractalGPT.SharpGPTLib.API.AI21
     /// A class to interact with the AI21 Studio API.
     /// </summary>
     [Serializable]
-    public class AI21StudioAPI : Text2TextAPI
+    public class AI21StudioAPI : IText2Text
     {
         private readonly AuthenticationHeaderValue _header;
         private readonly string _modelPath;

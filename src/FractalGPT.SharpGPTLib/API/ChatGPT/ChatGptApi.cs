@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 
 namespace FractalGPT.SharpGPTLib.API.ChatGPT;
@@ -11,26 +12,36 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT;
 /// Class for interacting with ChatGPT through API.
 /// </summary>
 [Serializable]
-public class ChatGptApi : IText2TextChatAPI
+public class ChatGptApi : IText2TextChat, IDisposable
 {
-    private readonly HttpClient _httpClient;
+    private readonly IWebAPIClient _webApi;
     private readonly SendDataChatGPT _sendData;
     private static readonly string ApiUrl = "https://api.openai.com/v1/chat/completions";
+
+    public event Action<string> ProxyInfo;
 
     /// <summary>
     /// Constructor for API initialization.
     /// </summary>
-    public ChatGptApi(string key, string modelName = "gpt-3.5-turbo", string prompt = null, double t = 0.7)
+    public ChatGptApi(string key, bool useProxy = false, string proxyPath = "proxy.json", string modelName = "gpt-3.5-turbo", string prompt = null, double t = 0.7)
     {
         // Use the default prompt if a custom one is not provided.
-        string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
-
-        _sendData = new SendDataChatGPT(modelName, defaultPrompt, temp: t);
-
-        _httpClient = new HttpClient
+        if (useProxy)
         {
-            DefaultRequestHeaders = { Authorization = new AuthenticationHeaderValue("Bearer", key) }
-        };
+            _webApi = new ProxyHTTPClient(proxyPath, key);
+            (_webApi as ProxyHTTPClient).OnProxyError += ChatGptApi_OnProxyError;
+        }
+        else { _webApi = new WithoutProxyClient(key); }
+        
+        string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
+        _sendData = new SendDataChatGPT(modelName, defaultPrompt, temp: t);
+        
+
+    }
+
+    private void ChatGptApi_OnProxyError(object sender, ProxyErrorEventArgs e)
+    {
+        ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
     }
 
     /// <summary>
@@ -42,10 +53,7 @@ public class ChatGptApi : IText2TextChatAPI
         _sendData.AddUserMessage(text);
 
         // Sending the request and receiving the response.
-        HttpResponseMessage response = await _httpClient.PostAsJsonAsync(ApiUrl, _sendData);
-
-        // Check for successful response status, otherwise an exception will be thrown.
-        response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
 
         // Deserialize the response into a ChatCompletionsResponse object.
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
@@ -83,7 +91,7 @@ public class ChatGptApi : IText2TextChatAPI
         _sendData.AddUserMessage(text);
 
         // Sending the request and receiving the response.
-        HttpResponseMessage response = _httpClient.PostAsJsonAsync(ApiUrl, _sendData).Result;
+        HttpResponseMessage response = _webApi.PostAsJsonAsync(ApiUrl, _sendData).Result;
 
         // Check for successful response status, otherwise an exception will be thrown.
         response.EnsureSuccessStatusCode();
@@ -120,6 +128,10 @@ public class ChatGptApi : IText2TextChatAPI
         _sendData.Clear();
     }
 
+    public void Dispose()
+    {
+        
+    }
 
     public event Action<string> Answer;
 }

@@ -13,7 +13,7 @@ namespace FractalGPT.SharpGPTLib.Task.TextQA
     [Serializable]
     public class TextQA
     {
-        private readonly IText2TextChatAPI _text2Text;
+        private readonly IText2TextChat _text2Text;
         private string _text;
         private readonly string _lang;
 
@@ -22,7 +22,7 @@ namespace FractalGPT.SharpGPTLib.Task.TextQA
         /// </summary>
         /// <param name="text2Text">API for text-to-text transformation.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="text2Text"/> is null.</exception>
-        public TextQA(IText2TextChatAPI text2Text, string lang)
+        public TextQA(IText2TextChat text2Text, string lang)
         {
             _lang = lang;
             _text2Text = text2Text ?? throw new ArgumentNullException(nameof(text2Text));

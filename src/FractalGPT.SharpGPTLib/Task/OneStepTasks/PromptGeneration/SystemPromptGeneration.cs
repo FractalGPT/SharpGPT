@@ -11,7 +11,7 @@ namespace FractalGPT.SharpGPTLib.Task.PromptGeneration
     [Serializable]
     public class SystemPromptGeneration
     {
-        private readonly IText2TextChatAPI _text2Text;
+        private readonly IText2TextChat _text2Text;
         private readonly string _lang;
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace FractalGPT.SharpGPTLib.Task.PromptGeneration
         /// </summary>
         /// <param name="text2Text">API for text-to-text transformation.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="text2Text"/> is null.</exception>
-        public SystemPromptGeneration(IText2TextChatAPI text2Text, string lang)
+        public SystemPromptGeneration(IText2TextChat text2Text, string lang)
         {
             _lang = lang;
             _text2Text = text2Text ?? throw new ArgumentNullException(nameof(text2Text));

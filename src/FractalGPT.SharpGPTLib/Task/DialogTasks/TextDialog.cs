@@ -15,7 +15,7 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
     [Serializable]
     public class TextDialog
     {
-        private readonly IText2TextChatAPI _text2Text; // This field is readonly because it is only set in the constructor
+        private readonly IText2TextChat _text2Text; // This field is readonly because it is only set in the constructor
         private readonly string _lang;
         private string _text;
         bool text_loaded = false;
@@ -25,7 +25,7 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         /// </summary>
         /// <param name="text2Text">The text-to-text API implementation.</param>
         /// <param name="lang">The language setting for the dialog (default is "en").</param>
-        public TextDialog(IText2TextChatAPI text2Text, string lang = "en")
+        public TextDialog(IText2TextChat text2Text, string lang = "en")
         {
             _lang = lang;
             _text2Text = text2Text ?? throw new ArgumentNullException(nameof(text2Text));
