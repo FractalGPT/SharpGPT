@@ -123,7 +123,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
     - ❌ Speaker Recognition  
 - ❌ **PC Control**
    - ✅ ASR
-   - ❌ TTS
+   - ✅ TTS
    - ❌ Software-controlled task manager  
 
 ---
