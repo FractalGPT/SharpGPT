@@ -12,7 +12,6 @@ using System.Text.Json.Serialization;
 namespace FractalGPT.SharpGPTLib.API.WebUtils
 {
 
-
     [Serializable]
     public class ProxyHTTPClient : IWebAPIClient
     {
