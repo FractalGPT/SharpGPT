@@ -87,7 +87,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
    - ❌ Cross-Encoder  
 - ❌ **Function Invocation Model (FractalGPT)**  
 - ❌ **Search System (FractalGPT)**  
-- ❌ **QAAgent (FractalGPT)**  
+- ✅ **QAAgent (FractalGPT)**  
 - ❌ **MathAgent (FractalGPT)**  
 - ❌ **TextProcessor (FractalGPT)**  
 - ❌ **Image Description (FractalGPT)**  
