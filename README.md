@@ -77,7 +77,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 
 - ✅ **ChatGPT (OpenAI)**  
 - ✅ **AI21 (AI21 Labs)**
-- ❌ **[Local Server](https://github.com/FractalGPT/SimpleLLMServer) (FractalGPT Open)**
+- ✅ **[Local Server](https://github.com/FractalGPT/SimpleLLMServer) (FractalGPT Open)**
 - ❌ **GigaChat (Sber)**  
 - ❌ **Hallucination Checking (FractalGPT)**  
 - ❌ **Extractive Summarization (FractalGPT)**  
