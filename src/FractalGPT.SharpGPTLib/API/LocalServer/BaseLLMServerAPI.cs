@@ -11,7 +11,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
     /// Represents a base API client for interacting with a local server that provides LLM (Large Language Models) functionalities.
     /// </summary>
     [Serializable]
-    public class BaseAPI
+    public class BaseLLMServerAPI
     {
         private readonly HttpClient _client;
 
@@ -24,7 +24,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
         /// Initializes a new instance of the <see cref="BaseAPI"/> class with an optional host URL.
         /// </summary>
         /// <param name="host">The base URL of the local server.</param>
-        public BaseAPI(string host = "http://127.0.0.1:8080/")
+        public BaseLLMServerAPI(string host = "http://127.0.0.1:8080/")
         {
             Host = host;
             _client = new HttpClient();
@@ -82,6 +82,21 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
                 // ToDo: Log the exception or handle it as needed
                 return null;
             }
+        }
+
+
+        /// <summary>
+        /// Generates text based on a given prompt and optional parameters.
+        /// </summary>
+        /// <param name="prompt">The input prompt for text generation.</param>
+        /// <param name="generationParametrs">Optional parameters to customize the generation process.</param>
+        /// <returns>The generated text or null if the operation failed.</returns>
+        public async Task<string> TextGeneration(string prompt, GenerationParametrs generationParametrs)
+        {
+            if (generationParametrs == null) generationParametrs = new GenerationParametrs();
+
+            return await TextGeneration(prompt, generationParametrs.MaxLen, generationParametrs.Temperature, 
+                generationParametrs.TopK, generationParametrs.TopP, generationParametrs.NoRepeatNgramSize);
         }
     }
 }

@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.label1 = new System.Windows.Forms.Label();
-            this.apiKey = new System.Windows.Forms.TextBox();
+            this.apiKeyOrHost = new System.Windows.Forms.TextBox();
             this.a_txt = new System.Windows.Forms.RichTextBox();
             this.q_txt = new System.Windows.Forms.RichTextBox();
             this.label2 = new System.Windows.Forms.Label();
@@ -45,16 +45,17 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(13, 13);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(153, 13);
+            this.label1.Size = new System.Drawing.Size(202, 13);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Ключ OpenAI или FractalGPT:";
+            this.label1.Text = "Ключ OpenAI или FractalGPT, или хост:";
             // 
-            // apiKey
+            // apiKeyOrHost
             // 
-            this.apiKey.Location = new System.Drawing.Point(13, 30);
-            this.apiKey.Name = "apiKey";
-            this.apiKey.Size = new System.Drawing.Size(267, 20);
-            this.apiKey.TabIndex = 1;
+            this.apiKeyOrHost.Location = new System.Drawing.Point(13, 30);
+            this.apiKeyOrHost.Name = "apiKeyOrHost";
+            this.apiKeyOrHost.Size = new System.Drawing.Size(267, 20);
+            this.apiKeyOrHost.TabIndex = 1;
+            this.apiKeyOrHost.Text = "http://192.168.0.101:8080/";
             // 
             // a_txt
             // 
@@ -147,7 +148,7 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.q_txt);
             this.Controls.Add(this.a_txt);
-            this.Controls.Add(this.apiKey);
+            this.Controls.Add(this.apiKeyOrHost);
             this.Controls.Add(this.label1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "Form1";
@@ -160,7 +161,7 @@
         #endregion
 
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.TextBox apiKey;
+        private System.Windows.Forms.TextBox apiKeyOrHost;
         private System.Windows.Forms.RichTextBox a_txt;
         private System.Windows.Forms.RichTextBox q_txt;
         private System.Windows.Forms.Label label2;
