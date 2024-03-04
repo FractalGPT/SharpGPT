@@ -13,9 +13,9 @@ namespace FractalGPT.GUI.Models
         User,
 
         /// <summary>
-        /// Сообщение создано и отправлено GPT (Generative Pre-trained Transformer),
+        /// Сообщение создано и отправлено ботом,
         /// скорее всего, это автоматически сгенерированный ответ от системы искусственного интеллекта.
         /// </summary>
-        GPT
+        Bot
     }
 }

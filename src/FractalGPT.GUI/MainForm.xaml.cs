@@ -3,8 +3,8 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Win32;
 using FractalGPT.GUI.Models;
-using FractalGPT.SharpGPTLib.API.ChatGPT;
-using FractalGPT.SharpGPTLib.MLWithLLM.Speech;
+using FractalGPT.GUI.Bots;
+using FractalGPT.SharpGPTLib.Prompts.PersonaChat;
 
 namespace FractalGPT.GUI
 {
@@ -16,10 +16,7 @@ namespace FractalGPT.GUI
         
         private readonly OpenFileDialog _openFileDialog; // Диалог для выбора файлов
         private string _filePath; // Путь к выбранному файлу
-
-        private readonly ChatGptApi _chatGptApi; // Клиент API для взаимодействия с ChatGpt
-        SettingsWindow _settingsWindow;
-        SpeechSynthesizerWrapper speechSynthesizer = new SpeechSynthesizerWrapper();
+        private IBotInterface _bot; 
 
 
         /// <summary>
@@ -29,13 +26,22 @@ namespace FractalGPT.GUI
         {
             InitializeComponent();
             _openFileDialog = new OpenFileDialog();
-            _settingsWindow = new SettingsWindow();
-            
-            string apiKey = _settingsWindow.GetOpenAIKey();
-            _chatGptApi = new ChatGptApi(apiKey, false);
-            _chatGptApi.Answer += ChatGptApi_Answer;
-            _chatGptApi.ProxyInfo += _chatGptApi_ProxyInfo;
-            speechSynthesizer.SetVoice(0);
+
+            string[] facts =
+            {
+                "Я люблю читать книги",
+                "Я очень дружелюбный",
+                "Меня зовут Сергей",
+                "Мне 30 лет",
+                "У меня есть машина",
+                "Моего собеседника зовут User"
+            };
+
+            PersonaChat personaChat = new PersonaChat(facts);
+            personaChat.Context = new PersonaContext(3);
+            personaChat.StartConversation = "Недавно, у меня был следующий диалог: ";
+
+            _bot = new PersonaBotInterface(this, personaChat, "http://192.168.0.101:8080/");
         }
 
       
@@ -94,7 +100,8 @@ namespace FractalGPT.GUI
 
             // Получаем текст вопроса из текстового поля
             string question = TextMessage.Text;
-            _chatGptApi.SendAsyncText(question);
+            _bot.Send(question);
+
             // Создаем новое сообщение и добавляем его в список сообщений
             MessagesList.Items.Add(new Message(question, Sender.User, filePath: _filePath));
             // Прокручиваем список сообщений до последнего элемента
@@ -106,21 +113,7 @@ namespace FractalGPT.GUI
         }
 
 
-        /// <summary>
-        /// Получает ответ от чат gpt
-        /// </summary>
-        private void ChatGptApi_Answer(string obj)
-        {
-            MessagesList.Items.Add(new Message(obj, Sender.GPT));
-            MessagesList.ScrollIntoView(MessagesList.Items[^1]); // Прокрутка до последнего сообщения
-            //speechSynthesizer.Speak(obj);
-        }
-
-        private void _chatGptApi_ProxyInfo(string obj)
-        {
-            MessagesList.Items.Add(new Message(obj, Sender.GPT));
-            MessagesList.ScrollIntoView(MessagesList.Items[^1]);
-        }
+       
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {

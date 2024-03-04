@@ -52,10 +52,11 @@ public class SendDataChatGPT
         Temperature = temp;
         Prompt = systemPrompt;
         this.bufferSize = bufferSize;
-        Messages = new List<MessageChatGPT>(bufferSize);
-
-        // Инициализация списка сообщений с начальным системным сообщением.
-        Messages.Add(new MessageChatGPT("system", systemPrompt));
+        Messages = new List<MessageChatGPT>(bufferSize)
+        {
+            // Инициализация списка сообщений с начальным системным сообщением.
+            new MessageChatGPT("system", systemPrompt)
+        };
         currentIndex = 1;
     }
 
@@ -97,13 +98,9 @@ public class SendDataChatGPT
     {
         // Если достигли размера буфера, удаляем самое старое сообщение
         if (currentIndex >= bufferSize)
-        {
             Messages.RemoveAt(0);
-        }
         else
-        {
             currentIndex++;
-        }
 
         Messages.Add(new MessageChatGPT(role, text));
     }

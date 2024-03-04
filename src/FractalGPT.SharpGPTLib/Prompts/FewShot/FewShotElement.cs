@@ -40,7 +40,7 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
         /// <param name="endToken">The end token to append to the formatted string. Default is "&lt;/s&gt;".</param>
         /// <param name="sep">The separator to use between the prompt and model output. Default is a newline character.</param>
         /// <returns>A formatted string that combines the prompt and model output.</returns>
-        public string GetString(string startToken = "<s>", string endToken = "</s>", string sep = "\n")
+        public virtual string GetString(string startToken = "<s>", string endToken = "</s>", string sep = "\n")
         {
             return $"{startToken}{Prompt}{sep}{ModelOutput}{endToken}";
         }

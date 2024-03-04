@@ -18,12 +18,12 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
         public List<FewShotElement> FewShots = new List<FewShotElement>();
 
         /// <summary>
-        /// Gets or sets the end token used to denote the end of a model's output. Default is "&lt;/s&gt;".
+        /// Gets or sets the end token used to denote the end of a model's output. Default is "</s>".
         /// </summary>
         public string EndToken { get; set; } = "</s>";
 
         /// <summary>
-        /// Gets or sets the start token used to denote the beginning of a model's output. Default is "&lt;s&gt;".
+        /// Gets or sets the start token used to denote the beginning of a model's output. Default is "<s>".
         /// </summary>
         public string StartToken { get; set; } = "<s>";
 
