@@ -25,7 +25,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
         /// </summary>
         public event EventHandler<ProxyErrorEventArgs> OnProxyError;
 
-
+        
         public AuthenticationHeaderValue Authentication { get; set; }
 
         /// <summary>

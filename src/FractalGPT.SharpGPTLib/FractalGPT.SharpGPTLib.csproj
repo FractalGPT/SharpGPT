@@ -13,6 +13,12 @@
     <Reference Include="AI">
       <HintPath>..\..\Binary\AIFramework2.2\AI.dll</HintPath>
     </Reference>
+    <Reference Include="AI.DataPrepaire">
+      <HintPath>..\..\Binary\AIFramework2.2\AI.DataPrepaire.dll</HintPath>
+    </Reference>
+    <Reference Include="AI.ONNX">
+      <HintPath>..\..\Binary\AIFramework2.2\AI.ONNX.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -8319,6 +8319,92 @@
             Window for cepstral liftering
             </summary>
         </member>
+        <member name="T:AI.Controls.ComplexObjectControl.Base.ComplexObjectBase">
+            <summary>
+            Сложный объект (API для доступа к физ. объекту/диф. модель)
+            </summary>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ComplexObjectBase.GetState(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Возвращает вектор состояния объекта
+            </summary>
+            <param name="action">Вектор управляющего воздействия</param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.Controls.ComplexObjectControl.Base.ObjectInversModel">
+            <summary>
+            Модель обратного процесса, к процессу управления
+            </summary>
+        </member>
+        <member name="F:AI.Controls.ComplexObjectControl.Base.ObjectInversModel.MultyRegression">
+            <summary>
+            Модель
+            </summary>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectInversModel.#ctor">
+            <summary>
+            Модель обратного процесса, к процессу управления
+            </summary>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectInversModel.GetControl(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Получение управляющего воздействия, способного вызвать нужную реакцию
+            </summary>
+            <param name="state"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectInversModel.Train(AI.Controls.ComplexObjectControl.Base.ObjModelDataset)">
+            <summary>
+            Обучение модели
+            </summary>
+            <param name="dataset"></param>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectInversModel.GetObjModelWithNNW(System.Int32,System.Int32,System.Int32,AI.ML.NeuralNetwork.CoreNNW.Activations.IActivation)">
+            <summary>
+            Создание обратной модели на базе полносвязной нейронной сети
+            </summary>
+            <param name="inputDim">Число входов</param>
+            <param name="outputDim">Число выходов</param>
+            <param name="h">Количество нейронов на скрытом слое, если 0 - то сеть не имеет скрытого слоя</param>
+            <param name="activationH">Активация скрытого слоя</param>
+        </member>
+        <member name="T:AI.Controls.ComplexObjectControl.Base.ObjectModel">
+            <summary>
+            Модель для прогнозирование реакции объекта на управляющее воздействие
+            </summary>
+        </member>
+        <member name="F:AI.Controls.ComplexObjectControl.Base.ObjectModel.MultyRegression">
+            <summary>
+            Модель
+            </summary>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectModel.#ctor">
+            <summary>
+            Модель для прогнозирование реакции объекта на управляющее воздействие
+            </summary>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectModel.GetReaction(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Прогнозирование реакции объекта на управляющее воздействие
+            </summary>
+            <param name="action">Управляющее воздействие</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectModel.Train(AI.Controls.ComplexObjectControl.Base.ObjModelDataset)">
+            <summary>
+            Обучение модели
+            </summary>
+            <param name="dataset"></param>
+        </member>
+        <member name="M:AI.Controls.ComplexObjectControl.Base.ObjectModel.GetObjModelWithNNW(System.Int32,System.Int32,System.Int32,AI.ML.NeuralNetwork.CoreNNW.Activations.IActivation)">
+            <summary>
+            Создание прямой модели на базе полносвязной нейронной сети
+            </summary>
+            <param name="inputDim">Число входов</param>
+            <param name="outputDim">Число выходов</param>
+            <param name="h">Количество нейронов на скрытом слое, если 0 - то сеть не имеет скрытого слоя</param>
+            <param name="activationH">Активация скрытого слоя</param>
+        </member>
         <member name="T:AI.Correlation">
             <summary>
             Класс реализует авто- и взаимо- кореляционные функции
@@ -13596,6 +13682,13 @@
             <param name="signal">Исходный сигнал</param>
             <returns>Отфильтрованный</returns>
         </member>
+        <member name="M:AI.DSP.DSPCore.IFilter.FilterOutp(System.Double)">
+            <summary>
+            Запуск фильтрации
+            </summary>
+            <param name="signal">Исходный сигнал</param>
+            <returns>Отфильтрованный</returns>
+        </member>
         <member name="T:AI.DSP.DSPCore.Kepstr">
             <summary>
             Кепстральный анализ
@@ -14016,6 +14109,13 @@
             Расчет отклика фильтра на сигнал
             </summary>
             <param name="input">Сигнал</param>
+        </member>
+        <member name="M:AI.DSP.FIR.FIRFilter.FilterOutp(System.Double)">
+            <summary>
+            Фильтрация сигнала по одному отсчету
+            </summary>
+            <param name="signal"></param>
+            <returns></returns>
         </member>
         <member name="T:AI.DSP.FIR.FIRCalcConvType">
             <summary>
@@ -17067,96 +17167,106 @@
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.K">
             <summary>
-            Число соседей
+            Количество соседей для учёта в алгоритме KNN.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.H">
             <summary>
-            Ширина окна
+            Ширина окна для метода окна Парзена.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.IsFixed">
             <summary>
-            Фиксирована ли ширина окна
+            Указывает, фиксирована ли ширина окна.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.IsParsenMethod">
             <summary>
-            Использовать ли метод Парзена
+            Указывает, используется ли метод окна Парзена.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.KernelParsenWindow">
             <summary>
-            Ядро окна Парзена
+            Функция ядра для окна Парзена.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.Dist">
             <summary>
-            Функция измерения расстояния
+            Функция для измерения расстояния между векторами.
             </summary>
         </member>
         <member name="P:AI.ML.Classifiers.KNNCl.Classes">
             <summary>
-            Набор данных
+            Набор классов для классификации.
             </summary>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.#ctor">
             <summary>
-            Метод k-ближайших соседей
+            Инициализация экземпляра класса KNNCl с настройками по умолчанию.
             </summary>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.#ctor(AI.ML.DataSets.VectorIntDataset)">
             <summary>
-            Метод k-ближайших соседей
+            Инициализация экземпляра класса KNNCl с использованием предоставленного набора данных.
+            </summary>
+            <param name="vectorClasses">Набор данных для классификации.</param>
+        </member>
+        <member name="M:AI.ML.Classifiers.KNNCl.#ctor(AI.ML.Classifiers.StructClasses)">
+            <summary>
+            Инициализация экземпляра класса KNNCl с предоставленным набором классов.
+            </summary>
+            <param name="classifikator">Набор классов для классификации.</param>
+        </member>
+        <member name="M:AI.ML.Classifiers.KNNCl.InitializeDefaults">
+            <summary>
+            Устанавливает настройки по умолчанию.
             </summary>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.RbfK(System.Double)">
             <summary>
-            Радиально-базисная функция окна
+            Радиально-базисная функция ядра.
             </summary>
-        </member>
-        <member name="M:AI.ML.Classifiers.KNNCl.#ctor(AI.ML.Classifiers.StructClasses)">
-            <summary>
-            Метод k-ближайших соседей
-            </summary>
-            <param name="classifikator">Коллекция классов</param>
+            <param name="r">Радиальное расстояние.</param>
+            <returns>Результат радиально-базисной функции.</returns>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.Classify(AI.DataStructs.Algebraic.Vector)">
             <summary>
-            Распознавание
+            Классифицирует входной вектор и возвращает индекс класса с максимальной вероятностью.
             </summary>
-            <param name="inp">Вектор входа</param>
+            <param name="inp">Входной вектор для классификации.</param>
+            <returns>Индекс класса с максимальной вероятностью.</returns>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.AddClass(AI.DataStructs.Algebraic.Vector,System.Int32)">
             <summary>
-            Добавить класс
+            Добавляет новый класс в набор классов.
             </summary>
-            <param name="features">Вектор признаков</param>
-            <param name="num">Метка </param>
+            <param name="features">Вектор признаков класса.</param>
+            <param name="num">Метка класса.</param>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.ClassifyProbVector(AI.DataStructs.Algebraic.Vector)">
             <summary>
-            Распознавание вектора, представить вектором распределения вероятностей
+            Распознаёт вектор и возвращает вектор вероятностей классов.
             </summary>
+            <param name="inp">Входной вектор.</param>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.RecognizeVectorMax(AI.DataStructs.Algebraic.Vector)">
             <summary>
-            Возвращает вектор, его длина равна количеству классов, на позиции распознанного класса установлено значение 1
+            Возвращает вектор распознавания классов с максимальным значением 1 для распознанного класса.
             </summary>
-            <param name="inp">Вектор входных данных</param>
+            <param name="inp">Входной вектор.</param>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.Train(AI.DataStructs.Algebraic.Vector[],System.Int32[])">
             <summary>
-            Обучение классификатора
+            Обучает классификатор.
             </summary>
-            <param name="features">Признаки</param>
-            <param name="classes">Метки классов</param>
+            <param name="features">Массив признаков.</param>
+            <param name="classes">Массив меток классов.</param>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.Train(AI.ML.DataSets.VectorIntDataset)">
             <summary>
-            Обучение на базе набора данных вектор-класс
+            Обучает классификатор на основе набора данных.
             </summary>
-            <param name="dataset">Набор данных Vector-int32</param>
+            <param name="dataset">Набор данных.</param>
         </member>
         <member name="M:AI.ML.Classifiers.KNNCl.Save(System.String)">
             <summary>
@@ -17190,11 +17300,12 @@
             </summary>
             <param name="pathToEtallonClassCsv">Путь до файла</param>
         </member>
-        <member name="M:AI.ML.Classifiers.KNNCl.ToVector(System.Int32)">
+        <member name="M:AI.ML.Classifiers.KNNCl.ToVector(System.Int32,System.Boolean)">
             <summary>
             Transform to vector
             </summary>
             <param name="i">Индекс</param>
+            <param name="isParsenMethod">Используется ли окно Парзена</param>
         </member>
         <member name="T:AI.ML.Classifiers.LinearClassifierBinarry">
             <summary>
@@ -17320,6 +17431,11 @@
             Классификатор, работающий по принципу метода эталонов
             </summary>
         </member>
+        <member name="P:AI.ML.Classifiers.NN.Dist">
+            <summary>
+            Функция растояния
+            </summary>
+        </member>
         <member name="P:AI.ML.Classifiers.NN.Classes">
             <summary>
             Классы
@@ -17417,6 +17533,35 @@
             <summary>
             Структура классификатора
             </summary>
+        </member>
+        <member name="M:AI.ML.Classifiers.StructClasses.Add(AI.ML.DataSets.VectorClass)">
+            <summary>
+            Добавляет объект <see cref="T:AI.ML.DataSets.VectorClass"/> в конец списка.
+            </summary>
+            <param name="item">Объект <see cref="T:AI.ML.DataSets.VectorClass"/>, который необходимо добавить в список.</param>
+            <remarks>
+            Этот метод является потокобезопасным и обеспечивает защиту от одновременного доступа из разных потоков.
+            </remarks>
+        </member>
+        <member name="M:AI.ML.Classifiers.StructClasses.Remove(AI.ML.DataSets.VectorClass)">
+            <summary>
+            Удаляет первое вхождение указанного объекта <see cref="T:AI.ML.DataSets.VectorClass"/> из списка.
+            </summary>
+            <param name="item">Объект <see cref="T:AI.ML.DataSets.VectorClass"/>, который необходимо удалить из списка.</param>
+            <remarks>
+            Этот метод является потокобезопасным и обеспечивает защиту от одновременного доступа из разных потоков.
+            </remarks>
+        </member>
+        <member name="P:AI.ML.Classifiers.StructClasses.Item(System.Int32)">
+            <summary>
+            Получает или задает элемент по указанному индексу.
+            </summary>
+            <param name="index">Индекс элемента для получения или установки.</param>
+            <returns>Элемент по указанному индексу.</returns>
+            <remarks>
+            Для получения элемента используется потокобезопасный доступ на чтение.
+            При установке элемента используется потокобезопасный доступ на запись.
+            </remarks>
         </member>
         <member name="M:AI.ML.Classifiers.StructClasses.Save(System.String)">
             <summary>
@@ -18139,34 +18284,34 @@
         </member>
         <member name="T:AI.ML.DataSets.VectorClass">
             <summary>
-            Представляет структуру вектор-класс
+            Представляет структуру вектор-класс для классификации.
             </summary>
         </member>
-        <member name="F:AI.ML.DataSets.VectorClass.Features">
+        <member name="P:AI.ML.DataSets.VectorClass.Features">
             <summary>
-            Вектор для классификации
+            Получает или задает вектор для классификации.
             </summary>
         </member>
-        <member name="F:AI.ML.DataSets.VectorClass.ClassMark">
+        <member name="P:AI.ML.DataSets.VectorClass.ClassMark">
             <summary>
-            Метка класса
+            Получает или задает метку класса.
             </summary>
         </member>
         <member name="P:AI.ML.DataSets.VectorClass.R">
             <summary>
-            Радиус(схожесть)
+            Получает или задает радиус (схожесть).
             </summary>
         </member>
         <member name="M:AI.ML.DataSets.VectorClass.#ctor(AI.DataStructs.Algebraic.Vector,System.Int32)">
             <summary>
-            Представляет структуру вектор-класс
+            Инициализирует новый экземпляр класса <see cref="T:AI.ML.DataSets.VectorClass"/> с указанными вектором и меткой класса.
             </summary>
-            <param name="vector">Вектор</param>
-            <param name="mark">Метка класса</param>
+            <param name="vector">Вектор для классификации.</param>
+            <param name="mark">Метка класса.</param>
         </member>
         <member name="M:AI.ML.DataSets.VectorClass.#ctor">
             <summary>
-            Представляет структуру вектор-класс
+            Инициализирует новый экземпляр класса <see cref="T:AI.ML.DataSets.VectorClass"/>.
             </summary>
         </member>
         <member name="T:AI.ML.DataSets.GroupeVidData">
@@ -18334,6 +18479,11 @@
         <member name="M:AI.ML.Distances.BaseDist.Cos(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double},AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
             <summary>
             Косинусное сходство
+            </summary>
+        </member>
+        <member name="M:AI.ML.Distances.BaseDist.CosDistRelu(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double},AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
+            <summary>
+            Косинусное расстояние
             </summary>
         </member>
         <member name="M:AI.ML.Distances.BaseDist.CosDist(AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double},AI.DataStructs.Algebraic.IAlgebraicStructure{System.Double})">
@@ -19218,6 +19368,34 @@
             <summary>
             Вектор признаков
             </summary>
+        </member>
+        <member name="T:AI.ML.LinearModelTools.NonIterativeTwoClass">
+            <summary>
+            Безытеративное обучение (Двуклассовый)
+            </summary>
+        </member>
+        <member name="P:AI.ML.LinearModelTools.NonIterativeTwoClass.W">
+            <summary>
+            Вектор весов
+            </summary>
+        </member>
+        <member name="P:AI.ML.LinearModelTools.NonIterativeTwoClass.B">
+            <summary>
+            Вес смещения
+            </summary>
+        </member>
+        <member name="M:AI.ML.LinearModelTools.NonIterativeTwoClass.Train(System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector},System.Collections.Generic.IEnumerable{AI.DataStructs.Algebraic.Vector})">
+            <summary>
+            Обучение классификатора
+            </summary>
+            <param name="vectorsCL1">Объекты класса 1</param>
+            <param name="vectorsCL2">Объекты класса 2</param>
+        </member>
+        <member name="M:AI.ML.LinearModelTools.NonIterativeTwoClass.Forward(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Прямой проход
+            </summary>
+            <param name="vect">Вектор</param>
         </member>
         <member name="T:AI.ML.MatrixUtils.EigenValuesVectors">
             <summary>
@@ -25624,6 +25802,100 @@
             <param name="data"></param>
             <param name="targets"></param>
         </member>
+        <member name="T:AI.ML.Regression.NeuralMultyRegression">
+            <summary>
+            Нейросетевая множественная регрессия
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.MeanInp">
+            <summary>
+            Средний вектор входа
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.StdInp">
+            <summary>
+            Разброс значений на входе
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.MeanOutp">
+            <summary>
+            Средний вектор выхода
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.StdOutp">
+            <summary>
+            Разброс значений на выходе
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.Graph">
+            <summary>
+            Граф автоматического дифференцирования
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.LearningRate">
+            <summary>
+            Скорость обучения
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.EpochesToPass">
+            <summary>
+            Число эпох
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.Optimizer">
+            <summary>
+            Оптимизатор
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.ValSplit">
+            <summary>
+            Доля валидационной выборки
+            </summary>
+        </member>
+        <member name="P:AI.ML.Regression.NeuralMultyRegression.Loss">
+            <summary>
+            Метод измерения ошибки
+            </summary>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.#ctor(AI.ML.NeuralNetwork.CoreNNW.NNW)">
+            <summary>
+            Регрессия для многих переменных на базе нейронной сети
+            </summary>
+            <param name="net">Нейронная сеть</param>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.#ctor(System.Int32,System.Int32,System.Int32,AI.ML.NeuralNetwork.CoreNNW.Activations.IActivation)">
+            <summary>
+            Регрессия для многих переменных на базе нейронной сети
+            </summary>
+            <param name="inputDim">Число входов</param>
+            <param name="outputDim">Число выходов</param>
+            <param name="h">Количество нейронов на скрытом слое, если 0 - то сеть не имеет скрытого слоя</param>
+            <param name="activationH">Активация скрытого слоя</param>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.Predict(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Прогнозирование
+            </summary>
+            <param name="data">Входные данные</param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.Train(AI.DataStructs.Algebraic.Vector[],AI.DataStructs.Algebraic.Vector[])">
+            <summary>
+            Обучение регрессионной модели
+            </summary>
+            <param name="data"></param>
+            <param name="targets"></param>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.Save(System.String)">
+            <summary>
+            Сохранение в бинарный файл
+            </summary>
+        </member>
+        <member name="M:AI.ML.Regression.NeuralMultyRegression.LoadFromFile(System.String)">
+            <summary>
+            Загрузка из бинарного файла
+            </summary>
+        </member>
         <member name="T:AI.ML.Regression.PolynomialRegression">
             <summary>
             Полиномиальная регрессия
@@ -25647,6 +25919,16 @@
             <param name="vect">Значения незав. переменных</param>
         </member>
         <member name="T:AI.ML.Regression.StructRegr">
+            <summary>
+             Набор данных регрессии item
+            </summary>
+        </member>
+        <member name="M:AI.ML.Regression.StructRegr.#ctor">
+            <summary>
+             Набор данных регрессии item
+            </summary>
+        </member>
+        <member name="M:AI.ML.Regression.StructRegr.#ctor(AI.DataStructs.Algebraic.Vector,System.Double)">
             <summary>
              Набор данных регрессии item
             </summary>
@@ -25875,9 +26157,16 @@
             </summary>
             <param name="inp">Масив состояний</param>
         </member>
+        <member name="M:AI.ML.SeqAnalyze.States2Vector.Encode(System.Int32[])">
+            <summary>
+            Кодирование одного массива состояний в укрупненный
+            </summary>
+            <param name="inp">Масив состояний</param>
+        </member>
         <member name="M:AI.ML.SeqAnalyze.States2Vector.Train(System.Int32[][],AI.DataStructs.Algebraic.Vector[])">
             <summary>
-            Обучение
+            Обучение 
+            ToDo: Добавить рассчет индекса
             </summary>
             <param name="data">Массивы состояний</param>
             <param name="y">Целевые векторы</param>
@@ -25898,6 +26187,11 @@
         <member name="T:AI.ML.SeqAnalyze.ValueDictRegressor">
             <summary>
             Значение для словаря регрессий
+            </summary>
+        </member>
+        <member name="F:AI.ML.SeqAnalyze.ValueDictRegressor.Index">
+            <summary>
+            Индекс токена (дописать для обучения)
             </summary>
         </member>
         <member name="F:AI.ML.SeqAnalyze.ValueDictRegressor.TargetValue">

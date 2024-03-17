@@ -4,6 +4,194 @@
         <name>AI.DataPrepaire</name>
     </assembly>
     <members>
+        <member name="T:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens">
+            <summary>
+            Класс, содержащий константы для меток токенов.
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.Padding">
+            <summary>
+            Пустой токен (паддинг)
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.Unknown">
+            <summary>
+            Метка для неизвестных слов
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.Classification">
+            <summary>
+            Метка для классификации
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.Separation">
+            <summary>
+            Метка разделения
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.Mask">
+            <summary>
+            Метка маскировки
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.SpecialTokens.FromJson(System.String)">
+            <summary>
+            Загрузка токенов из JSON
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Backends.BertTokenizers.StringExtensions">
+            <summary>
+            Метод-расширение для строки, который разбивает ее на подстроки с использованием заданных разделителей,
+            при этом разделители также включаются в результат.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.StringExtensions.SplitAndKeep(System.String,System.Char[])">
+            <summary>
+            Разбивает строку на подстроки с использованием заданных разделителей,
+            при этом разделители также включаются в результат.
+            </summary>
+            <param name="inputString">Исходная строка.</param>
+            <param name="delimiters">Массив символов-разделителей.</param>
+            <returns>Перечисление подстрок, включая разделители.</returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase">
+            <summary>
+            Абстрактный базовый класс для токенизаторов.
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.TokenWordPart">
+            <summary>
+            Часть неоконченного слова
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.SpecialTokenMap">
+            <summary>
+            Специальные токены
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase._vocabulary">
+            <summary>
+            Список слов из словаря.
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase._vocabularyDict">
+            <summary>
+            Словарь, отображающий слово в его индекс в словаре
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.#ctor(System.String)">
+            <summary>
+            Инициализирует новый экземпляр класса TokenizerBase.
+            </summary>
+            <param name="vocabularyFilePath">Путь к файлу словаря.</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.BaseEncode(System.Collections.Generic.IEnumerable{System.String},System.Int32)">
+            <summary>
+            Кодирует входные тексты в виде токенов и возвращает список кортежей (InputIds, TokenTypeIds, AttentionMask).
+            </summary>
+            <param name="texts">Входные тексты для токенизации.</param>
+            <param name="sequenceLength">Длина последовательности токенов.</param>
+            <returns>Список кортежей (InputIds, TokenTypeIds, AttentionMask).</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.BaseEncode(System.String,System.Int32)">
+            <summary>
+            Кодирует входные тексты в виде токенов и возвращает список кортежей (InputIds, TokenTypeIds, AttentionMask).
+            </summary>
+            <param name="text">Входной текст для токенизации</param>
+            <param name="sequenceLength">Длина последовательности токенов.</param>
+            <returns>Список кортежей (InputIds, TokenTypeIds, AttentionMask).</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.Encode(System.Collections.Generic.IEnumerable{System.String},System.Int32)">
+            <summary>
+            Кодирует входные тексты в виде токенов
+            </summary>
+            <param name="texts">Входные тексты для токенизации.</param>
+            <param name="sequenceLength">Длина последовательности токенов.</param>
+            <returns>Структуру с токенами</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.Encode(System.String,System.Int32)">
+            <summary>
+            Кодирует входные тексты в виде токенов
+            </summary>
+            <param name="text">Входной текст для токенизации</param>
+            <param name="sequenceLength">Длина последовательности токенов</param>
+            <returns>Структуру с токенами</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.IdToToken(System.Int32)">
+            <summary>
+            Возвращает слово по его индексу в словаре.
+            </summary>
+            <param name="id">Индекс слова в словаре.</param>
+            <returns>Слово.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.Untokenize(System.Collections.Generic.List{System.String})">
+            <summary>
+            Объединяет список токенов в единое предложение.
+            </summary>
+            <param name="tokens">Список токенов.</param>
+            <returns>Единое предложение.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.Tokenize(System.String[])">
+            <summary>
+            Токенизирует входные тексты и возвращает список токенов вместе с их индексами в словаре и индексами сегментов.
+            </summary>
+            <param name="texts">Входные тексты для токенизации.</param>
+            <returns>Список токенов вместе с индексами в словаре и индексами сегментов.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.SegmentIndex(System.Collections.Generic.List{System.ValueTuple{System.String,System.Int32}})">
+            <summary>
+            Возвращает индексы сегментов для списка токенов.
+            </summary>
+            <param name="tokens">Список токенов.</param>
+            <returns>Список индексов сегментов.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.TokenizeSubwords(System.String)">
+            <summary>
+            Токенизирует подслова входного слова.
+            </summary>
+            <param name="word">Входное слово.</param>
+            <returns>Список токенов вместе с их индексами в словаре.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.TokenizeSentence(System.String)">
+            <summary>
+            Абстрактный метод для токенизации предложения.
+            </summary>
+            <param name="text">Текст для токенизации.</param>
+            <returns>Перечисление токенов.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizerBase.Tokens2Struct(System.Collections.Generic.List{System.ValueTuple{System.Int32,System.Int32,System.Int32}})">
+            <summary>
+            Преобразование токенов в структуру
+            </summary>
+            <param name="enc"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Backends.BertTokenizers.TokenizeResult">
+            <summary>
+            Структура TokenizeResult представляет результат токенизации текста.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Backends.BertTokenizers.TokenizeResult.InputIds">
+            <summary>
+            Массив идентификаторов входных токенов.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Backends.BertTokenizers.TokenizeResult.AttentionMask">
+            <summary>
+            Массив масок внимания (attention mask).
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Backends.BertTokenizers.TokenizeResult.TypeIds">
+            <summary>
+            Массив идентификаторов типов токенов.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Backends.BertTokenizers.TokenizeResult.ToString">
+            <summary>
+            Строковое представление
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:AI.DataPrepaire.DataLoader.DataItem">
             <summary>
             Столбец данных
@@ -250,6 +438,70 @@
         <member name="T:AI.DataPrepaire.DataLoader.Formats.JSONLoader">
             <summary>
             Загрузка JSON файлов
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.NNWBlockLoader.INNWBlockV2V">
+            <summary>
+            Интерфейс нейросетевого блока отображения вектора в вектор
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.INNWBlockV2V.Forward(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Прямой проход
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.INNWBlockV2V.ToLayer">
+            <summary>
+            Перевод модуля в слой нейронной сети
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader">
+            <summary>
+            Загрузчик линейного слоя
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.Neurons">
+            <summary>
+            Веса нейронов
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.Bias">
+            <summary>
+            Веса смещения
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.Forward(System.Double[])">
+            <summary>
+            Прямой проход
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.Forward(AI.DataStructs.Algebraic.Vector)">
+            <summary>
+            Прямой проход
+            </summary>
+            <param name="input">Вход</param>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.ToLayer">
+            <summary>
+            Перевод структуры в обучаемый слой AIFramework
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.LoadFromJson(System.String)">
+            <summary>
+            Загрузка из JSON
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.LoadFromBinary(System.String)">
+            <summary>
+            Загрузка из бинарного файла
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.DataLoader.NNWBlockLoader.LinearLayerLoader.Save(System.String)">
+            <summary>
+            Сохранение в бинарный файл
             </summary>
         </member>
         <member name="T:AI.DataPrepaire.DataLoader.Sound.AudioHelper">
@@ -594,6 +846,334 @@
             </summary>
             <param name="input">Строка входа</param>
             <param name="target">Целевая строка</param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.QA.KnnBot">
+            <summary>
+            Экстрактивный бот на базе knn
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.Alg">
+            <summary>
+            Алгоритм классификации
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.Mean">
+            <summary>
+            Вектор средних
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.Std">
+            <summary>
+            СКО
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.ClassesToStr">
+            <summary>
+            Преобразование меток класса в ответы
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.KNN">
+            <summary>
+            Метод ближайшего соседа
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.TextTransform">
+            <summary>
+            Функция преобразования текста в вектор
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.QA.KnnBot.#ctor(System.Func{System.String,AI.DataStructs.Algebraic.Vector})">
+            <summary>
+            Экстрактивный бот на базе knn
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.QA.KnnBot.Train(System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Обучение бота
+            </summary>
+            <param name="textQ"></param>
+            <param name="textAns"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.QA.KnnBot.GetAnswer(System.String)">
+            <summary>
+            Получение ответа
+            </summary>
+            <param name="text">Текст вопроса</param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.QA.KnnBot.Answer">
+            <summary>
+            Класс ответа
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.Answer.Conf">
+            <summary>
+            Уверенность в ответе
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.QA.KnnBot.Answer.AnswerStr">
+            <summary>
+            Ответ строкой
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.QA.KnnBot.ClAlg">
+            <summary>
+            Алгоритм классификации
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.NLPUtils.QA.KnnBot.ClAlg.KNN">
+            <summary>
+            Метод k ближ соседей
+            </summary>
+        </member>
+        <member name="F:AI.DataPrepaire.NLPUtils.QA.KnnBot.ClAlg.NN">
+            <summary>
+            Метод эталонов (быстрее, но не дает уверенность)
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer">
+            <summary>
+            Класс для токенизации текста на предложения, учитывая определённый набор сокращений.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer.AbbreviationsProcessor">
+            <summary>
+            Обработчик аббревиатур 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer.#ctor">
+            <summary>
+            Конструктор по умолчанию, инициализирующий класс с предопределённым набором сокращений.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer.#ctor(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Конструктор, позволяющий задать собственный набор сокращений.
+            </summary>
+            <param name="abbreviations">Список сокращений, которые не следует интерпретировать как конец предложения.</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer.Tokenize(System.String)">
+            <summary>
+            Разделяет входной текст на предложения, учитывая сокращения.
+            </summary>
+            <param name="text">Текст для токенизации.</param>
+            <returns>Список предложений, извлечённых из входного текста.</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SentencesTokenizer.TokenizeWithNer(System.String)">
+            <summary>
+            Разделяет входной текст на предложения, учитывая сокращения и именованные сущности.
+            </summary>
+            <param name="text">Текст для токенизации.</param>
+            <returns>Список предложений, извлечённых из входного текста.</returns>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.INerProcessor">
+            <summary>
+            Обработчик NER
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.INerProcessor.NerToNerToken">
+            <summary>
+            Словарь преобразования нера в токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.INerProcessor.NerTokenToNer">
+            <summary>
+            Словарь преобразования токена в нер
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.INerProcessor.RunProcessor(System.String)">
+            <summary>
+            Преобразование нера в токен нера
+            Например: "Встретимся в 22:00" -> "Встретимся в %time_1%"
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.INerProcessor.NerDecoder(System.String)">
+            <summary>
+            Декодирует NER
+            Например: "Встретимся в %time_1%" -> "Встретимся в 22:00"
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor">
+            <summary>
+            Реализация обработчика NER.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.TokenCounter">
+            <summary>
+            Счетчик для уникальных токенов
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.NerToNerToken">
+            <summary>
+            Словарь преобразования нера в токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.NerTokenToNer">
+            <summary>
+            Словарь преобразования токена в нер
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.#ctor">
+            <summary>
+            Реализация обработчика NER.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.RunProcessor(System.String)">
+            <summary>
+            Преобразует текст, заменяя элементы NER на их токены.
+            </summary>
+            <param name="text">Текст для обработки</param>
+            <returns>Текст с замененными элементами NER на токены</returns>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.NerProcessor.NerDecoder(System.String)">
+            <summary>
+            Декодирует токены NER обратно в их исходный текст.
+            </summary>
+            <param name="text">Текст с токенами NER для декодирования</param>
+            <returns>Текст с восстановленными элементами NER</returns>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.RegexNer">
+            <summary>
+            NER на базе регулярных выражений
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.RegexNer.Pattern">
+            <summary>
+            Паттерн
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.RegexNer.NameToken">
+            <summary>
+            Имя токена NER
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.RegexNer.#ctor(System.String,System.String)">
+            <summary>
+            Экстрактор NER на базе 
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.RegexNer.RunProcessor(System.String)">
+            <summary>
+            Замена нера на токен
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor">
+            <summary>
+            Класс для замены аббревиатур
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor.NerToNerToken">
+            <summary>
+            Словарь преобразования нера в токен
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor.NerTokenToNer">
+            <summary>
+            Словарь преобразования токена в Ner
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor.#ctor(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Класс для замены аббревиатур
+            </summary>
+            <param name="abbreviations">Аббревиатуры</param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor.RunProcessor(System.String)">
+            <summary>
+            Замена аббревиатуры на токен
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AbbreviationsNerProcessor.NerDecoder(System.String)">
+            <summary>
+            Замена токена на аббревиатуру
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AdressProcessor">
+            <summary>
+            Экстрактор адресов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.AdressProcessor.#ctor">
+            <summary>
+            Экстрактор адресов
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.CombineNerProcessor">
+            <summary>
+            Комбинированный NER
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.CombineNerProcessor.#ctor">
+            <summary>
+            Комбинированный NER
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.CombineNerProcessor.RunProcessor(System.String)">
+            <summary>
+            Запуск сегментации текста
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.CombineNerProcessor.NerDecoder(System.String)">
+            <summary>
+            Запуск декодирования текста
+            </summary>
+            <param name="text"></param>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.EmailAdressProcessor">
+            <summary>
+            Экстрактор адресов почты
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.EmailAdressProcessor.#ctor">
+            <summary>
+            Экстрактор адресов почты
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.NameRusNerProcessor">
+            <summary>
+            Экстрактор ФИО и ИОФ
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.NameRusNerProcessor.#ctor">
+            <summary>
+            Экстрактор ФИО и ИОФ
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.PhoneNerProcessor">
+            <summary>
+            Экстрактор телефонных номеров.
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.PhoneNerProcessor.#ctor">
+            <summary>
+            Экстрактор телефонных номеров
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.SiteAdressProcessor">
+            <summary>
+            Экстрактор адресов сайтов
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.SiteAdressProcessor.#ctor">
+            <summary>
+            Экстрактор адресов сайтов
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.TimeProcessor">
+            <summary>
+            Экстрактор времени
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.NLPUtils.RegexpNLP.SimpleNER.SpecialNers.TimeProcessor.#ctor">
+            <summary>
+            Экстрактор адресов
+            </summary>
         </member>
         <member name="T:AI.DataPrepaire.NLPUtils.TextClassification.TextRuleClassifier">
             <summary>
@@ -1799,6 +2379,141 @@
             <summary>
             Токенизация на уровне букв
             </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizer">
+            <summary>
+            Класс BertTokenizer представляет токенизатор для модели BERT.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizer.TokenizerConfig">
+            <summary>
+            Конфигурация токенизатора
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizer.#ctor(System.String,System.Boolean)">
+            <summary>
+            Инициализирует новый экземпляр класса BertTokenizer.
+            </summary>
+            <param name="path">Путь к файлу словаря.</param>
+            <param name="isUnCased">Учитывать ли регистр при токенизации</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizer.FromPretrained(System.String)">
+            <summary>
+            Загрузка пред. обученного токенизатора Bert
+            </summary>
+            <param name="pathToFolder">Путь до папки</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizer.TokenizeSentence(System.String)">
+            <summary>
+            Токенизация последовательности
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig">
+            <summary>
+            Класс представляет конфигурацию для BERT токенизатора.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.DoLowerCase">
+            <summary>
+            Определяет, следует ли приводить текст к нижнему регистру при токенизации.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.UnknownToken">
+            <summary>
+            Метка для неизвестных слов в токенизаторе
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.SeparationToken">
+            <summary>
+            Метка для разделения токенов
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.PaddingToken">
+            <summary>
+            Метка для паддинга (пустых токенов)
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.ClassificationToken">
+            <summary>
+            Метка для токена классификации
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.MaskToken">
+            <summary>
+            Метка для маскировки токенов при обучении
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.TokenizeChineseChars">
+            <summary>
+            Определяет, следует ли токенизировать китайские символы отдельно
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.StripAccents">
+            <summary>
+            Параметр, указывающий на необходимость удаления диакритических знаков при токенизации.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.NameOrPath">
+            <summary>
+            Путь к предобученной модели или ее имя
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.DoBasicTokenize">
+            <summary>
+            Определяет, следует ли использовать базовую токенизацию
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.NeverSplit">
+            <summary>
+            Параметр для токенизатора, указывающий на токены, которые не следует разбивать
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.TokenizerClass">
+            <summary>
+            Класс токенизатора, используемый для обработки текста
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.ModelMaxLength">
+            <summary>
+            Максимальная длина контекста модели в токенах
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertTokenizerConfig.FromJson(System.String)">
+            <summary>
+            Загрузка конфигурации из JSON
+            </summary>
+        </member>
+        <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertWithOutSplitWordTokenizer">
+            <summary>
+            Класс BertWithOutSplitWordTokenizer представляет токенизатор для модели BERT, без разделения по словам.
+            </summary>
+        </member>
+        <member name="P:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertWithOutSplitWordTokenizer.TokenizerConfig">
+            <summary>
+            Конфигурация токенизатора
+            </summary>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertWithOutSplitWordTokenizer.#ctor(System.String,System.Boolean)">
+            <summary>
+            Инициализирует новый экземпляр класса BertTokenizer.
+            </summary>
+            <param name="path">Путь к файлу словаря.</param>
+            <param name="isUnCased">Учитывать ли регистр при токенизации</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertWithOutSplitWordTokenizer.FromPretrained(System.String)">
+            <summary>
+            Загрузка пред. обученного токенизатора Bert
+            </summary>
+            <param name="pathToFolder">Путь до папки</param>
+        </member>
+        <member name="M:AI.DataPrepaire.Tokenizers.TextTokenizers.HFTokenizers.BertWithOutSplitWordTokenizer.TokenizeSentence(System.String)">
+            <summary>
+            Токенизация последовательности
+            </summary>
+            <param name="text"></param>
+            <returns></returns>
         </member>
         <member name="T:AI.DataPrepaire.Tokenizers.TextTokenizers.WordEndingsRUTokenizer">
             <summary>

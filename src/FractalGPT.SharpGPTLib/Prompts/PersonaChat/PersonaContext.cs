@@ -63,7 +63,7 @@ public class PersonaContext
     /// </summary>
     /// <param name="role">The role in the conversation (user or assistant).</param>
     /// <param name="text">The text of the message.</param>
-    private void AddMessage(string role, string text)
+    public void AddMessage(string role, string text)
     {
         // Removes the oldest message if the buffer size is reached
         if (currentIndex >= bufferSize)

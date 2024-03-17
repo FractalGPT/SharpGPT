@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml.Xsl;
 
 namespace FractalGPT.SharpGPTLib.Task.DialogTasks
 {
@@ -59,15 +60,36 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         public async Task<string> GetAnswer(string q)
         {
             PersonaChatPromptCreator.AddUserMessage(q);
-
-            string input = PersonaChatPromptCreator.ToString() +
-                PersonaChatPromptCreator.SepReplics + PersonaChatPromptCreator.BotTag + $" {TokenEnd}";
-
-            string answer = await AnswerGenAsync(input);
-            answer = answer.Replace(TokenEnd, "");
+            string answer = await GenerateFromContext();
             PersonaChatPromptCreator.AddAssistantMessage(answer);
             return answer;
         }
+
+        /// <summary>
+        /// Asynchronously generates an answer to the provided query based on the persona and the chat history.
+        /// </summary>
+        /// <param name="roleMessages">Роль-сообщение. Словарь: "role" -> bot или user, "text" -> Текст сообщения</param>
+        /// <returns>A task that represents the asynchronous operation, containing the bot's answer.</returns>
+        public async Task<string> GetAnswerContext(IEnumerable<Dictionary<string, string>> roleMessages)
+        {
+            SetContext(roleMessages);
+            string answer = await GenerateFromContext();
+            PersonaChatPromptCreator.AddAssistantMessage(answer);
+            return answer;
+        }
+
+        /// <summary>
+        /// Установка контекста
+        /// </summary>
+        /// <param name="roleMessages">Роль-сообщение. Словарь: "role" -> bot или user, "text" -> Текст сообщения</param>
+        public void SetContext(IEnumerable<Dictionary<string, string>> roleMessages)
+        {
+            PersonaChatPromptCreator.Context.Clear();
+
+            foreach (var roleMess in roleMessages)
+                PersonaChatPromptCreator.Context.AddMessage(roleMess["role"], roleMess["text"]);
+        }
+
 
         /// <summary>
         /// Sends an answer to the provided query by generating it and then invoking the NewAnswer event.
@@ -86,6 +108,16 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
 
         // Placeholder method for the NewAnswer event.
         private void PersonaBot_NewAnswer(string obj) { }
+
+        // Генерация с учетом контекста
+        private async Task<string> GenerateFromContext() 
+        {
+            string input = PersonaChatPromptCreator.ToString() +
+                PersonaChatPromptCreator.SepReplics + PersonaChatPromptCreator.BotTag + $" {TokenEnd}";
+
+            string answer = await AnswerGenAsync(input);
+            return answer.Replace(TokenEnd, "");
+        }
     }
 }
 
