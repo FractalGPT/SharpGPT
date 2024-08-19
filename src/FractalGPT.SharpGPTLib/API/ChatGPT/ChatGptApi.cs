@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.API.ChatGPT;
 
@@ -83,6 +85,33 @@ public class ChatGptApi : IText2TextChat, IDisposable
     }
 
     /// <summary>
+    /// Asynchronous method for sending context of the dialogue and receiving a response from ChatGPT
+    /// </summary>
+    /// <param name="roleMessages">Role - message. Dictionary: "role" -> bot or user, "text" -> massage</param>
+    public async Task<ChatCompletionsResponse> SendAsync(IEnumerable<Dictionary<string, string>> roleMessages)
+    {
+        // Set context
+        SetContext(roleMessages);
+        // Sending the request and receiving the response.
+        HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
+        // Deserialize the response into a ChatCompletionsResponse object.
+        ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
+
+        return chatCompletionsResponse;
+    }
+
+
+    /// <summary>
+    /// Asynchronous method for sending context
+    /// </summary>
+    /// <param name="roleMessages">Role - message. Dictionary: "role" -> bot or user, "text" -> massage</param>
+    public async void SendContext(IEnumerable<Dictionary<string, string>> roleMessages) 
+    {
+        var chatCompletionsResponse = await SendAsync(roleMessages);
+        Answer(chatCompletionsResponse.Choices[0].Message.Content);
+    }
+
+    /// <summary>
     /// Synchronous method for sending text and receiving a response from ChatGPT, maintaining the context of the dialogue.
     /// </summary>
     public ChatCompletionsResponse Send(string text)
@@ -112,6 +141,22 @@ public class ChatGptApi : IText2TextChat, IDisposable
     {
         var chatCompletionsResponse = Send(text);
         return chatCompletionsResponse.Choices[0].Message.Content;
+    }
+
+    /// <summary>
+    /// Set context
+    /// </summary>
+    /// <param name="roleMessages"></param>
+    public void SetContext(IEnumerable<Dictionary<string, string>> roleMessages)
+    {
+        _sendData.Clear();
+
+        foreach (var roleMess in roleMessages) 
+        {
+            if (roleMess["role"] == "bot")
+                _sendData.AddAssistantMessage(roleMess["text"]);
+            else _sendData.AddUserMessage(roleMess["text"]);
+        }
     }
 
     /// <summary>
