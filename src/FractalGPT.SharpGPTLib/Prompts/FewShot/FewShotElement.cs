@@ -27,7 +27,7 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
         /// <summary>
         /// Initializes a new instance of the FewShotElement class.
         /// </summary>
-        public FewShotElement(string prompt, string output) 
+        public FewShotElement(string prompt, string output)
         {
             Prompt = prompt;
             ModelOutput = output;

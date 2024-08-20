@@ -18,7 +18,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
         /// The exception that occurred as a result of the connection error.
         /// </summary>
         public Exception Exception { get; }
-        
+
         public ProxyErrorEventArgs(WebProxy proxy, Exception exception)
         {
             Proxy = proxy;

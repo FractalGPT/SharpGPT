@@ -47,7 +47,7 @@ namespace FractalGPT.SharpGPTLib.API.FractalGPTAPI.QA
             using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
             {
                 fileBytes = new byte[fs.Length];
-                await fs.ReadAsync(fileBytes, 0, fileBytes.Length);
+                _ = await fs.ReadAsync(fileBytes, 0, fileBytes.Length);
             }
 
             var payload = new

@@ -77,7 +77,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
                 }
                 return null;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // ToDo: Log the exception or handle it as needed
                 return null;
@@ -95,7 +95,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
         {
             if (generationParametrs == null) generationParametrs = new GenerationParametrs();
 
-            return await TextGeneration(prompt, generationParametrs.MaxLen, generationParametrs.Temperature, 
+            return await TextGeneration(prompt, generationParametrs.MaxLen, generationParametrs.Temperature,
                 generationParametrs.TopK, generationParametrs.TopP, generationParametrs.NoRepeatNgramSize);
         }
     }

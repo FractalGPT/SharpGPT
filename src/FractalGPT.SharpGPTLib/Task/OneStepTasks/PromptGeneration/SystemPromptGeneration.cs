@@ -70,13 +70,13 @@ namespace FractalGPT.SharpGPTLib.Task.PromptGeneration
         {
             var prompt_dict = PromptManager.SystemPrompts;
             string promts = "";
-            string taskD = _lang == "en" ? "Task name" : "Имя задачи"; 
-            string promptText = _lang == "en" ? "Prompt" : "Подсказка"; 
+            string taskD = _lang == "en" ? "Task name" : "Имя задачи";
+            string promptText = _lang == "en" ? "Prompt" : "Подсказка";
 
             foreach (var prompt in prompt_dict)
                 promts += $"{taskD}: {prompt.Key}\t{promptText}: {prompt.Value}\n";
 
-            return TaskPrompts.InputPrompt(promts, "system_prompt_generation", _lang)+ task;
+            return TaskPrompts.InputPrompt(promts, "system_prompt_generation", _lang) + task;
         }
     }
 }

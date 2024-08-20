@@ -110,20 +110,20 @@ namespace FractalGPT.SharpGPTLib.Prompts.PersonaChat
         public override string ToString()
         {
             StringBuilder prompt = new StringBuilder();
-            prompt.Append(StartToken);
+            _ = prompt.Append(StartToken);
 
             foreach (var fact in Facts)
             {
-                prompt.Append(fact.FactBody.Trim('.'));
-                prompt.Append(". ");
+                _ = prompt.Append(fact.FactBody.Trim('.'));
+                _ = prompt.Append(". ");
             }
 
-            prompt.Append(StartConversation);
+            _ = prompt.Append(StartConversation);
 
             foreach (var message in Context.Messages)
             {
-                prompt.Append(message);
-                prompt.Append(SepReplics);
+                _ = prompt.Append(message);
+                _ = prompt.Append(SepReplics);
             }
 
             return prompt.ToString();

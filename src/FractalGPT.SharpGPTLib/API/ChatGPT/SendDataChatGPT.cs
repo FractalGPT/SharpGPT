@@ -10,7 +10,7 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT;
 [Serializable]
 public class SendDataChatGPT
 {
-    private int bufferSize;
+    private readonly int bufferSize;
     private int currentIndex;
 
     /// <summary>

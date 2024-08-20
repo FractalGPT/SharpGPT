@@ -50,7 +50,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
             try
             {
                 HttpResponseMessage response = await HttpClient.PostAsJsonAsync(apiUrl, sendData);
-                response.EnsureSuccessStatusCode();
+                _ = response.EnsureSuccessStatusCode();
                 return response;
             }
             catch (Exception ex)
@@ -74,7 +74,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
 
         public void Dispose()
         {
-            
+
         }
     }
 }

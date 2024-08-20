@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml.Xsl;
 
 namespace FractalGPT.SharpGPTLib.Task.DialogTasks
 {
@@ -110,7 +109,7 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         private void PersonaBot_NewAnswer(string obj) { }
 
         // Генерация с учетом контекста
-        private async Task<string> GenerateFromContext() 
+        private async Task<string> GenerateFromContext()
         {
             string input = PersonaChatPromptCreator.ToString() +
                 PersonaChatPromptCreator.SepReplics + PersonaChatPromptCreator.BotTag + $" {TokenEnd}";

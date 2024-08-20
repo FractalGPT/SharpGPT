@@ -1,11 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
 using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.Task.DialogTasks
 {
@@ -18,7 +14,7 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         private readonly IText2TextChat _text2Text; // This field is readonly because it is only set in the constructor
         private readonly string _lang;
         private string _text;
-        bool text_loaded = false;
+        private bool text_loaded = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextDialog"/> class.
@@ -73,9 +69,9 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         }
 
 
-        private string get_prompt(string input) 
+        private string get_prompt(string input)
         {
-            string q = _lang == "ru"? "Вопрос": "Question";
+            string q = _lang == "ru" ? "Вопрос" : "Question";
 
             string text_q = text_loaded ? input : $"Text {_text}\n\n{q}: {input}";
             text_loaded = true;

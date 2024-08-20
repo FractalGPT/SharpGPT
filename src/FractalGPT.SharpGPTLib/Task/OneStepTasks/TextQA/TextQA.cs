@@ -1,9 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
 using System;
-using System.Numerics;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.Task.TextQA
 {

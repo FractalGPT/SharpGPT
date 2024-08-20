@@ -1,12 +1,10 @@
-﻿using System;
+﻿using FractalGPT.SharpGPTLib.API.WebUtils;
+using FractalGPT.SharpGPTLib.Prompts;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using FractalGPT.SharpGPTLib.API.WebUtils;
-using FractalGPT.SharpGPTLib.Prompts;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.API.ChatGPT;
 
@@ -34,10 +32,10 @@ public class ChatGptApi : IText2TextChat, IDisposable
             (_webApi as ProxyHTTPClient).OnProxyError += ChatGptApi_OnProxyError;
         }
         else { _webApi = new WithoutProxyClient(key); }
-        
+
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
         _sendData = new SendDataChatGPT(modelName, defaultPrompt, temp: t);
-        
+
 
     }
 
@@ -105,7 +103,7 @@ public class ChatGptApi : IText2TextChat, IDisposable
     /// Asynchronous method for sending context
     /// </summary>
     /// <param name="roleMessages">Role - message. Dictionary: "role" -> bot or user, "text" -> massage</param>
-    public async void SendContext(IEnumerable<Dictionary<string, string>> roleMessages) 
+    public async void SendContext(IEnumerable<Dictionary<string, string>> roleMessages)
     {
         var chatCompletionsResponse = await SendAsync(roleMessages);
         Answer(chatCompletionsResponse.Choices[0].Message.Content);
@@ -123,7 +121,7 @@ public class ChatGptApi : IText2TextChat, IDisposable
         HttpResponseMessage response = _webApi.PostAsJsonAsync(ApiUrl, _sendData).Result;
 
         // Check for successful response status, otherwise an exception will be thrown.
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
         // Deserialize the response into a ChatCompletionsResponse object.
         ChatCompletionsResponse chatCompletionsResponse = response.Content.ReadFromJsonAsync<ChatCompletionsResponse>().Result;
@@ -151,7 +149,7 @@ public class ChatGptApi : IText2TextChat, IDisposable
     {
         _sendData.Clear();
 
-        foreach (var roleMess in roleMessages) 
+        foreach (var roleMess in roleMessages)
         {
             if (roleMess["role"] == "bot")
                 _sendData.AddAssistantMessage(roleMess["text"]);
@@ -175,7 +173,7 @@ public class ChatGptApi : IText2TextChat, IDisposable
 
     public void Dispose()
     {
-        
+
     }
 
     public event Action<string> Answer;

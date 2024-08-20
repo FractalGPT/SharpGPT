@@ -22,7 +22,7 @@ namespace FractalGPT.SharpGPTLib.API.AI21
         /// </summary>
         /// <param name="key">The API key for authentication.</param>
         /// <param name="modelPath">The path to the AI model.</param>
-        public AI21StudioAPI(string key, string model= "j2-grande-instruct")
+        public AI21StudioAPI(string key, string model = "j2-grande-instruct")
         {
             string modelPath = $"https://api.ai21.com/studio/v1/{model}/complete";
             string newKey = key ?? throw new ArgumentNullException(nameof(key));
@@ -96,7 +96,7 @@ namespace FractalGPT.SharpGPTLib.API.AI21
         /// <param name="temperature">The creativity temperature.</param>
         /// <param name="topKReturn">The number of top results to consider.</param>
         /// <param name="presencePenaltyScale">The scale of presence penalty.</param>
-        public void SetParams(int numResults = 1, int maxTokens = 80, string[] stopSequences = null, double temperature = 0.6, int topKReturn = 4, double presencePenaltyScale = 1.1) 
+        public void SetParams(int numResults = 1, int maxTokens = 80, string[] stopSequences = null, double temperature = 0.6, int topKReturn = 4, double presencePenaltyScale = 1.1)
         {
             _generationParametrs = new AI21GenerationParameters(numResults, maxTokens, stopSequences, temperature, topKReturn, presencePenaltyScale);
         }

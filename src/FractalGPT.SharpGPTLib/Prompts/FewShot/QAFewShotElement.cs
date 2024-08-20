@@ -22,7 +22,7 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
         }
 
 
-        public static QAFewShotElement[] GetArrayFewShots(string basePrompt, IEnumerable<string> qs, IEnumerable<string> answers) 
+        public static QAFewShotElement[] GetArrayFewShots(string basePrompt, IEnumerable<string> qs, IEnumerable<string> answers)
         {
             string[] qArr = qs.ToArray();
             string[] aArr = answers.ToArray();
@@ -34,7 +34,7 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
 
             for (int i = 0; i < qArr.Length; i++)
                 qAFewShotElements[i] = new QAFewShotElement(basePrompt, qArr[i], aArr[i]);
-            
+
             return qAFewShotElements;
         }
     }

@@ -3,21 +3,19 @@ using AI.Statistics;
 using FractalGPT.SharpGPTLib.API;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace FractalGPT.SharpGPTLib.LLM
 {
     public class SuperChatLLM : IText2TextChat
     {
-        private Random _random = new Random();
+        private readonly Random _random = new Random();
 
         /// <summary>
         /// A neural network working on the principle of a chatbot,
         /// and a function for assessing its quality (heuristics)
         /// </summary>
-        public List<(IText2TextChat, Func<string, double>)> LLMs { get; set; } 
+        public List<(IText2TextChat, Func<string, double>)> LLMs { get; set; }
             = new List<(IText2TextChat, Func<string, double>)>();
 
         public void ClearContext()

@@ -1,7 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
 using System;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Description

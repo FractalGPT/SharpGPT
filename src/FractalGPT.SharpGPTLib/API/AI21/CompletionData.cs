@@ -2,7 +2,7 @@
 
 namespace FractalGPT.SharpGPTLib.API.AI21
 {
-     /// <summary>
+    /// <summary>
     /// Represents the data associated with a completion, typically the text output.
     /// </summary>
     [Serializable]

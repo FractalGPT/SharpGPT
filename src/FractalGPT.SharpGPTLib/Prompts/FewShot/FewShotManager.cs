@@ -64,8 +64,8 @@ namespace FractalGPT.SharpGPTLib.Prompts.FewShot
 
             foreach (var element in FewShots)
             {
-                sb.Append(element.GetString(StartToken, EndToken, Sep));
-                sb.Append(SepShots);
+                _ = sb.Append(element.GetString(StartToken, EndToken, Sep));
+                _ = sb.Append(SepShots);
             }
 
             return sb.ToString().TrimEnd(SepShots.ToCharArray()); // Optionally trim the trailing separator for cleaner output

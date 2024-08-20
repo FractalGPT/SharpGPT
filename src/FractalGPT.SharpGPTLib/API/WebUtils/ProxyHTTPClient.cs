@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System.Text.Json;
-using System.IO;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.API.WebUtils
 {
@@ -18,14 +18,14 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
         /// <summary>
         /// List of proxy servers for iteration.
         /// </summary>
-        private List<WebProxy> _proxies;
+        private readonly List<WebProxy> _proxies;
 
         /// <summary>
         /// Event triggered on a proxy connection error.
         /// </summary>
         public event EventHandler<ProxyErrorEventArgs> OnProxyError;
 
-        
+
         public AuthenticationHeaderValue Authentication { get; set; }
 
         /// <summary>
@@ -81,13 +81,11 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
                         UseProxy = true,
                     };
 
-                    using (var httpClient = new HttpClient(httpClientHandler))
-                    {
-                        httpClient.DefaultRequestHeaders.Authorization = Authentication;
-                        HttpResponseMessage response = await httpClient.PostAsJsonAsync(apiUrl, sendData);
-                        response.EnsureSuccessStatusCode();
-                        return response;
-                    }
+                    using var httpClient = new HttpClient(httpClientHandler);
+                    httpClient.DefaultRequestHeaders.Authorization = Authentication;
+                    HttpResponseMessage response = await httpClient.PostAsJsonAsync(apiUrl, sendData);
+                    _ = response.EnsureSuccessStatusCode();
+                    return response;
                 }
                 catch (Exception ex)
                 {
@@ -111,7 +109,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
             var proxies = new List<WebProxy>();
             foreach (var proxyData in proxyDataList)
                 proxies.Add(GetWebProxy(proxyData));
-            
+
             return proxies;
         }
 
@@ -128,7 +126,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
                 BypassProxyOnLocal = false,
                 UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(
-                    userName: proxyData.Login, 
+                    userName: proxyData.Login,
                     password: proxyData.Password)
             };
             return proxy;
@@ -136,7 +134,7 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
 
         public void Dispose()
         {
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
     }
 

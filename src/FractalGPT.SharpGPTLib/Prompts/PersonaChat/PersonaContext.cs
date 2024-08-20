@@ -20,7 +20,7 @@ public class PersonaContext
     /// </summary>
     public string BotTag { get; set; } = "Я:";
 
-    private int bufferSize;
+    private readonly int bufferSize;
     private int currentIndex;
 
     /// <summary>

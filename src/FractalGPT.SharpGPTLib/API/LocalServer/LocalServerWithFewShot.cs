@@ -1,7 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.Prompts.FewShot;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.API.LocalServer
@@ -26,7 +24,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalServerWithFewShot"/> class.
         /// </summary>
-        public LocalServerWithFewShot() 
+        public LocalServerWithFewShot()
         {
             FewShotManagerFromServer = new FewShotManager();
         }
