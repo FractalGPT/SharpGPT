@@ -29,6 +29,11 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils
             ConfigureHttpClient();
         }
 
+        public WithoutProxyClient()
+        {
+
+        }
+
         /// <summary>
         /// Method to configure the HttpClient instance. 
         /// Set up HttpClient here, e.g., setting timeouts, proxy settings, etc.
