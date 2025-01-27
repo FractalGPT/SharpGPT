@@ -81,7 +81,7 @@
 - ✅ **Работа с ChatGPT (OpenAI)**  
 - ✅ **Работа с AI21 (AI21 Labs)**
 - ✅ **[Локальный сервер](https://github.com/FractalGPT/SimpleLLMServer) (FractalGPT Open)**
-- ❌ **GigaChat (Сбер)**  
+- ✅ **vLLM** 
 - ❌ **Проверка галлюцинаций (FractalGPT)**  
 - ❌ **Экстрактивная суммаризация (FractalGPT)**  
 - ❌ **Векторизация текстов (FractalGPT)**  
