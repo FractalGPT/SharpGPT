@@ -1,5 +1,4 @@
-﻿using FractalGPT.SharpGPTLib.API.ChatGPT;
-using FractalGPT.SharpGPTLib.API.WebUtils;
+﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.API;
+namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
 /// <summary>
 /// Class for interacting with LLM through API.

@@ -1,9 +1,8 @@
-﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace FractalGPT.SharpGPTLib.API.ChatGPT;
+namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
 /// <summary>
 /// Представляет ответ от ChatGPT.

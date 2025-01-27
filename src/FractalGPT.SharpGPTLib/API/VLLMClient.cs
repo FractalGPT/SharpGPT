@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System;
 
 namespace FractalGPT.SharpGPTLib.API;
 
