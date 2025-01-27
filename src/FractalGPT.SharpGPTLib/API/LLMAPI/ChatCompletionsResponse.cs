@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
