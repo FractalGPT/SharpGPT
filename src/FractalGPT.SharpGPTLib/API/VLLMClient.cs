@@ -44,7 +44,7 @@ public class VLLMClient : ChatLLMApi
         string systemPrompt,
         double temperature,
         string ip,
-        string port,
+        int port,
         HTTPType httpType = HTTPType.HTTP,
         string apiKey = null)
         : base(apiKey, false, string.Empty, modelName, systemPrompt, temperature)
@@ -55,8 +55,6 @@ public class VLLMClient : ChatLLMApi
         if (string.IsNullOrWhiteSpace(ip))
             throw new ArgumentNullException(nameof(ip), "IP address cannot be null or empty.");
 
-        if (string.IsNullOrWhiteSpace(port))
-            throw new ArgumentNullException(nameof(port), "Port cannot be null or empty.");
 
         var protocol = httpType == HTTPType.HTTP ? "http" : "https";
         ApiUrl = $"{protocol}://{ip}:{port}/v1/chat/completions";
