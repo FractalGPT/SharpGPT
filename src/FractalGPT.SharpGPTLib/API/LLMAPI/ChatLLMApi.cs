@@ -163,7 +163,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     public void ClearContext() => _sendData.Clear();
 
     /// <summary>
-    /// Sets a new system prompt and resets the context.
+    /// Sets a new system prompt and resets the context
     /// </summary>
     public void SetPrompt(string prompt)
     {
