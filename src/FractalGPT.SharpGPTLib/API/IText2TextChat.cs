@@ -12,7 +12,7 @@ public interface IText2TextChat
     /// </summary>
     /// <param name="text">Input text</param>
     /// <returns></returns>
-    Task<string> SendAsyncReturnText(string text);
+    Task<string> SendReturnTextAsync(string text);
 
     /// <summary>
     /// Main handler

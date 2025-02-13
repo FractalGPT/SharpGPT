@@ -24,9 +24,9 @@ namespace FractalGPT.SharpGPTLib.LLM
                 item.Item1.ClearContext();
         }
 
-        public Task<string> SendAsyncReturnText(string text)
+        public Task<string> SendReturnTextAsync(string text)
         {
-            return SelectionLLM(text).SendAsyncReturnText(text);
+            return SelectionLLM(text).SendReturnTextAsync(text);
         }
 
         public string SendReturnText(string text)

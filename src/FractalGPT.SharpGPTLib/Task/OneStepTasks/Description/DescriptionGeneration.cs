@@ -39,7 +39,7 @@ namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Description
             }
 
             string prompt = TaskPrompts.InputPrompt(text, "description_generation", _lang);
-            string summary = await _textToTextApi.SendAsyncReturnText(prompt);
+            string summary = await _textToTextApi.SendReturnTextAsync(prompt);
             return summary;
         }
 

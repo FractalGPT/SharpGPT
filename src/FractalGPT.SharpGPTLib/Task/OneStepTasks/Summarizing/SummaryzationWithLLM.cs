@@ -39,7 +39,7 @@ namespace FractalGPT.SharpGPTLib.Task.Summarizing
 
             // RuPrompts is a static class with resources.
             string prompt = TaskPrompts.InputPrompt(text, "summarization", _lang);
-            string summary = await _textToTextApi.SendAsyncReturnText(prompt);
+            string summary = await _textToTextApi.SendReturnTextAsync(prompt);
             return summary;
         }
 

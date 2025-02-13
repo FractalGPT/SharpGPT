@@ -45,7 +45,7 @@ namespace FractalGPT.SharpGPTLib.Task.DialogTasks
         /// <returns>A task that represents the asynchronous operation, containing the generated response.</returns>
         public async Task<string> GenerateAsync(string input)
         {
-            string ans = await _text2Text.SendAsyncReturnText(get_prompt(input));
+            string ans = await _text2Text.SendReturnTextAsync(get_prompt(input));
             return ans;
         }
 

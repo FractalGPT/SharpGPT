@@ -62,7 +62,7 @@ namespace FractalGPT.SharpGPTLib.Task.TextQA
             }
 
             string input = GetPrompt(question); // This assumes that an external method formats the requests.
-            return await _text2Text.SendAsyncReturnText(input);
+            return await _text2Text.SendReturnTextAsync(input);
         }
 
         /// <summary>

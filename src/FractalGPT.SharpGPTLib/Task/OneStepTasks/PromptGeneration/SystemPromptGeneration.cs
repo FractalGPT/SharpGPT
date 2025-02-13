@@ -41,7 +41,7 @@ namespace FractalGPT.SharpGPTLib.Task.PromptGeneration
             }
 
             string formattedInput = GetFormattedPrompt(input);
-            return await _text2Text.SendAsyncReturnText(formattedInput);
+            return await _text2Text.SendReturnTextAsync(formattedInput);
         }
 
         /// <summary>

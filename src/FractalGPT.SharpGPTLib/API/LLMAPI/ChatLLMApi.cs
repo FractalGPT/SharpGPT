@@ -16,6 +16,12 @@ public class ChatLLMApi : IText2TextChat, IDisposable
 {
     private readonly IWebAPIClient _webApi;
     private readonly SendDataLLM _sendData;
+
+    private readonly string _modelName;
+    private readonly string _apiKey;
+    private readonly string _prompt;
+    private readonly double _temperature;
+
     public virtual string ApiUrl { get; set; }
 
     public event Action<string> ProxyInfo;
@@ -23,8 +29,13 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// <summary>
     /// Constructor for API initialization.
     /// </summary>
-    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double t)
+    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature)
     {
+        _apiKey = key;
+        _modelName = modelName;
+        _prompt = prompt;
+        _temperature = temperature;
+
         // Use the default prompt if a custom one is not provided.
         if (useProxy)
         {
@@ -34,7 +45,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
         else { _webApi = new WithoutProxyClient(key); }
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
-        _sendData = new SendDataLLM(modelName, defaultPrompt, temp: t);
+        _sendData = new SendDataLLM(modelName, defaultPrompt, temp: temperature);
 
 
     }
@@ -49,16 +60,9 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// </summary>
     public async Task<ChatCompletionsResponse> SendAsync(string text)
     {
-        // Adding user text to the messages.
         _sendData.AddUserMessage(text);
-
-        // Sending the request and receiving the response.
         HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
-
-        // Deserialize the response into a ChatCompletionsResponse object.
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
-
-        // Add the system's response to the messages to maintain context.
         _sendData.AddAssistantMessage(chatCompletionsResponse.Choices[0].Message.Content);
 
         return chatCompletionsResponse;
@@ -67,10 +71,48 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// <summary>
     /// Asynchronous method for sending text and returning only the text content of the response from LLM.
     /// </summary>
-    public async Task<string> SendAsyncReturnText(string text)
+    public async Task<string> SendReturnTextAsync(string text)
     {
         var chatCompletionsResponse = await SendAsync(text);
         return chatCompletionsResponse.Choices[0].Message.Content;
+    }
+
+
+    /// <summary>
+    /// Отправка сообщения без контекста 
+    /// (потокобезопасная версия)
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns>Возвращает текст ответа</returns>
+    public async Task<string> SendWithoutContextTextAsync(string text)
+    {
+        var webApi = new WithoutProxyClient(_apiKey);
+        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+
+        sendData.AddUserMessage(text);
+        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        ChatCompletionsResponse chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>();
+        return chatCompletionsResponse.Choices[0].Message.Content;
+    }
+
+    /// <summary>
+    /// Отправка сообщения без учета контекста
+    /// (потокобезопасная версия)
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text)
+    {
+        var webApi = new WithoutProxyClient(_apiKey);
+        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+
+        sendData.AddUserMessage(text);
+        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        ChatCompletionsResponse chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>();
+
+        return chatCompletionsResponse;
     }
 
     /// <summary>
@@ -88,11 +130,8 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// <param name="roleMessages">Role - message. Dictionary: "role" -> bot or user, "text" -> massage</param>
     public async Task<ChatCompletionsResponse> SendAsync(IEnumerable<Dictionary<string, string>> roleMessages)
     {
-        // Set context
         SetContext(roleMessages);
-        // Sending the request and receiving the response.
         HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
-        // Deserialize the response into a ChatCompletionsResponse object.
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
 
         return chatCompletionsResponse;
@@ -114,19 +153,10 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// </summary>
     public ChatCompletionsResponse Send(string text)
     {
-        // Adding user text to the messages.
         _sendData.AddUserMessage(text);
-
-        // Sending the request and receiving the response.
         HttpResponseMessage response = _webApi.PostAsJsonAsync(ApiUrl, _sendData).Result;
-
-        // Check for successful response status, otherwise an exception will be thrown.
         _ = response.EnsureSuccessStatusCode();
-
-        // Deserialize the response into a ChatCompletionsResponse object.
         ChatCompletionsResponse chatCompletionsResponse = response.Content.ReadFromJsonAsync<ChatCompletionsResponse>().Result;
-
-        // Add the system's response to the messages to maintain context.
         _sendData.AddAssistantMessage(chatCompletionsResponse.Choices[0].Message.Content);
 
         return chatCompletionsResponse;
