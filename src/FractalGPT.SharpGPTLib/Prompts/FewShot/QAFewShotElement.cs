@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace FractalGPT.SharpGPTLib.Prompts.FewShot
+﻿namespace FractalGPT.SharpGPTLib.Prompts.FewShot
 {
     /// <summary>
     /// Represents an element for few-shot (QA Task) learning scenarios, encapsulating a prompt and its corresponding model output.

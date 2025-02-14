@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace FractalGPT.SharpGPTLib.API.AI21
 {

@@ -1,6 +1,4 @@
 ﻿using FractalGPT.SharpGPTLib.Prompts.FewShot;
-using System;
-using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.API.LocalServer;
 

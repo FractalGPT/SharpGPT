@@ -1,9 +1,6 @@
 ﻿using AI.DataStructs.Algebraic;
 using AI.Statistics;
 using FractalGPT.SharpGPTLib.API;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.LLM
 {

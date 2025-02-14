@@ -1,11 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -13,7 +8,7 @@ namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 /// Class for interacting with LLM through API.
 /// </summary>
 [Serializable]
-public class ChatLLMApi : IText2TextChat, IDisposable
+public class ChatLLMApi : IText2TextChat
 {
     private readonly IWebAPIClient _webApi;
     private readonly SendDataLLM _sendData;
@@ -62,7 +57,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     public async Task<ChatCompletionsResponse> SendAsync(string text)
     {
         _sendData.AddUserMessage(text);
-        HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
+        using HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
         _sendData.AddAssistantMessage(chatCompletionsResponse.Choices[0].Message.Content);
 
@@ -87,11 +82,11 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// <returns>Возвращает текст ответа</returns>
     public async Task<string> SendWithoutContextTextAsync(string text)
     {
-        var webApi = new WithoutProxyClient(_apiKey);
+        using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
 
         sendData.AddUserMessage(text);
-        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        using HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();
         return chatCompletionsResponse.Choices[0].Message.Content;
@@ -105,7 +100,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     /// <returns>Возвращает текст ответа</returns>
     public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context)
     {
-        var webApi = new WithoutProxyClient(_apiKey);
+        using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
         sendData.SetMessages(context);
 
@@ -150,7 +145,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     public async Task<ChatCompletionsResponse> SendAsync(IEnumerable<Dictionary<string, string>> roleMessages)
     {
         SetContext(roleMessages);
-        HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
+        using HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
 
         return chatCompletionsResponse;
@@ -173,7 +168,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     public ChatCompletionsResponse Send(string text)
     {
         _sendData.AddUserMessage(text);
-        HttpResponseMessage response = _webApi.PostAsJsonAsync(ApiUrl, _sendData).Result;
+        using HttpResponseMessage response = _webApi.PostAsJsonAsync(ApiUrl, _sendData).Result;
         _ = response.EnsureSuccessStatusCode();
         ChatCompletionsResponse chatCompletionsResponse = response.Content.ReadFromJsonAsync<ChatCompletionsResponse>().Result;
         _sendData.AddAssistantMessage(chatCompletionsResponse.Choices[0].Message.Content);
@@ -218,11 +213,6 @@ public class ChatLLMApi : IText2TextChat, IDisposable
     {
         _sendData.Prompt = prompt;
         _sendData.Clear();
-    }
-
-    public void Dispose()
-    {
-
     }
 
     public event Action<string> Answer;

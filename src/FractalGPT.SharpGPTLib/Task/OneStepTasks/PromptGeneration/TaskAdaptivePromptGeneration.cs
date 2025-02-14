@@ -1,9 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
-using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.Task.PromptGeneration
+namespace FractalGPT.SharpGPTLib.Tasks.PromptGeneration
 {
     /// <summary>
     /// Prompt generator

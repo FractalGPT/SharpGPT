@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FractalGPT.SharpGPTLib.Prompts.PersonaChat;
+﻿namespace FractalGPT.SharpGPTLib.Prompts.PersonaChat;
 
 /// <summary>
 /// Represents a segment of dialogue, maintaining a buffer of the latest messages.

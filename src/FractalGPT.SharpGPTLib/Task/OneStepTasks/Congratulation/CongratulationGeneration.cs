@@ -1,8 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
 
-namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Congratulation
+namespace FractalGPT.SharpGPTLib.Tasks.OneStepTasks.Congratulation
 {
     /// <summary>
     /// Represents a specialized chat model focused on generating congratulatory messages.

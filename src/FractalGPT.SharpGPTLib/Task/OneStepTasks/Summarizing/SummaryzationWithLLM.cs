@@ -1,9 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
-using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.Task.Summarizing
+namespace FractalGPT.SharpGPTLib.Tasks.Summarizing
 {
     /// <summary>
     /// Text summarization service using Large Language Models (LLMs).

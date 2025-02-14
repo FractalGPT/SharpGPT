@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FractalGPT.SharpGPTLib.Prompts
+﻿namespace FractalGPT.SharpGPTLib.Prompts
 {
     /// <summary>
     /// Prompts for LLM

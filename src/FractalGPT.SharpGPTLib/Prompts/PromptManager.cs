@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FractalGPT.SharpGPTLib.Prompts
+﻿namespace FractalGPT.SharpGPTLib.Prompts
 {
     [Serializable]
     public static class PromptManager

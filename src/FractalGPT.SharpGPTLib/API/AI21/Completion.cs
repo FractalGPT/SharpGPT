@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FractalGPT.SharpGPTLib.API.AI21
+﻿namespace FractalGPT.SharpGPTLib.API.AI21
 {
     /// <summary>
     /// Represents a single completion with its associated data.

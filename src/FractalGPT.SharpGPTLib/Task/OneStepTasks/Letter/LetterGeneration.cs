@@ -1,8 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
 
-namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Letter
+namespace FractalGPT.SharpGPTLib.Tasks.OneStepTasks.Letter
 {
     /// <summary>
     /// Represents a specialized chat model focused on letter generation tasks.

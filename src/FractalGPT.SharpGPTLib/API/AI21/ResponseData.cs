@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace FractalGPT.SharpGPTLib.API.AI21
+﻿namespace FractalGPT.SharpGPTLib.API.AI21
 {
     /// <summary>
     /// Represents the response structure containing a list of completions.

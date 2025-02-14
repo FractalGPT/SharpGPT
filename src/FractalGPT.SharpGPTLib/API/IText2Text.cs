@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace FractalGPT.SharpGPTLib.API;
+﻿namespace FractalGPT.SharpGPTLib.API;
 
 /// <summary>
 /// The task of transforming text to text

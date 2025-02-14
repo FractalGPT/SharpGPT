@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -88,7 +86,7 @@ public class SendDataLLM
     /// Загрузка сообщений
     /// </summary>
     /// <param name="messages"></param>
-    public void SetMessages(IEnumerable<LLMMessage> messages) 
+    public void SetMessages(IEnumerable<LLMMessage> messages)
     {
         Messages.Clear();
         Messages.AddRange(messages);

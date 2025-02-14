@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FractalGPT.SharpGPTLib.Prompts.FewShot
+﻿namespace FractalGPT.SharpGPTLib.Prompts.FewShot
 {
 
     /// <summary>

@@ -1,9 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
-using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Description
+namespace FractalGPT.SharpGPTLib.Tasks.OneStepTasks.Description
 {
     /// <summary>
     /// Service for generating descriptions using Large Language Models (LLMs).

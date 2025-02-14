@@ -1,8 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.API;
-using System;
-using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.Task.OneStepTasks
+namespace FractalGPT.SharpGPTLib.Tasks.OneStepTasks
 {
     /// <summary>
     /// Represents a simple chat model that sends and receives text using the IText2TextAPI interface.

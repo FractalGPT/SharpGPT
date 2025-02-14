@@ -1,8 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
 
-namespace FractalGPT.SharpGPTLib.Task.OneStepTasks.Code
+namespace FractalGPT.SharpGPTLib.Tasks.OneStepTasks.Code
 {
     /// <summary>
     /// Represents a specialized chat model focused on code generation tasks.

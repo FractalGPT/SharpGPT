@@ -1,9 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API;
 using FractalGPT.SharpGPTLib.Prompts;
-using System;
-using System.Threading.Tasks;
 
-namespace FractalGPT.SharpGPTLib.Task.TextQA
+namespace FractalGPT.SharpGPTLib.Tasks.TextQA
 {
     /// <summary>
     /// Class for handling questions and answers based on a given text.

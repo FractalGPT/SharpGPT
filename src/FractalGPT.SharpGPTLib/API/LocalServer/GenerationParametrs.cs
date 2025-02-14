@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FractalGPT.SharpGPTLib.API.LocalServer;
+﻿namespace FractalGPT.SharpGPTLib.API.LocalServer;
 
 /// <summary>
 /// Represents the parameters for generation processes.
