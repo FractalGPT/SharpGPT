@@ -113,7 +113,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 - ✅ **Persona chat (local)** 
 - ❌ **Automatic Review Generation**  
 - ❌ **Calling a functions**  
-- ❌ **Math Problem Solving**  
+- ✅ **Math Problem Solving**  
 - ✅ **Document-based Q&A**  
 - ❌ **Image Description**  
 - ❌ **Image-based Q&A**  
