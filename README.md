@@ -81,7 +81,7 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 - ✅ **vLLM**  
 - ❌ **Hallucination Checking (FractalGPT)**  
 - ❌ **Extractive Summarization (FractalGPT)**  
-- ✅ **Text Vectorization (FractalGPT)**  
+- ✅ **Text Vectorization**  
 - ✅ **Text Similarity Search**  
    - ✅ Bi-Encoder  
    - ✅ Cross-Encoder  
