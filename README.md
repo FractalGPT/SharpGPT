@@ -81,15 +81,14 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 - ✅ **vLLM**  
 - ❌ **Hallucination Checking (FractalGPT)**  
 - ❌ **Extractive Summarization (FractalGPT)**  
-- ❌ **Text Vectorization (FractalGPT)**  
+- ✅ **Text Vectorization (FractalGPT)**  
 - ✅ **Text Similarity Search**  
    - ✅ Bi-Encoder  
    - ✅ Cross-Encoder  
 - ❌ **Function Invocation Model (FractalGPT)**  
 - ❌ **Search System (FractalGPT)**  
 - ✅ **QAAgent (FractalGPT)**  
-- ❌ **MathAgent (FractalGPT)**  
-- ❌ **TextProcessor (FractalGPT)**  
+- ✅ **TextProcessor (FractalGPT)**  
 - ❌ **Image Description (FractalGPT)**  
 - ❌ **Logical Inference Module (FractalGPT)**  
 - ❌ **Signal Processing Module (FractalGPT)**  
