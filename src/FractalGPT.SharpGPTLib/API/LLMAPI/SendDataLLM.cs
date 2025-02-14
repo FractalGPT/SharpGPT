@@ -72,6 +72,16 @@ public class SendDataLLM
     }
 
     /// <summary>
+    /// Загрузка сообщений
+    /// </summary>
+    /// <param name="messages"></param>
+    public void SetMessages(IEnumerable<LLMMessage> messages) 
+    {
+        Messages.Clear();
+        Messages.AddRange(messages);
+    }
+
+    /// <summary>
     /// Adds a user message to the conversation.
     /// </summary>
     /// <param name="text">The text of the user message.</param>

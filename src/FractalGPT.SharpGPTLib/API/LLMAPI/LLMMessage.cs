@@ -40,16 +40,48 @@ public class LLMMessage
     public LLMMessage(string role, string content)
     {
         if (string.IsNullOrWhiteSpace(role))
-        {
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
-        }
 
         if (string.IsNullOrWhiteSpace(content))
-        {
             throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
-        }
 
         Role = role;
         Content = content;
     }
+
+    /// <summary>
+    /// Создает сообщение для отправки по апи в llm
+    /// </summary>
+    /// <param name="role"></param>
+    /// <param name="content"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static LLMMessage CreateMessege(Roles role, string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
+
+        var senderRole = role.ToString().ToLower();
+
+        return new LLMMessage(senderRole, content);
+    }
+}
+
+/// <summary>
+/// Роли
+/// </summary>
+public enum Roles : byte
+{
+    /// <summary>
+    /// Сообщение бота
+    /// </summary>
+    Assistant = 1,
+    /// <summary>
+    /// Сообщение пользователя
+    /// </summary>
+    User = 2,
+    /// <summary>
+    /// Системное сообщение
+    /// </summary>
+    System = 3
 }

@@ -2,6 +2,7 @@
 using FractalGPT.SharpGPTLib.Prompts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -90,6 +91,24 @@ public class ChatLLMApi : IText2TextChat, IDisposable
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
 
         sendData.AddUserMessage(text);
+        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        ChatCompletionsResponse chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>();
+        return chatCompletionsResponse.Choices[0].Message.Content;
+    }
+
+    /// <summary>
+    /// Отправка сообщения учитывающая контекст 
+    /// (потокобезопасная версия)
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns>Возвращает текст ответа</returns>
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context)
+    {
+        var webApi = new WithoutProxyClient(_apiKey);
+        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+        sendData.SetMessages(context);
+
         HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();
