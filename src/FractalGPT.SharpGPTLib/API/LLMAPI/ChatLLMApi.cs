@@ -109,7 +109,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
         sendData.SetMessages(context);
 
-        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();
         return chatCompletionsResponse.Choices[0].Message.Content;
@@ -127,7 +127,7 @@ public class ChatLLMApi : IText2TextChat, IDisposable
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
 
         sendData.AddUserMessage(text);
-        HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();
 

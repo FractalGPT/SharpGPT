@@ -25,6 +25,15 @@ public class SendDataLLM
     [JsonPropertyName("temperature")]
     public double Temperature { get; }
 
+    [JsonPropertyName("repetition_penalty")]
+    public double RepetitionPenalty { get; set; }
+
+    [JsonPropertyName("top_p")]
+    public double TopP { get; set; }
+
+    [JsonPropertyName("top_k")]
+    public int TopK { get; set; }
+
     /// <summary>
     /// Gets or sets the system prompt used at the beginning of every message exchange.
     /// This property is not serialized because it is included as part of the initial messages.
@@ -50,7 +59,8 @@ public class SendDataLLM
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="modelName"/> or <paramref name="systemPrompt"/> is null or empty.
     /// </exception>
-    public SendDataLLM(string modelName, string systemPrompt, int bufferSize = 5, double temp = 0.7)
+    public SendDataLLM(string modelName, string systemPrompt,
+        int bufferSize = 5, double temp = 0.7, int topK = 20, double topP = 0.9, double repetitionPenalty = 1.06)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
@@ -60,6 +70,9 @@ public class SendDataLLM
 
         ModelName = modelName;
         Temperature = temp;
+        TopK = topK;
+        TopP = topP;
+        RepetitionPenalty = repetitionPenalty;
         Prompt = systemPrompt;
 
         this.bufferSize = bufferSize;
