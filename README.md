@@ -82,9 +82,9 @@ Join us in our exciting journey into the world of artificial intelligence! We ar
 - ❌ **Hallucination Checking (FractalGPT)**  
 - ❌ **Extractive Summarization (FractalGPT)**  
 - ❌ **Text Vectorization (FractalGPT)**  
-- ❌ **Text Similarity Search (FractalGPT)**  
-   - ❌ Bi-Encoder  
-   - ❌ Cross-Encoder  
+- ✅ **Text Similarity Search**  
+   - ✅ Bi-Encoder  
+   - ✅ Cross-Encoder  
 - ❌ **Function Invocation Model (FractalGPT)**  
 - ❌ **Search System (FractalGPT)**  
 - ✅ **QAAgent (FractalGPT)**  
