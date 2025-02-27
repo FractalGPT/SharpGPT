@@ -14,7 +14,9 @@ public class WithoutProxyClient : IWebAPIClient
     /// <summary>
     /// Static HttpClient instance reused across requests for better performance.
     /// </summary>
-    private static readonly HttpClient HttpClient = new HttpClient();
+    private static readonly HttpClient HttpClient = new() {
+        Timeout = TimeSpan.FromMinutes(10),
+    };
 
     /// <summary>
     /// Constructor to initialize the client with an API key.
