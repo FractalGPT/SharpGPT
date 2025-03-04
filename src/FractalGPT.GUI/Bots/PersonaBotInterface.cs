@@ -1,7 +1,7 @@
 ﻿using FractalGPT.GUI.Models;
 using FractalGPT.SharpGPTLib.API.LocalServer;
 using FractalGPT.SharpGPTLib.Prompts.PersonaChat;
-using FractalGPT.SharpGPTLib.Task.DialogTasks;
+using FractalGPT.SharpGPTLib.Tasks.DialogTasks;
 using System;
 using System.Threading.Tasks;
 

@@ -1,5 +1,6 @@
-﻿using System.Net.Http.Headers;
-using System.Net.Http.Json;
+﻿using System.Net;
+using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace FractalGPT.SharpGPTLib.API.WebUtils;
 
@@ -10,6 +11,8 @@ public class WithoutProxyClient : IWebAPIClient
     /// Property to hold authentication information.
     /// </summary>
     public AuthenticationHeaderValue Authentication { get; set; }
+
+    public string ApiKey { get; set; }
 
     /// <summary>
     /// Static HttpClient instance reused across requests for better performance.
@@ -24,7 +27,9 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="apiKey">API key for authentication.</param>
     public WithoutProxyClient(string apiKey)
     {
-        Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
+        ApiKey = apiKey;
+        if (!string.IsNullOrEmpty(apiKey))
+            Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
         ConfigureHttpClient();
     }
 
@@ -39,7 +44,8 @@ public class WithoutProxyClient : IWebAPIClient
     /// </summary>
     private void ConfigureHttpClient()
     {
-        HttpClient.DefaultRequestHeaders.Authorization = Authentication;
+        if (Authentication != null)
+            HttpClient.DefaultRequestHeaders.Authorization = Authentication;
     }
 
     /// <summary>
@@ -53,9 +59,34 @@ public class WithoutProxyClient : IWebAPIClient
     {
         try
         {
-            HttpResponseMessage response = await HttpClient.PostAsJsonAsync(apiUrl, sendData);
-            _ = response.EnsureSuccessStatusCode();
+            var jsonContent = JsonSerializer.Serialize(sendData, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            });
+
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(apiUrl),
+                //Headers = {
+                //    { HttpRequestHeader.Authorization.ToString(), "Bearer xxxxxxxxxxxxxxxxxxx" },
+                //    { HttpRequestHeader.Accept.ToString(), "application/json" },
+                //    { "X-Version", "1" }
+                //},
+                Content = new StringContent(jsonContent),
+            };
+
+            if (!string.IsNullOrEmpty(ApiKey))
+                httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Authorization.ToString(), "Bearer " + ApiKey);
+            httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Accept.ToString(), "application/json");
+            httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
+
+            using var response = await HttpClient.SendAsync(httpRequestMessage);
             return response;
+
+            //using var response = await HttpClient.PostAsJsonAsync(apiUrl, sendData);
+            //_ = response.EnsureSuccessStatusCode();
+            //return response;
         }
         catch (Exception ex)
         {
@@ -78,6 +109,6 @@ public class WithoutProxyClient : IWebAPIClient
 
     public void Dispose()
     {
-
+        HttpClient?.Dispose();
     }
 }

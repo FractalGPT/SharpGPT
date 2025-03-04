@@ -4,10 +4,6 @@ using FractalGPT.SharpGPTLib.API.ChatGPT;
 using FractalGPT.SharpGPTLib.API.LocalServer;
 using FractalGPT.SharpGPTLib.Prompts.FewShot;
 using FractalGPT.SharpGPTLib.Prompts.PersonaChat;
-using FractalGPT.SharpGPTLib.Task.DialogTasks;
-using FractalGPT.SharpGPTLib.Task.PromptGeneration;
-using FractalGPT.SharpGPTLib.Task.Summarizing;
-using FractalGPT.SharpGPTLib.Task.TextQA;
 
 namespace FractalGPT.SharpGPTTestAPP
 {

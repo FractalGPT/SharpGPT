@@ -86,9 +86,8 @@ public class ChatLLMApi : IText2TextChat
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
 
         sendData.AddUserMessage(text);
-        using HttpResponseMessage response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        ChatCompletionsResponse chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>();
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
         return chatCompletionsResponse.Choices[0].Message.Content;
     }
 
