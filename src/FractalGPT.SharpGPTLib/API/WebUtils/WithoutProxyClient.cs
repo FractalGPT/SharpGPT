@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace FractalGPT.SharpGPTLib.API.WebUtils;
@@ -61,19 +63,14 @@ public class WithoutProxyClient : IWebAPIClient
         {
             var jsonContent = JsonSerializer.Serialize(sendData, new JsonSerializerOptions
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             });
 
             var httpRequestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(apiUrl),
-                //Headers = {
-                //    { HttpRequestHeader.Authorization.ToString(), "Bearer xxxxxxxxxxxxxxxxxxx" },
-                //    { HttpRequestHeader.Accept.ToString(), "application/json" },
-                //    { "X-Version", "1" }
-                //},
-                Content = new StringContent(jsonContent),
+                Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
             };
 
             if (!string.IsNullOrEmpty(ApiKey))
@@ -81,12 +78,9 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Accept.ToString(), "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-            using var response = await HttpClient.SendAsync(httpRequestMessage);
+            var response = await HttpClient.SendAsync(httpRequestMessage);
+            _ = response.EnsureSuccessStatusCode();
             return response;
-
-            //using var response = await HttpClient.PostAsJsonAsync(apiUrl, sendData);
-            //_ = response.EnsureSuccessStatusCode();
-            //return response;
         }
         catch (Exception ex)
         {
