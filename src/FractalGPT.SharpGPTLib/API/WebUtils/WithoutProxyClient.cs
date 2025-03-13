@@ -20,7 +20,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// Static HttpClient instance reused across requests for better performance.
     /// </summary>
     private readonly HttpClient HttpClient = new() {
-        Timeout = TimeSpan.FromMinutes(10),
+        Timeout = TimeSpan.FromMinutes(6),
     };
 
     /// <summary>
@@ -66,7 +66,7 @@ public class WithoutProxyClient : IWebAPIClient
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             });
 
-            var httpRequestMessage = new HttpRequestMessage
+            using var httpRequestMessage = new HttpRequestMessage
             {
                 Method = HttpMethod.Post,
                 RequestUri = new Uri(apiUrl),
@@ -78,7 +78,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Accept.ToString(), "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-            var response = await HttpClient.SendAsync(httpRequestMessage);
+            var response = await HttpClient.SendAsync(httpRequestMessage, new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token);
             _ = response.EnsureSuccessStatusCode();
             return response;
         }
