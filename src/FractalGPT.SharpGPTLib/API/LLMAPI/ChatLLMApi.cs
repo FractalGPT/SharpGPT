@@ -1,6 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 using System.Net.Http.Json;
+using System.Threading;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -54,10 +55,10 @@ public class ChatLLMApi : IText2TextChat
     /// <summary>
     /// Asynchronous method for sending text and receiving a response from LLM, maintaining the context of the dialogue.
     /// </summary>
-    public async Task<ChatCompletionsResponse> SendAsync(string text)
+    public async Task<ChatCompletionsResponse> SendAsync(string text, CancellationToken cancellationToken = default)
     {
         _sendData.AddUserMessage(text);
-        using HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData);
+        using HttpResponseMessage response = await _webApi.PostAsJsonAsync(ApiUrl, _sendData, cancellationToken);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
         _sendData.AddAssistantMessage(chatCompletionsResponse.Choices[0].Message.Content);
 
@@ -75,37 +76,78 @@ public class ChatLLMApi : IText2TextChat
 
 
     /// <summary>
-    /// Отправка сообщения без контекста 
-    /// (потокобезопасная версия)
+    /// Отправка сообщения без контекста (потокобезопасная версия)
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="text">Текст запроса</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text)
+    public async Task<string> SendWithoutContextTextAsync(string text, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(text))
+            throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
+
         using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
 
         sendData.AddUserMessage(text);
-        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>();
+
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
+
+        // Проверка, что HTTP-запрос выполнен успешно
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
+        }
+
+        var chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (chatCompletionsResponse == null ||
+            chatCompletionsResponse.Choices == null ||
+            chatCompletionsResponse.Choices.Count == 0)
+        {
+            throw new InvalidOperationException("Некорректный ответ от LLM API.");
+        }
+
         return chatCompletionsResponse.Choices[0].Message.Content;
     }
 
     /// <summary>
-    /// Отправка сообщения учитывающая контекст 
-    /// (потокобезопасная версия)
+    /// Отправка сообщения с учетом контекста (потокобезопасная версия).
     /// </summary>
-    /// <param name="context"></param>
-    /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context)
+    /// <param name="context">Контекст сообщений LLM.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Возвращает текст ответа.</returns>
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default)
     {
+        if (context == null)
+            throw new ArgumentNullException(nameof(context));
+
         using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
         sendData.SetMessages(context);
 
-        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
+        }
+
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>();
+            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (chatCompletionsResponse == null ||
+            chatCompletionsResponse.Choices == null ||
+            chatCompletionsResponse.Choices.Count == 0)
+        {
+            throw new InvalidOperationException("Некорректный ответ от LLM API.");
+        }
+
         return chatCompletionsResponse.Choices[0].Message.Content;
     }
 

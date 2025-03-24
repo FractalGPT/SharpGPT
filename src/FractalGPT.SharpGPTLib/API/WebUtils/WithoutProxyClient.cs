@@ -57,8 +57,15 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="sendData">Data to send in the request.</param>
     /// <returns>The HttpResponseMessage from the request.</returns>
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData)
+    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken cancellationToken = default)
     {
+        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token;
+
+        if (string.IsNullOrWhiteSpace(apiUrl))
+            throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
+        if (sendData == null)
+            throw new ArgumentNullException(nameof(sendData));
+
         try
         {
             var jsonContent = JsonSerializer.Serialize(sendData, new JsonSerializerOptions
@@ -66,21 +73,25 @@ public class WithoutProxyClient : IWebAPIClient
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             });
 
-            using var httpRequestMessage = new HttpRequestMessage
+            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(apiUrl))
             {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri(apiUrl),
-                Content = new StringContent(jsonContent, Encoding.UTF8, "application/json"),
+                Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
             };
 
             if (!string.IsNullOrEmpty(ApiKey))
-                httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Authorization.ToString(), "Bearer " + ApiKey);
-            httpRequestMessage.Headers.TryAddWithoutValidation(HttpRequestHeader.Accept.ToString(), "application/json");
+                httpRequestMessage.Headers.TryAddWithoutValidation("Authorization", "Bearer " + ApiKey);
+
+            httpRequestMessage.Headers.TryAddWithoutValidation("Accept", "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-            var response = await HttpClient.SendAsync(httpRequestMessage, new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token);
+            var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken);// .ConfigureAwait(false);
             _ = response.EnsureSuccessStatusCode();
             return response;
+        }
+        catch (OperationCanceledException)
+        {
+            // Пробрасываем исключения отмены без обёртывания
+            throw;
         }
         catch (Exception ex)
         {

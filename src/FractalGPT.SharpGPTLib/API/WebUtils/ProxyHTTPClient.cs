@@ -64,23 +64,40 @@ public class ProxyHTTPClient : IWebAPIClient
     /// <param name="sendData">Data to be sent in the request.</param>
     /// <returns>HTTP response from the server.</returns>
     /// <exception cref="InvalidOperationException">Thrown if unable to connect through any of the proxy servers.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData)
+    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(apiUrl))
+            throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
+        if (sendData == null)
+            throw new ArgumentNullException(nameof(sendData));
+
         foreach (var proxy in _proxies)
         {
             try
             {
-                var httpClientHandler = new HttpClientHandler()
+                var handler = new HttpClientHandler
                 {
                     Proxy = proxy,
                     UseProxy = true,
                 };
 
-                using var httpClient = new HttpClient(httpClientHandler);
-                httpClient.DefaultRequestHeaders.Authorization = Authentication;
-                HttpResponseMessage response = await httpClient.PostAsJsonAsync(apiUrl, sendData);
-                _ = response.EnsureSuccessStatusCode();
+                using var httpClient = new HttpClient(handler);
+
+                if (Authentication != null)
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = Authentication;
+                }
+
+                HttpResponseMessage response = await httpClient
+                    .PostAsJsonAsync(apiUrl, sendData, cancellationToken)
+                    .ConfigureAwait(false);
+
+                response.EnsureSuccessStatusCode();
                 return response;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -88,8 +105,9 @@ public class ProxyHTTPClient : IWebAPIClient
             }
         }
 
-        throw new InvalidOperationException("Failed to connect through any of the proxies.");
+        throw new InvalidOperationException("Не удалось подключиться через ни один из прокси.");
     }
+
 
     /// <summary>
     /// Load proxy list
