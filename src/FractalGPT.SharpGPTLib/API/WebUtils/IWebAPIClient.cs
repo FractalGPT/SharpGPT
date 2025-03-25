@@ -10,5 +10,5 @@ namespace FractalGPT.SharpGPTLib.API.WebUtils;
 public interface IWebAPIClient : IDisposable
 {
     AuthenticationHeaderValue Authentication { get; set; }
-    Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken concelationToken = default);
+    Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? concelationToken = default);
 }

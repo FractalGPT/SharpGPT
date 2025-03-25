@@ -57,9 +57,9 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="sendData">Data to send in the request.</param>
     /// <returns>The HttpResponseMessage from the request.</returns>
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken cancellationToken = default)
+    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? cancellationToken = default)
     {
-        cancellationToken = cancellationToken == null ? new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token : cancellationToken;
+        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token;
 
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
@@ -84,7 +84,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("Accept", "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-            var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken);// .ConfigureAwait(false);
+            var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);// .ConfigureAwait(false);
             _ = response.EnsureSuccessStatusCode();
             return response;
         }
