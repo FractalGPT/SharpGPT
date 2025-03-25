@@ -59,7 +59,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken cancellationToken = default)
     {
-        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token;
+        cancellationToken = cancellationToken == null ? new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token : cancellationToken;
 
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
