@@ -18,7 +18,7 @@ public class LLMMessage
     /// Gets the content of the message.
     /// </summary>
     [JsonPropertyName("content")]
-    public string Content { get; }
+    public string Content { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LLMMessage"/> class 
@@ -55,7 +55,7 @@ public class LLMMessage
     /// <param name="content"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static LLMMessage CreateMessege(Roles role, string content)
+    public static LLMMessage CreateMessage(Roles role, string content)
     {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
@@ -64,6 +64,16 @@ public class LLMMessage
 
         return new LLMMessage(senderRole, content);
     }
+
+    /// <summary>
+    /// Метод для глубокого копирования объекта LLMMessage
+    /// </summary>
+    /// <returns></returns>
+    public LLMMessage DeepClone()
+    {
+        return new LLMMessage(this.Role, this.Content);
+    }
+
 }
 
 /// <summary>
