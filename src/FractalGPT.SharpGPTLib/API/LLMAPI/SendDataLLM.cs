@@ -58,7 +58,7 @@ public class SendDataLLM
     /// Thrown when <paramref name="modelName"/> or <paramref name="systemPrompt"/> is null or empty.
     /// </exception>
     public SendDataLLM(string modelName, string systemPrompt,
-        int bufferSize = 5, double temp = 0.7, int topK = 20, double topP = 0.9, double repetitionPenalty = 1.06)
+        int bufferSize = 5, double temp = 0.7, int topK = 20, double topP = 0.9, double repetitionPenalty = 1.00)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
