@@ -24,7 +24,7 @@ public class GenerationParametrs
     /// <summary>
     /// Gets or sets the temperature for sampling, affecting randomness.
     /// </summary>
-    public double Temperature { get; set; } = 0.6;
+    public double Temperature { get; set; } = 0.05;
 
     /// <summary>
     /// Gets or sets the size of the n-gram to prevent repeating sequences.

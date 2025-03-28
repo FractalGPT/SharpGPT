@@ -154,7 +154,7 @@ public class BaseInfinityEmbedder : IEmbedderService
         throw lastException;
     }
 
-    private async Task<Vector> EncodeQuestionBaseAsync(string question)
+    private async Task<Vector> EncodeQuestionBaseAsync(string query)
     {
         Exception lastException = new Exception();
         for (int attempt = 0; attempt < 2; attempt++)
@@ -164,7 +164,7 @@ public class BaseInfinityEmbedder : IEmbedderService
                 using var response = await _httpClient.PostAsJsonAsync("/v1/embeddings", new InfinityEmbeddingsArgs
                 {
                     Model = ModelName,
-                    Input = [GetDetailedInstruct(question)],
+                    Input = [GetDetailedInstruct(query)],
                 });
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>();
