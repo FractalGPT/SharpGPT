@@ -21,6 +21,8 @@ public class ChatLLMApi : IText2TextChat
 
     public virtual string ApiUrl { get; set; }
 
+    public virtual string TokenizeApiUrl { get; set; }
+
     public event Action<string> ProxyInfo;
 
     /// <summary>
@@ -42,7 +44,7 @@ public class ChatLLMApi : IText2TextChat
         else { _webApi = new WithoutProxyClient(key); }
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
-        _sendData = new SendDataLLM(modelName, defaultPrompt, temp: temperature);
+        _sendData = new SendDataLLM(modelName, defaultPrompt, temperature: temperature);
 
 
     }
@@ -50,6 +52,19 @@ public class ChatLLMApi : IText2TextChat
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
     {
         ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
+    }
+
+    public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
+    {
+        using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, new
+        {
+            messages,
+            model = _modelName,
+        }, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken);
+
+        return result?.Count ?? 0;
     }
 
     /// <summary>
@@ -87,7 +102,7 @@ public class ChatLLMApi : IText2TextChat
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
 
         sendData.AddUserMessage(text);
 
@@ -126,7 +141,7 @@ public class ChatLLMApi : IText2TextChat
             throw new ArgumentNullException(nameof(context));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
@@ -160,7 +175,7 @@ public class ChatLLMApi : IText2TextChat
     public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text)
     {
         var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temp: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
 
         sendData.AddUserMessage(text);
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);

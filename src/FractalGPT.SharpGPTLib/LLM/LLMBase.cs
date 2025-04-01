@@ -45,15 +45,23 @@ public class LLMBase
     /// <summary>
     /// Отправка запроса к LLM с учетом контекста сообщений.
     /// </summary>
-    /// <param name="context">Последовательность сообщений LLM.</param>
+    /// <param name="messages">Последовательность сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ LLM в виде строки.</returns>
-    public async Task<string> SendToLLM(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default)
+    public async Task<string> SendToLLM(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
     {
-        if (context == null)
-            throw new ArgumentNullException(nameof(context));
+        if (messages == null)
+            throw new ArgumentNullException(nameof(messages));
 
         // Передаём запрос через клиент _chatLLMApi с поддержкой контекста
-        return await _chatLLMApi.SendWithContextTextAsync(context, cancellationToken).ConfigureAwait(false);
+        return await _chatLLMApi.SendWithContextTextAsync(messages, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
+    {
+        if (messages == null)
+            throw new ArgumentNullException(nameof(messages));
+
+        return await _chatLLMApi.TokenizeAsync(messages, cancellationToken).ConfigureAwait(false);
     }
 }

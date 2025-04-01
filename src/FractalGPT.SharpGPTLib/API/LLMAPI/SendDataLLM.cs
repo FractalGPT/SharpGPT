@@ -32,6 +32,9 @@ public class SendDataLLM
     [JsonPropertyName("top_k")]
     public int TopK { get; set; }
 
+    [JsonPropertyName("max_tokens")]
+    public int MaxTokens { get; set; }
+
     /// <summary>
     /// Gets or sets the system prompt used at the beginning of every message exchange.
     /// This property is not serialized because it is included as part of the initial messages.
@@ -53,12 +56,18 @@ public class SendDataLLM
     /// <param name="modelName">The name of the LLM model to use.</param>
     /// <param name="systemPrompt">The system text that initializes the conversation context.</param>
     /// <param name="bufferSize">The maximum number of messages to keep in the conversation.</param>
-    /// <param name="temp">Controls the randomness or creativity of the LLM's output.</param>
+    /// <param name="temperature">Controls the randomness or creativity of the LLM's output.</param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="modelName"/> or <paramref name="systemPrompt"/> is null or empty.
     /// </exception>
-    public SendDataLLM(string modelName, string systemPrompt,
-        int bufferSize = 5, double temp = 0.7, int topK = 20, double topP = 0.9, double repetitionPenalty = 1.00)
+    public SendDataLLM(string modelName,
+        string systemPrompt,
+        int bufferSize = 5,
+        double temperature = 0.7,
+        int topK = 20,
+        double topP = 0.9,
+        double repetitionPenalty = 1.00,
+        int maxTokens = 2048)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
@@ -67,11 +76,12 @@ public class SendDataLLM
             throw new ArgumentNullException(nameof(systemPrompt), "System prompt cannot be null or empty.");
 
         ModelName = modelName;
-        Temperature = temp;
+        Temperature = temperature;
         TopK = topK;
         TopP = topP;
         RepetitionPenalty = repetitionPenalty;
         Prompt = systemPrompt;
+        MaxTokens = maxTokens;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize)

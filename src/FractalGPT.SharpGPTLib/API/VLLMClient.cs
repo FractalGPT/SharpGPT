@@ -32,5 +32,6 @@ public class VLLMClient : ChatLLMApi
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
 
         ApiUrl = $"{host.Trim('/')}/v1/chat/completions";
+        TokenizeApiUrl = $"{host.Trim('/')}/tokenize";
     }
 }
