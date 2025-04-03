@@ -62,6 +62,7 @@ public class InfinityReranker
 
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<RerankResponse>();
+                result.Results = result.Results.OrderBy(t => t.Index).ToList();
                 return result;
             }
             catch (Exception ex)
