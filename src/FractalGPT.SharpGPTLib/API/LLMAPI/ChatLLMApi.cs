@@ -115,18 +115,25 @@ public class ChatLLMApi : IText2TextChat
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
-        var chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        if (chatCompletionsResponse == null ||
-            chatCompletionsResponse.Choices == null ||
-            chatCompletionsResponse.Choices.Count == 0)
+        try
         {
-            throw new InvalidOperationException("Некорректный ответ от LLM API.");
-        }
+            var chatCompletionsResponse = await response.Content
+                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
-        return chatCompletionsResponse.Choices[0].Message.Content;
+            if (chatCompletionsResponse == null ||
+                chatCompletionsResponse.Choices == null ||
+                chatCompletionsResponse.Choices.Count == 0)
+            {
+                throw new InvalidOperationException("Некорректный ответ от LLM API.");
+            }
+
+            return chatCompletionsResponse.Choices[0].Message.Content;
+        }
+        catch (Exception ex)
+        {
+            var content = await response.Content.ReadAsStringAsync();
+            throw new Exception(content, ex);
+        }
     }
 
     /// <summary>
