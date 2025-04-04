@@ -64,7 +64,7 @@ public class SendDataLLM
         string systemPrompt,
         int bufferSize = 5,
         double temperature = 0.7,
-        int topK = 20,
+        int topK = 5,
         double topP = 0.9,
         double repetitionPenalty = 1.00,
         int maxTokens = 2048)
