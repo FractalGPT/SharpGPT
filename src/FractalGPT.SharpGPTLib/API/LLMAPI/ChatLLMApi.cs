@@ -106,34 +106,45 @@ public class ChatLLMApi : IText2TextChat
 
         sendData.AddUserMessage(text);
 
-        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
+        Exception exception = new Exception();
 
-        // Проверка, что HTTP-запрос выполнен успешно
-        if (!response.IsSuccessStatusCode)
+        for (int attempts = 0; attempts < 2; attempts++)
         {
-            var errorContent = await response.Content.ReadAsStringAsync();
-            throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
-        }
+            using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
 
-        try
-        {
-            var chatCompletionsResponse = await response.Content
-                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-            if (chatCompletionsResponse == null ||
-                chatCompletionsResponse.Choices == null ||
-                chatCompletionsResponse.Choices.Count == 0)
+            // Проверка, что HTTP-запрос выполнен успешно
+            if (!response.IsSuccessStatusCode)
             {
-                throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                exception = new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
             }
 
-            return chatCompletionsResponse.Choices[0].Message.Content;
+            try
+            {
+                var chatCompletionsResponse = await response.Content
+                    .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+
+                if (chatCompletionsResponse == null ||
+                    chatCompletionsResponse.Choices == null ||
+                    chatCompletionsResponse.Choices.Count == 0)
+                {
+                    throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                }
+
+                var result = chatCompletionsResponse.Choices[0].Message.Content;
+                if (!string.IsNullOrEmpty(result))
+                    return result;
+            }
+            catch (Exception ex)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                exception = new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 500)), ex);
+
+                await Task.Delay(500);
+            }
         }
-        catch (Exception ex)
-        {
-            var content = await response.Content.ReadAsStringAsync();
-            throw new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 200)), ex);
-        }
+
+        throw exception;
     }
 
     /// <summary>
