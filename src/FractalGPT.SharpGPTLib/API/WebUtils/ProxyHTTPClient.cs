@@ -91,8 +91,7 @@ public class ProxyHTTPClient : IWebAPIClient
                 }
 
                 HttpResponseMessage response = await httpClient
-                    .PostAsJsonAsync(apiUrl, sendData, cancellationToken.Value)
-                    .ConfigureAwait(false);
+                    .PostAsJsonAsync(apiUrl, sendData, cancellationToken.Value);
 
                 response.EnsureSuccessStatusCode();
                 return response;

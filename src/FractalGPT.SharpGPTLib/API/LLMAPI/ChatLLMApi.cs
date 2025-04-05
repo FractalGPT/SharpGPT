@@ -106,12 +106,12 @@ public class ChatLLMApi : IText2TextChat
 
         sendData.AddUserMessage(text);
 
-        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
 
         // Проверка, что HTTP-запрос выполнен успешно
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
@@ -151,17 +151,16 @@ public class ChatLLMApi : IText2TextChat
         var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
         sendData.SetMessages(context);
 
-        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
+        using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
+            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
         if (chatCompletionsResponse == null ||
             chatCompletionsResponse.Choices == null ||

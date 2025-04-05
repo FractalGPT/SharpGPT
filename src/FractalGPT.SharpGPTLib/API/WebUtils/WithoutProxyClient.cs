@@ -84,7 +84,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("Accept", "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-            var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);// .ConfigureAwait(false);
+            var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
             _ = response.EnsureSuccessStatusCode();
             return response;
         }
