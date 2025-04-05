@@ -7,7 +7,7 @@ namespace FractalGPT.SharpGPTLib.Encoders.Reranker;
 /// </summary>
 /// <typeparam name="InpDataType">Тип данных запроса</typeparam>
 /// <typeparam name="OutDataType">Тип данных ответа</typeparam>
-public abstract class RerankerBase<InpDataType, OutDataType>
+public abstract class RerankerBase<InpDataType, OutDataType> : IRerankerService<InpDataType, OutDataType>
 {
     /// <summary>
     /// Мера схожести

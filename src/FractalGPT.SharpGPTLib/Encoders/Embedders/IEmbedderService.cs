@@ -5,7 +5,7 @@ namespace FractalGPT.SharpGPTLib.Encoders.Embedders;
 /// <summary>
 /// Определяет сервис для генерации векторных эмбеддингов на основе текстовых данных.
 /// </summary>
-public interface IEmbedderService
+public interface IEmbedderService : IBiEncoder
 {
     /// <summary>
     /// Асинхронно генерирует векторное представление (эмбеддинг) для заданного вопроса.
