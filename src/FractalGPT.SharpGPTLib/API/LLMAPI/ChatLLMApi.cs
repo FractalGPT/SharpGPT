@@ -132,7 +132,7 @@ public class ChatLLMApi : IText2TextChat
         catch (Exception ex)
         {
             var content = await response.Content.ReadAsStringAsync();
-            throw new Exception(content, ex);
+            throw new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 200)), ex);
         }
     }
 
