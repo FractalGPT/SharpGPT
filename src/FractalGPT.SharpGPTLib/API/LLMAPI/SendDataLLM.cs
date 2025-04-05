@@ -32,6 +32,9 @@ public class SendDataLLM
     [JsonPropertyName("top_k")]
     public int TopK { get; set; }
 
+    [JsonPropertyName("min_tokens")]
+    public int MinTokens { get; set; }
+    
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
 
@@ -63,11 +66,12 @@ public class SendDataLLM
     public SendDataLLM(string modelName,
         string systemPrompt,
         int bufferSize = 5,
-        double temperature = 0.7,
-        int topK = 10,
+        double temperature = 0.1,
+        int topK = 5,
         double topP = 0.8,
         double repetitionPenalty = 1.00,
-        int maxTokens = 2048)
+        int maxTokens = 2048,
+        int minTokens = 10)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
@@ -82,6 +86,7 @@ public class SendDataLLM
         RepetitionPenalty = repetitionPenalty;
         Prompt = systemPrompt;
         MaxTokens = maxTokens;
+        MinTokens = minTokens;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize)
