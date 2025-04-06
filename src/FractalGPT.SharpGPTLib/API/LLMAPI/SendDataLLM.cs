@@ -76,8 +76,8 @@ public class SendDataLLM
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
 
-        if (string.IsNullOrWhiteSpace(systemPrompt))
-            throw new ArgumentNullException(nameof(systemPrompt), "System prompt cannot be null or empty.");
+        //if (string.IsNullOrWhiteSpace(systemPrompt))
+        //    throw new ArgumentNullException(nameof(systemPrompt), "System prompt cannot be null or empty.");
 
         ModelName = modelName;
         Temperature = temperature;
@@ -89,11 +89,11 @@ public class SendDataLLM
         MinTokens = minTokens;
 
         this.bufferSize = bufferSize;
-        Messages = new List<LLMMessage>(bufferSize)
-        {
-            // Initialize the message list with the initial system message.
-            new LLMMessage("system", systemPrompt)
-        };
+        Messages = new List<LLMMessage>(bufferSize);
+
+        if (!string.IsNullOrEmpty(systemPrompt))
+            Messages.Add(LLMMessage.CreateMessage(Roles.System, systemPrompt));
+
         currentIndex = 1;
     }
 
