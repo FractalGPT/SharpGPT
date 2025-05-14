@@ -70,7 +70,7 @@ public class SendDataLLM
         int topK = 5,
         double topP = 0.8,
         double repetitionPenalty = 1.00,
-        int maxTokens = 2048,
+        int maxTokens = 2248,
         int minTokens = 10)
     {
         if (string.IsNullOrWhiteSpace(modelName))
