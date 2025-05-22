@@ -71,7 +71,7 @@ public class SendDataLLM
         double topP = 0.8,
         double repetitionPenalty = 1.00,
         int maxTokens = 2248,
-        int minTokens = 10)
+        int minTokens = 8)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
