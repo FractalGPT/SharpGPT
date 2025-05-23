@@ -1,5 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
+using FractalGPT.SharpGPTLib.Stream;
 using System.Net.Http.Json;
 using System.Threading;
 
@@ -18,6 +19,7 @@ public class ChatLLMApi : IText2TextChat
     private readonly string _apiKey;
     private readonly string _prompt;
     private readonly double _temperature;
+    private readonly IStreamHandler _streamSender;
 
     public virtual string ApiUrl { get; set; }
 
@@ -28,12 +30,13 @@ public class ChatLLMApi : IText2TextChat
     /// <summary>
     /// Constructor for API initialization.
     /// </summary>
-    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature)
+    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature, IStreamHandler streamSender)
     {
         _apiKey = key;
         _modelName = modelName;
         _prompt = prompt;
         _temperature = temperature;
+        _streamSender = streamSender;
 
         // Use the default prompt if a custom one is not provided.
         if (useProxy)
@@ -45,8 +48,6 @@ public class ChatLLMApi : IText2TextChat
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
         _sendData = new SendDataLLM(modelName, defaultPrompt, temperature: temperature);
-
-
     }
 
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
@@ -96,13 +97,15 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, CancellationToken cancellationToken = default)
+    public async Task<string> SendWithoutContextTextAsync(string text, CancellationToken cancellationToken = default, string streamId = null)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
+        var isStream = string.IsNullOrEmpty(streamId);
+
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
 
         sendData.AddUserMessage(text);
 
@@ -121,19 +124,32 @@ public class ChatLLMApi : IText2TextChat
 
             try
             {
-                var chatCompletionsResponse = await response.Content
-                    .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-                if (chatCompletionsResponse == null ||
-                    chatCompletionsResponse.Choices == null ||
-                    chatCompletionsResponse.Choices.Count == 0)
+                //TODOS ПРОВЕРИТЬ СТРИМ отправку с помощью SIGNALR
+                if (isStream)
                 {
-                    throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                    var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+                    if (!string.IsNullOrEmpty(result))
+                        return result;
+                    break;
+                    //throw new NotImplementedException();
+                }
+                else
+                {
+                    var chatCompletionsResponse = await response.Content
+                        .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+
+                    if (chatCompletionsResponse == null ||
+                        chatCompletionsResponse.Choices == null ||
+                        chatCompletionsResponse.Choices.Count == 0)
+                    {
+                        throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                    }
+
+                    var result = chatCompletionsResponse.Choices[0].Message.Content;
+                    if (!string.IsNullOrEmpty(result))
+                        return result;
                 }
 
-                var result = chatCompletionsResponse.Choices[0].Message.Content;
-                if (!string.IsNullOrEmpty(result))
-                    return result;
             }
             catch (Exception ex)
             {
@@ -153,13 +169,15 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default)
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default, string streamId = null)
     {
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
+        var isStream = string.IsNullOrEmpty(streamId);
+
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
@@ -168,6 +186,12 @@ public class ChatLLMApi : IText2TextChat
         {
             var errorContent = await response.Content.ReadAsStringAsync();
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
+        }
+
+        if (isStream)
+        {
+            throw new NotImplementedException();
+            //chatCompletionsResponse = await _streamSender.StartStreamAsync(streamId, _prompt, response);
         }
 
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
@@ -189,12 +213,20 @@ public class ChatLLMApi : IText2TextChat
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text)
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = null)
     {
+        var isStream = string.IsNullOrEmpty(streamId);
+
         var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
 
         sendData.AddUserMessage(text);
+
+        if (isStream)
+        {
+            throw new NotImplementedException();
+            //chatCompletionsResponse = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+        }
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         ChatCompletionsResponse chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();

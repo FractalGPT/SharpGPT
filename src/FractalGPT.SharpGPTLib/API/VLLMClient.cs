@@ -26,7 +26,8 @@ public class VLLMClient : ChatLLMApi
         double temperature,
         string host,
         string apiKey = null)
-        : base(apiKey, false, string.Empty, modelName, systemPrompt, temperature)
+        ///TODOS СТРИМ
+        : base(apiKey, false, string.Empty, modelName, systemPrompt, temperature, null)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");

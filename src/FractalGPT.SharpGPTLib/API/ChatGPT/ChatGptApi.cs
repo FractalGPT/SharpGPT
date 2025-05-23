@@ -29,8 +29,11 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT
             string proxyPath = "proxy.json",
             string modelName = "gpt-3.5-turbo",
             string prompt = null,
-            double temperature = 0.7)
-            : base(apiKey, useProxy, proxyPath, modelName, prompt, temperature)
+            double temperature = 0.7
+            ///TODOS СТРИМ
+            //IStreamSender streamSender = 0.7
+            )
+            : base(apiKey, useProxy, proxyPath, modelName, prompt, temperature, null)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new ArgumentNullException(nameof(apiKey), "API key cannot be null or empty.");
