@@ -69,7 +69,7 @@ public class SendDataLLM
         double temperature = 0.1,
         int topK = 5,
         double topP = 0.8,
-        double repetitionPenalty = 1.00,
+        double repetitionPenalty = 1.04,
         int maxTokens = 2248,
         int minTokens = 8)
     {
