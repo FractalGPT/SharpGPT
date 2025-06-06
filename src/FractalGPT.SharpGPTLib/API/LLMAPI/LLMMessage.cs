@@ -42,7 +42,7 @@ public class LLMMessage
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
 
         //Из-за этого периодически падает (когда LLM возвращает пустой ответ)
-        if (string.IsNullOrWhiteSpace(content))
+        if (content == null) //string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
 
         Role = role;
