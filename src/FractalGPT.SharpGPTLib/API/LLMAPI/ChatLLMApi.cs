@@ -102,7 +102,7 @@ public class ChatLLMApi : IText2TextChat
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
-        var isStream = string.IsNullOrEmpty(streamId);
+        var isStream = !string.IsNullOrEmpty(streamId);
 
         using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
@@ -174,7 +174,7 @@ public class ChatLLMApi : IText2TextChat
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
-        var isStream = string.IsNullOrEmpty(streamId);
+        var isStream = !string.IsNullOrEmpty(streamId);
 
         using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
