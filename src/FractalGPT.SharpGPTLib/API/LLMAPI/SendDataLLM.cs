@@ -104,7 +104,30 @@ public class SendDataLLM
     public void SetMessages(IEnumerable<LLMMessage> messages)
     {
         Messages.Clear();
-        Messages.AddRange(messages);
+
+        List<LLMMessage> fixedMessages = [];
+
+        foreach (var message in messages)
+        {
+            if (fixedMessages.Count == 0)
+            {
+                if (message.Role == "assistant")
+                    fixedMessages.Add(new LLMMessage("user", ""));
+
+                fixedMessages.Add(message);
+            }
+            else
+            {
+                if (message.Role == fixedMessages[fixedMessages.Count - 1].Role)
+                    fixedMessages.Add(new LLMMessage(message.Role == "assistant" ? "user" : "assistant", ""));
+                if (message.Role == "assistant" && fixedMessages[fixedMessages.Count - 1].Role == "system")
+                    fixedMessages.Add(new LLMMessage("user", ""));
+
+                fixedMessages.Add(message);
+            }
+        }
+
+        Messages.AddRange(fixedMessages);
     }
 
     /// <summary>
