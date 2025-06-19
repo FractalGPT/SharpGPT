@@ -112,16 +112,17 @@ public class SendDataLLM
             if (fixedMessages.Count == 0)
             {
                 if (message.Role == "assistant")
-                    fixedMessages.Add(new LLMMessage("user", ""));
+                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, ""));
 
                 fixedMessages.Add(message);
             }
             else
             {
                 if (message.Role == fixedMessages[fixedMessages.Count - 1].Role)
-                    fixedMessages.Add(new LLMMessage(message.Role == "assistant" ? "user" : "assistant", ""));
+                    fixedMessages.Add(LLMMessage.CreateMessage(message.Role == "assistant" ? Roles.User : Roles.Assistant, ""));
+
                 if (message.Role == "assistant" && fixedMessages[fixedMessages.Count - 1].Role == "system")
-                    fixedMessages.Add(new LLMMessage("user", ""));
+                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, ""));
 
                 fixedMessages.Add(message);
             }

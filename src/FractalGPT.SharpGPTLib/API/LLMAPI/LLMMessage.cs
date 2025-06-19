@@ -58,7 +58,7 @@ public class LLMMessage
     /// <exception cref="ArgumentException"></exception>
     public static LLMMessage CreateMessage(Roles role, string content)
     {
-        if (string.IsNullOrWhiteSpace(content))
+        if (content == null)
             throw new ArgumentException("Content cannot be null or whitespace.", nameof(content));
 
         var senderRole = role.ToString().ToLower();
