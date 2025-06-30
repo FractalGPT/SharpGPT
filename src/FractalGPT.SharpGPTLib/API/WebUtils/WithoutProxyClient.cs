@@ -85,7 +85,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
             var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-            _ = response.EnsureSuccessStatusCode();
+            //_ = response.EnsureSuccessStatusCode();
             return response;
         }
         catch (OperationCanceledException)

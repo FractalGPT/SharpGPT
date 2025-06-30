@@ -72,9 +72,9 @@ public class SendDataLLM
         double temperature = 0.1,
         int topK = 5,
         double topP = 0.8,
-        double repetitionPenalty = 1.00,
-        int maxTokens = 2048,
-        int minTokens = 10,
+        double repetitionPenalty = 1.04,
+        int maxTokens = 2248,
+        int minTokens = 8,
         bool stream = false
         )
     {
@@ -110,7 +110,31 @@ public class SendDataLLM
     public void SetMessages(IEnumerable<LLMMessage> messages)
     {
         Messages.Clear();
-        Messages.AddRange(messages);
+
+        List<LLMMessage> fixedMessages = [];
+
+        foreach (var message in messages)
+        {
+            if (fixedMessages.Count == 0)
+            {
+                if (message.Role == "assistant")
+                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, ""));
+
+                fixedMessages.Add(message);
+            }
+            else
+            {
+                if (message.Role == fixedMessages[fixedMessages.Count - 1].Role)
+                    fixedMessages.Add(LLMMessage.CreateMessage(message.Role == "assistant" ? Roles.User : Roles.Assistant, ""));
+
+                if (message.Role == "assistant" && fixedMessages[fixedMessages.Count - 1].Role == "system")
+                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, ""));
+
+                fixedMessages.Add(message);
+            }
+        }
+
+        Messages.AddRange(fixedMessages);
     }
 
     /// <summary>
