@@ -169,7 +169,7 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default, string streamId = null)
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default, string streamId = "")
     {
         if (context == null)
             throw new ArgumentNullException(nameof(context));
@@ -177,7 +177,7 @@ public class ChatLLMApi : IText2TextChat
         var isStream = !string.IsNullOrEmpty(streamId);
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, streamId: streamId);
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);

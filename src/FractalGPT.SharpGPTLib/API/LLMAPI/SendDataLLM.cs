@@ -35,8 +35,8 @@ public class SendDataLLM
     [JsonPropertyName("min_tokens")]
     public int MinTokens { get; set; }
 
-    [JsonPropertyName("stream")]
-    public bool IsStream { get; set; }
+    [JsonPropertyName("stream_id")]
+    public string StreamId { get; set; }
     
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
@@ -75,7 +75,7 @@ public class SendDataLLM
         double repetitionPenalty = 1.04,
         int maxTokens = 2248,
         int minTokens = 8,
-        bool stream = false
+        string streamId = ""
         )
     {
         if (string.IsNullOrWhiteSpace(modelName))
@@ -92,7 +92,7 @@ public class SendDataLLM
         Prompt = systemPrompt;
         MaxTokens = maxTokens;
         MinTokens = minTokens;
-        IsStream = stream;
+        StreamId = streamId;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize);
