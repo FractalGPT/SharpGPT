@@ -84,16 +84,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("Accept", "application/json");
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
-
-            //TODOS внимательно посмотреть
-            bool isStreamingRequest = false;
-            var streamIdPropert = sendData.GetType();
-            var streamProperty = sendData.GetType().GetProperty("Stream");
-            if (streamProperty != null)
-            {
-                var streamValue = streamProperty.GetValue(sendData);
-                isStreamingRequest = streamValue is bool && (bool)streamValue;
-            }
+            var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
 
             var response = isStreamingRequest
             ? await HttpClient.SendAsync(
