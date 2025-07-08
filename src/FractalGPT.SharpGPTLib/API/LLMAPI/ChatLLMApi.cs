@@ -97,15 +97,13 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, CancellationToken cancellationToken = default, string streamId = null)
+    public async Task<string> SendWithoutContextTextAsync(string text,string streamId = "", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
-        var isStream = !string.IsNullOrEmpty(streamId);
-
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
 
         sendData.AddUserMessage(text);
 
@@ -125,13 +123,12 @@ public class ChatLLMApi : IText2TextChat
             try
             {
                 //TODOS ПРОВЕРИТЬ СТРИМ отправку с помощью SIGNALR
-                if (isStream)
+                if (!string.IsNullOrEmpty(streamId))
                 {
                     var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+                    //TODOS обрабока ошибки
                     if (!string.IsNullOrEmpty(result))
                         return result;
-                    break;
-                    //throw new NotImplementedException();
                 }
                 else
                 {
@@ -174,10 +171,8 @@ public class ChatLLMApi : IText2TextChat
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
-        var isStream = !string.IsNullOrEmpty(streamId);
-
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, streamId: streamId);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
@@ -188,23 +183,26 @@ public class ChatLLMApi : IText2TextChat
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
-        if (isStream)
+        //TODO проверить обработка стрима
+        if (!string.IsNullOrEmpty(streamId))
         {
-            throw new NotImplementedException();
-            //chatCompletionsResponse = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+            var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+            return result;
         }
-
-        ChatCompletionsResponse chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-        if (chatCompletionsResponse == null ||
-            chatCompletionsResponse.Choices == null ||
-            chatCompletionsResponse.Choices.Count == 0)
+        else
         {
-            throw new InvalidOperationException("Некорректный ответ от LLM API.");
-        }
+            ChatCompletionsResponse chatCompletionsResponse = await response.Content
+                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
-        return chatCompletionsResponse.Choices[0].Message.Content;
+            if (chatCompletionsResponse == null ||
+                chatCompletionsResponse.Choices == null ||
+                chatCompletionsResponse.Choices.Count == 0)
+            {
+                throw new InvalidOperationException("Некорректный ответ от LLM API.");
+            }
+
+            return chatCompletionsResponse.Choices[0].Message.Content;
+        }
     }
 
     /// <summary>
@@ -213,22 +211,29 @@ public class ChatLLMApi : IText2TextChat
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = null)
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = "")
     {
-        var isStream = string.IsNullOrEmpty(streamId);
-
         var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream:isStream);
+        //var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, streamId: streamId);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
+    
 
         sendData.AddUserMessage(text);
 
-        if (isStream)
-        {
-            throw new NotImplementedException();
-            //chatCompletionsResponse = await _streamSender.StartStreamAsync(streamId, _prompt, response);
-        }
+        ChatCompletionsResponse chatCompletionsResponse;
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        ChatCompletionsResponse chatCompletionsResponse = await response.Content
+        // TODOs тут подумать, пока что не используется, не знаю как правильно использовать
+        //if (string.IsNullOrEmpty(streamId))
+        //{
+        //    var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+        //    chatCompletionsResponse = new ChatCompletionsResponse(result);
+        //} 
+        //else
+        //{
+        //    chatCompletionsResponse = await response.Content
+        //        .ReadFromJsonAsync<ChatCompletionsResponse>();
+        //}
+        chatCompletionsResponse = await response.Content
             .ReadFromJsonAsync<ChatCompletionsResponse>();
 
         return chatCompletionsResponse;
