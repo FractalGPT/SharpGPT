@@ -97,7 +97,7 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text,string streamId = "", CancellationToken cancellationToken = default)
+    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = "", CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
@@ -126,7 +126,7 @@ public class ChatLLMApi : IText2TextChat
                 if (!string.IsNullOrEmpty(streamId))
                 {
                     var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
-                    //TODOS обрабока ошибки
+                    //TODOS Подумать как обработать ошибки
                     if (!string.IsNullOrEmpty(result))
                         return result;
                 }
@@ -214,29 +214,38 @@ public class ChatLLMApi : IText2TextChat
     public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = "")
     {
         var webApi = new WithoutProxyClient(_apiKey);
-        //var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, streamId: streamId);
         var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
-    
 
         sendData.AddUserMessage(text);
 
         ChatCompletionsResponse chatCompletionsResponse;
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        // TODOs тут подумать, пока что не используется, не знаю как правильно использовать
-        //if (string.IsNullOrEmpty(streamId))
-        //{
-        //    var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
-        //    chatCompletionsResponse = new ChatCompletionsResponse(result);
-        //} 
-        //else
-        //{
-        //    chatCompletionsResponse = await response.Content
-        //        .ReadFromJsonAsync<ChatCompletionsResponse>();
-        //}
-        chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>();
-
-        return chatCompletionsResponse;
+        // TODOs тут внимательно посмотреть, функция пока не используется.
+        if (string.IsNullOrEmpty(streamId))
+        {
+            var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+            return new ChatCompletionsResponse
+            {
+                Id = null,
+                Object = null,
+                Created = 0,
+                Choices = new List<Choice>
+                {
+                    new Choice
+                    {
+                        Index = 0,
+                        Message = new LLMMessage("assistant", result),
+                        FinishReason = null
+                    }
+                },
+                Usage = new Usage()
+            };
+        } 
+        else
+        {
+            return chatCompletionsResponse = await response.Content
+                .ReadFromJsonAsync<ChatCompletionsResponse>();
+        }
     }
 
     /// <summary>
