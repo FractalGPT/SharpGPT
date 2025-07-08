@@ -54,7 +54,7 @@ public class LLMBase
             throw new ArgumentNullException(nameof(messages));
 
         // Передаём запрос через клиент _chatLLMApi с поддержкой контекста
-        return await _chatLLMApi.SendWithContextTextAsync(messages, cancellationToken, streamId);
+        return await _chatLLMApi.SendWithContextTextAsync(messages, streamId, cancellationToken);
     }
 
     public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)

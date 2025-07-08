@@ -182,7 +182,6 @@ public class ChatLLMApi : IText2TextChat
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
-        //TODO проверить обработка стрима
         if (!string.IsNullOrEmpty(streamId))
         {
             var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
@@ -219,7 +218,6 @@ public class ChatLLMApi : IText2TextChat
 
         ChatCompletionsResponse chatCompletionsResponse;
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        // TODOs тут внимательно посмотреть, функция пока не используется.
         if (string.IsNullOrEmpty(streamId))
         {
             var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);

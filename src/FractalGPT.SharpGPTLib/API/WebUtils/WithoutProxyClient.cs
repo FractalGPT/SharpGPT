@@ -85,6 +85,7 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
 
+            //TODOS внимательно посмотреть
             bool isStreamingRequest = false;
             var streamIdPropert = sendData.GetType();
             var streamProperty = sendData.GetType().GetProperty("Stream");
@@ -103,7 +104,6 @@ public class WithoutProxyClient : IWebAPIClient
                 httpRequestMessage, 
                 cancellationToken.Value);
 
-            //var response = await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value); //HttpCompletionOption.ResponseHeadersRead
             //_ = response.EnsureSuccessStatusCode();
             return response;
         }
