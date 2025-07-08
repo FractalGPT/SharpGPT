@@ -122,7 +122,6 @@ public class ChatLLMApi : IText2TextChat
 
             try
             {
-                //TODOS ПРОВЕРИТЬ СТРИМ отправку с помощью SIGNALR
                 if (!string.IsNullOrEmpty(streamId))
                 {
                     var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
@@ -166,7 +165,7 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default, string streamId = "")
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, string streamId = "", CancellationToken cancellationToken = default)
     {
         if (context == null)
             throw new ArgumentNullException(nameof(context));

@@ -37,21 +37,4 @@ public class ChatCompletionsResponse
     /// </summary>
     [JsonPropertyName("usage")]
     public Usage Usage { get; set; } = new();
-
-    //public ChatCompletionsResponse(string content)
-    //    {
-    //        Id = null;
-    //        Object = null;
-    //        Created = 0;
-    //        Choices = new List<Choice>
-    //        {
-    //            new Choice
-    //            {
-    //                Index = 0,
-    //                Message = new LLMMessage("assistant", content),
-    //                FinishReason = null
-    //            }
-    //        };
-    //        Usage = new Usage { };
-    //    }
 }

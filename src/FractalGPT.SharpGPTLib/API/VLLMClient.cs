@@ -27,8 +27,7 @@ public class VLLMClient : ChatLLMApi
         double temperature,
         string host,
         string apiKey = null, 
-        IStreamHandler streamHandler = null
-        )
+        IStreamHandler streamHandler = null)
         : base(apiKey, false, string.Empty, modelName, systemPrompt, temperature, streamHandler)
     {
         if (string.IsNullOrWhiteSpace(modelName))

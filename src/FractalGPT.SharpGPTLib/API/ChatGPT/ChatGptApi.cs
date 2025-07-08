@@ -32,8 +32,7 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT
             string modelName = "gpt-3.5-turbo",
             string prompt = null,
             double temperature = 0.7,
-            IStreamHandler streamSender = null
-            )
+            IStreamHandler streamSender = null)
             : base(apiKey, useProxy, proxyPath, modelName, prompt, temperature, streamSender)
         {
             if (string.IsNullOrWhiteSpace(apiKey))

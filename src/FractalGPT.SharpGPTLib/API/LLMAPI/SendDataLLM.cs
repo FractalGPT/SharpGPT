@@ -93,7 +93,6 @@ public class SendDataLLM
         Prompt = systemPrompt;
         MaxTokens = maxTokens;
         MinTokens = minTokens;
-        //StreamId = streamId;
         Stream = stream;
 
         this.bufferSize = bufferSize;
