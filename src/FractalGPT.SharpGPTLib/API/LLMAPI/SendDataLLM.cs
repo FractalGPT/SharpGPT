@@ -75,7 +75,6 @@ public class SendDataLLM
         double repetitionPenalty = 1.04,
         int maxTokens = 2248,
         int minTokens = 8,
-        //string streamId = ""
         bool stream = false
         )
     {

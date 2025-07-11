@@ -97,7 +97,7 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = "", CancellationToken cancellationToken = default)
+    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
@@ -165,7 +165,7 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, string streamId = "", CancellationToken cancellationToken = default)
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (context == null)
             throw new ArgumentNullException(nameof(context));
@@ -209,7 +209,7 @@ public class ChatLLMApi : IText2TextChat
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = "")
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = null)
     {
         var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
