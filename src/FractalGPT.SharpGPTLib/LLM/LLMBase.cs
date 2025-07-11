@@ -33,7 +33,7 @@ public class LLMBase
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Ответ LLM в виде строки</returns>
-    public async Task<string> SendToLLM(string text, string streamId = "", CancellationToken cancellationToken = default)
+    public async Task<string> SendToLLM(string text, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
@@ -48,7 +48,7 @@ public class LLMBase
     /// <param name="messages">Последовательность сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ LLM в виде строки.</returns>
-    public async Task<string> SendToLLM(IEnumerable<LLMMessage> messages, string streamId = "", CancellationToken cancellationToken = default)
+    public async Task<string> SendToLLM(IEnumerable<LLMMessage> messages, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (messages == null)
             throw new ArgumentNullException(nameof(messages));
