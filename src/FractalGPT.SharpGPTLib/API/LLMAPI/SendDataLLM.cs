@@ -34,6 +34,9 @@ public class SendDataLLM
 
     [JsonPropertyName("min_tokens")]
     public int MinTokens { get; set; }
+
+    [JsonPropertyName("stream")]
+    public bool Stream { get; set; }
     
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
@@ -71,7 +74,9 @@ public class SendDataLLM
         double topP = 0.8,
         double repetitionPenalty = 1.04,
         int maxTokens = 2248,
-        int minTokens = 8)
+        int minTokens = 8,
+        bool stream = false
+        )
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
@@ -87,6 +92,7 @@ public class SendDataLLM
         Prompt = systemPrompt;
         MaxTokens = maxTokens;
         MinTokens = minTokens;
+        Stream = stream;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize);

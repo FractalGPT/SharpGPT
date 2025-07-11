@@ -33,13 +33,13 @@ public class LLMBase
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Ответ LLM в виде строки</returns>
-    public async Task<string> SendToLLM(string text, CancellationToken cancellationToken = default)
+    public async Task<string> SendToLLM(string text, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         // Используем ConfigureAwait для библиотечного кода.
-        return await _chatLLMApi.SendWithoutContextTextAsync(text, cancellationToken);
+        return await _chatLLMApi.SendWithoutContextTextAsync(text, streamId, cancellationToken);
     }
 
     /// <summary>
@@ -48,13 +48,13 @@ public class LLMBase
     /// <param name="messages">Последовательность сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ LLM в виде строки.</returns>
-    public async Task<string> SendToLLM(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
+    public async Task<string> SendToLLM(IEnumerable<LLMMessage> messages, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (messages == null)
             throw new ArgumentNullException(nameof(messages));
 
         // Передаём запрос через клиент _chatLLMApi с поддержкой контекста
-        return await _chatLLMApi.SendWithContextTextAsync(messages, cancellationToken);
+        return await _chatLLMApi.SendWithContextTextAsync(messages, streamId, cancellationToken);
     }
 
     public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)

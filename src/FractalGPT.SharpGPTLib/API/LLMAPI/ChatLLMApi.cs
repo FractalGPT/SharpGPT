@@ -1,5 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
+using FractalGPT.SharpGPTLib.Stream;
 using System.Net.Http.Json;
 using System.Threading;
 
@@ -18,6 +19,7 @@ public class ChatLLMApi : IText2TextChat
     private readonly string _apiKey;
     private readonly string _prompt;
     private readonly double _temperature;
+    private readonly IStreamHandler _streamSender;
 
     public virtual string ApiUrl { get; set; }
 
@@ -28,12 +30,13 @@ public class ChatLLMApi : IText2TextChat
     /// <summary>
     /// Constructor for API initialization.
     /// </summary>
-    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature)
+    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature, IStreamHandler streamSender)
     {
         _apiKey = key;
         _modelName = modelName;
         _prompt = prompt;
         _temperature = temperature;
+        _streamSender = streamSender;
 
         // Use the default prompt if a custom one is not provided.
         if (useProxy)
@@ -45,8 +48,6 @@ public class ChatLLMApi : IText2TextChat
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
         _sendData = new SendDataLLM(modelName, defaultPrompt, temperature: temperature);
-
-
     }
 
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
@@ -96,13 +97,13 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, CancellationToken cancellationToken = default)
+    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
 
         sendData.AddUserMessage(text);
 
@@ -121,19 +122,30 @@ public class ChatLLMApi : IText2TextChat
 
             try
             {
-                var chatCompletionsResponse = await response.Content
-                    .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-                if (chatCompletionsResponse == null ||
-                    chatCompletionsResponse.Choices == null ||
-                    chatCompletionsResponse.Choices.Count == 0)
+                if (!string.IsNullOrEmpty(streamId))
                 {
-                    throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                    var result = await _streamSender.StartStreamAsync(streamId, response);
+                    //TODOS Подумать как обработать ошибки
+                    if (!string.IsNullOrEmpty(result))
+                        return result;
+                }
+                else
+                {
+                    var chatCompletionsResponse = await response.Content
+                        .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+
+                    if (chatCompletionsResponse == null ||
+                        chatCompletionsResponse.Choices == null ||
+                        chatCompletionsResponse.Choices.Count == 0)
+                    {
+                        throw new InvalidOperationException("Некорректный ответ от LLM API.");
+                    }
+
+                    var result = chatCompletionsResponse.Choices[0].Message.Content;
+                    if (!string.IsNullOrEmpty(result))
+                        return result;
                 }
 
-                var result = chatCompletionsResponse.Choices[0].Message.Content;
-                if (!string.IsNullOrEmpty(result))
-                    return result;
             }
             catch (Exception ex)
             {
@@ -153,13 +165,13 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default)
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, string streamId = null, CancellationToken cancellationToken = default)
     {
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
@@ -170,17 +182,25 @@ public class ChatLLMApi : IText2TextChat
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
-        ChatCompletionsResponse chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-        if (chatCompletionsResponse == null ||
-            chatCompletionsResponse.Choices == null ||
-            chatCompletionsResponse.Choices.Count == 0)
+        if (!string.IsNullOrEmpty(streamId))
         {
-            throw new InvalidOperationException("Некорректный ответ от LLM API.");
+            var result = await _streamSender.StartStreamAsync(streamId, response);
+            return result;
         }
+        else
+        {
+            ChatCompletionsResponse chatCompletionsResponse = await response.Content
+                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
-        return chatCompletionsResponse.Choices[0].Message.Content;
+            if (chatCompletionsResponse == null ||
+                chatCompletionsResponse.Choices == null ||
+                chatCompletionsResponse.Choices.Count == 0)
+            {
+                throw new InvalidOperationException("Некорректный ответ от LLM API.");
+            }
+
+            return chatCompletionsResponse.Choices[0].Message.Content;
+        }
     }
 
     /// <summary>
