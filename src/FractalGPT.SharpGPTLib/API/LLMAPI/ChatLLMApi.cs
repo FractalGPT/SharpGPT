@@ -124,7 +124,7 @@ public class ChatLLMApi : IText2TextChat
             {
                 if (!string.IsNullOrEmpty(streamId))
                 {
-                    var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+                    var result = await _streamSender.StartStreamAsync(streamId, response);
                     //TODOS Подумать как обработать ошибки
                     if (!string.IsNullOrEmpty(result))
                         return result;
@@ -184,7 +184,7 @@ public class ChatLLMApi : IText2TextChat
 
         if (!string.IsNullOrEmpty(streamId))
         {
-            var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+            var result = await _streamSender.StartStreamAsync(streamId, response);
             return result;
         }
         else
@@ -220,7 +220,7 @@ public class ChatLLMApi : IText2TextChat
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
         if (string.IsNullOrEmpty(streamId))
         {
-            var result = await _streamSender.StartStreamAsync(streamId, _prompt, response);
+            var result = await _streamSender.StartStreamAsync(streamId, response);
             return new ChatCompletionsResponse
             {
                 Id = null,
