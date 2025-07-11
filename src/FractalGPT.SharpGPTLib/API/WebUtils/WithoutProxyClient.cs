@@ -87,8 +87,8 @@ public class WithoutProxyClient : IWebAPIClient
             var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
 
             var response = isStreamingRequest ?
-                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) 
-                : await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
+                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) : 
+                await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
 
             //_ = response.EnsureSuccessStatusCode();
             return response;
