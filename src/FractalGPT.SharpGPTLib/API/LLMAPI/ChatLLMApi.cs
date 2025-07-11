@@ -209,40 +209,17 @@ public class ChatLLMApi : IText2TextChat
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, string streamId = null)
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text)
     {
         var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
 
         sendData.AddUserMessage(text);
-
-        ChatCompletionsResponse chatCompletionsResponse;
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
-        if (string.IsNullOrEmpty(streamId))
-        {
-            var result = await _streamSender.StartStreamAsync(streamId, response);
-            return new ChatCompletionsResponse
-            {
-                Id = null,
-                Object = null,
-                Created = 0,
-                Choices = new List<Choice>
-                {
-                    new Choice
-                    {
-                        Index = 0,
-                        Message = new LLMMessage("assistant", result),
-                        FinishReason = null
-                    }
-                },
-                Usage = new Usage()
-            };
-        } 
-        else
-        {
-            return chatCompletionsResponse = await response.Content
-                .ReadFromJsonAsync<ChatCompletionsResponse>();
-        }
+        ChatCompletionsResponse chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>();
+
+        return chatCompletionsResponse;
     }
 
     /// <summary>
