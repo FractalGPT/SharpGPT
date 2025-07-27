@@ -1,0 +1,158 @@
+﻿namespace FractalGPT.SharpGPTLib.API.LLMAPI;
+
+/// <summary>
+/// Represents configuration settings for text generation, encapsulating model parameters and behavior.
+/// </summary>
+public class GenerateSettings
+{
+    /// <summary>
+    /// Gets the name of the model to be used for text generation.
+    /// </summary>
+    public string ModelName { get; }
+
+    private double _temperature;
+
+    /// <summary>
+    /// Gets the temperature controlling the randomness of the output. Higher values make output more creative, lower values make it more focused.
+    /// Valid range: 0.0 to 2.0.
+    /// </summary>
+    public double Temperature
+    {
+        get => _temperature;
+        set
+        {
+            _temperature = ValidateRange(value, 0.0, 2.0, nameof(Temperature));
+        }
+    }
+
+    private double _repetitionPenalty;
+    /// <summary>
+    /// Gets or sets the penalty for repeated tokens to discourage repetitive output.
+    /// Valid range: 0.0 to 2.0.
+    /// </summary>
+    public double RepetitionPenalty
+    {
+        get => _repetitionPenalty;
+        set => _repetitionPenalty = ValidateRange(value, 0.0, 2.0, nameof(RepetitionPenalty));
+    }
+
+    private double _topP;
+    /// <summary>
+    /// Gets or sets the value for nucleus sampling, where only the smallest set of tokens whose cumulative probability exceeds TopP is considered.
+    /// Valid range: 0.0 to 1.0.
+    /// </summary>
+    public double TopP
+    {
+        get => _topP;
+        set => _topP = ValidateRange(value, 0.0, 1.0, nameof(TopP));
+    }
+
+    private int _topK;
+    /// <summary>
+    /// Gets or sets the number of top tokens to consider during sampling.
+    /// Must be a positive integer.
+    /// </summary>
+    public int TopK
+    {
+        get => _topK;
+        set => _topK = ValidatePositive(value, nameof(TopK));
+    }
+
+    private int _minTokens;
+    /// <summary>
+    /// Gets or sets the minimum number of tokens to generate.
+    /// Must be non-negative.
+    /// </summary>
+    public int MinTokens
+    {
+        get => _minTokens;
+        set => _minTokens = ValidateNonNegative(value, nameof(MinTokens));
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to stream the output as it is generated.
+    /// </summary>
+    public bool Stream { get; set; }
+
+    private int _maxTokens;
+    /// <summary>
+    /// Gets or sets the maximum number of tokens to generate.
+    /// Must be a positive integer.
+    /// </summary>
+    public int MaxTokens
+    {
+        get => _maxTokens;
+        set => _maxTokens = ValidatePositive(value, nameof(MaxTokens));
+    }
+
+    /// <summary>
+    /// Gets or sets additional settings for reasoning behavior during generation. Can be null.
+    /// </summary>
+    public ReasoningSettings ReasoningSettings { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenerateSettings"/> class with required and default values.
+    /// </summary>
+    /// <param name="modelName">The name of the model to use. Cannot be null or empty.</param>
+    /// <param name="temperature">The temperature for generation randomness. Default is 1.0.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="modelName"/> is null or empty.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="temperature"/> is out of range.</exception>
+    public GenerateSettings(string modelName, double temperature = 0.1)
+    {
+        ModelName = string.IsNullOrWhiteSpace(modelName)
+            ? throw new ArgumentException("Model name cannot be null or empty.", nameof(modelName))
+            : modelName;
+        Temperature = temperature;
+        _repetitionPenalty = 1.04;
+        _topP = 0.8;
+        _topK = 5;
+        _minTokens = 8; 
+        _maxTokens = 2248;
+        Stream = false; 
+        ReasoningSettings = null;
+    }
+
+    /// <summary>
+    /// Validates that a double value is within the specified range.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="min">The minimum allowed value.</param>
+    /// <param name="max">The maximum allowed value.</param>
+    /// <param name="paramName">The name of the parameter for error reporting.</param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is out of range.</exception>
+    private static double ValidateRange(double value, double min, double max, string paramName)
+    {
+        if (value < min || value > max)
+            throw new ArgumentOutOfRangeException(paramName, $"Value must be between {min} and {max}.");
+        return value;
+    }
+
+    /// <summary>
+    /// Validates that an integer value is positive.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="paramName">The name of the parameter for error reporting.</param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is not positive.</exception>
+    private static int ValidatePositive(int value, string paramName)
+    {
+        if (value <= 0)
+            throw new ArgumentOutOfRangeException(paramName, "Value must be positive.");
+        return value;
+    }
+
+    /// <summary>
+    /// Validates that an integer value is non-negative.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="paramName">The name of the parameter for error reporting.</param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is negative.</exception>
+    private static int ValidateNonNegative(int value, string paramName)
+    {
+        if (value < 0)
+            throw new ArgumentOutOfRangeException(paramName, "Value cannot be negative.");
+        return value;
+    }
+}

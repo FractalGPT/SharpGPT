@@ -42,6 +42,12 @@ public class SendDataLLM
     public int MaxTokens { get; set; }
 
     /// <summary>
+    /// Reasoning data 
+    /// </summary>
+    [JsonPropertyName("reasoning")]
+    public ReasoningSettings ReasoningData { get; set; }
+
+    /// <summary>
     /// Gets or sets the system prompt used at the beginning of every message exchange.
     /// This property is not serialized because it is included as part of the initial messages.
     /// </summary>
