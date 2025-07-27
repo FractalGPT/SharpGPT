@@ -5,12 +5,13 @@
 /// </summary>
 public class GenerateSettings
 {
-    /// <summary>
-    /// Gets the name of the model to be used for text generation.
-    /// </summary>
-    public string ModelName { get; }
 
     private double _temperature;
+    private double _repetitionPenalty;
+    private double _topP;
+    private int _topK;
+    private int _maxTokens;
+    private int _minTokens;
 
     /// <summary>
     /// Gets the temperature controlling the randomness of the output. Higher values make output more creative, lower values make it more focused.
@@ -25,7 +26,7 @@ public class GenerateSettings
         }
     }
 
-    private double _repetitionPenalty;
+    
     /// <summary>
     /// Gets or sets the penalty for repeated tokens to discourage repetitive output.
     /// Valid range: 0.0 to 2.0.
@@ -36,7 +37,7 @@ public class GenerateSettings
         set => _repetitionPenalty = ValidateRange(value, 0.0, 2.0, nameof(RepetitionPenalty));
     }
 
-    private double _topP;
+    
     /// <summary>
     /// Gets or sets the value for nucleus sampling, where only the smallest set of tokens whose cumulative probability exceeds TopP is considered.
     /// Valid range: 0.0 to 1.0.
@@ -47,7 +48,7 @@ public class GenerateSettings
         set => _topP = ValidateRange(value, 0.0, 1.0, nameof(TopP));
     }
 
-    private int _topK;
+    
     /// <summary>
     /// Gets or sets the number of top tokens to consider during sampling.
     /// Must be a positive integer.
@@ -58,7 +59,6 @@ public class GenerateSettings
         set => _topK = ValidatePositive(value, nameof(TopK));
     }
 
-    private int _minTokens;
     /// <summary>
     /// Gets or sets the minimum number of tokens to generate.
     /// Must be non-negative.
@@ -74,7 +74,6 @@ public class GenerateSettings
     /// </summary>
     public bool Stream { get; set; }
 
-    private int _maxTokens;
     /// <summary>
     /// Gets or sets the maximum number of tokens to generate.
     /// Must be a positive integer.
@@ -97,11 +96,8 @@ public class GenerateSettings
     /// <param name="temperature">The temperature for generation randomness. Default is 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="modelName"/> is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="temperature"/> is out of range.</exception>
-    public GenerateSettings(string modelName, double temperature = 0.1)
+    public GenerateSettings(double temperature = 0.1)
     {
-        ModelName = string.IsNullOrWhiteSpace(modelName)
-            ? throw new ArgumentException("Model name cannot be null or empty.", nameof(modelName))
-            : modelName;
         Temperature = temperature;
         _repetitionPenalty = 1.04;
         _topP = 0.8;

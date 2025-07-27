@@ -97,13 +97,26 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = null, CancellationToken cancellationToken = default, int maxTokens = 2248)
+    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = null, CancellationToken cancellationToken = default, GenerateSettings generateSettings = null)
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId), maxTokens:maxTokens);
+        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
+
+        // Передача настроек
+        if(generateSettings != null) 
+        {
+            sendData.MaxTokens = generateSettings.MaxTokens;
+            sendData.MinTokens = generateSettings.MinTokens;
+            sendData.Temperature = generateSettings.Temperature;
+            sendData.RepetitionPenalty = generateSettings.RepetitionPenalty;
+            sendData.TopK = generateSettings.TopK;
+            sendData.TopP = generateSettings.TopP;
+            sendData.ReasoningSettings = generateSettings.ReasoningSettings;
+        }
+
 
         sendData.AddUserMessage(text);
 

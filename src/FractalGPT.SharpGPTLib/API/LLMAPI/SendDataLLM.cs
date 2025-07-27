@@ -21,7 +21,7 @@ public class SendDataLLM
     /// Gets the temperature value for text generation (degree of randomness).
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; }
+    public double Temperature { get; set; }
 
     [JsonPropertyName("repetition_penalty")]
     public double RepetitionPenalty { get; set; }
@@ -45,7 +45,7 @@ public class SendDataLLM
     /// Reasoning data 
     /// </summary>
     [JsonPropertyName("reasoning")]
-    public ReasoningSettings ReasoningData { get; set; }
+    public ReasoningSettings ReasoningSettings { get; set; } = null;
 
     /// <summary>
     /// Gets or sets the system prompt used at the beginning of every message exchange.
