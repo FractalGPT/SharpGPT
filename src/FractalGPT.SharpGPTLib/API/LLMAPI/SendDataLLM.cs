@@ -45,7 +45,7 @@ public class SendDataLLM
     /// Reasoning data 
     /// </summary>
     [JsonPropertyName("reasoning")]
-    public ReasoningSettings ReasoningSettings { get; set; } = null;
+    public ReasoningSettings ReasoningSettings { get; set; }
 
     /// <summary>
     /// Gets or sets the system prompt used at the beginning of every message exchange.
