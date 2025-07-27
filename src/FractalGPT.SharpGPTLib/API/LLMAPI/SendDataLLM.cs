@@ -74,14 +74,8 @@ public class SendDataLLM
     /// </exception>
     public SendDataLLM(string modelName,
         string systemPrompt,
-        int bufferSize = 5,
-        double temperature = 0.1,
-        int topK = 5,
-        double topP = 0.8,
-        double repetitionPenalty = 1.04,
-        int maxTokens = 2248,
-        int minTokens = 8,
-        bool stream = false
+        GenerateSettings generateSettings = null,
+        int bufferSize = 5
         )
     {
         if (string.IsNullOrWhiteSpace(modelName))
@@ -90,15 +84,17 @@ public class SendDataLLM
         //if (string.IsNullOrWhiteSpace(systemPrompt))
         //    throw new ArgumentNullException(nameof(systemPrompt), "System prompt cannot be null or empty.");
 
+        generateSettings ??= new();
         ModelName = modelName;
-        Temperature = temperature;
-        TopK = topK;
-        TopP = topP;
-        RepetitionPenalty = repetitionPenalty;
+        Temperature = generateSettings.Temperature;
+        TopK = generateSettings.TopK;
+        TopP = generateSettings.TopP;
+        RepetitionPenalty = generateSettings.RepetitionPenalty;
         Prompt = systemPrompt;
-        MaxTokens = maxTokens;
-        MinTokens = minTokens;
-        Stream = stream;
+        MaxTokens = generateSettings.MaxTokens;
+        MinTokens = generateSettings.MinTokens;
+        Stream = generateSettings.Stream;
+        ReasoningSettings = generateSettings.ReasoningSettings;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize);

@@ -72,7 +72,9 @@ public class GenerateSettings
     /// <summary>
     /// Gets or sets a value indicating whether to stream the output as it is generated.
     /// </summary>
-    public bool Stream { get; set; }
+    public bool Stream => !string.IsNullOrEmpty(StreamId);
+
+    public readonly string StreamId;
 
     /// <summary>
     /// Gets or sets the maximum number of tokens to generate.
@@ -96,15 +98,21 @@ public class GenerateSettings
     /// <param name="temperature">The temperature for generation randomness. Default is 1.0.</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="modelName"/> is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="temperature"/> is out of range.</exception>
-    public GenerateSettings(double temperature = 0.1)
+    public GenerateSettings(double temperature = 0.1,
+        double repetitionPenalty = 1.04,
+        double topP = 0.8,
+        int topK = 5,
+        int minTokens = 8,
+        int maxTokens = 2248,
+        string streamId = null)
     {
         Temperature = temperature;
-        _repetitionPenalty = 1.04;
-        _topP = 0.8;
-        _topK = 5;
-        _minTokens = 8; 
-        _maxTokens = 2248;
-        Stream = false; 
+        _repetitionPenalty = repetitionPenalty;
+        _topP = topP;
+        _topK = topK;
+        _minTokens = minTokens; 
+        _maxTokens = maxTokens;
+        StreamId = streamId;
         ReasoningSettings = null;
     }
 

@@ -39,7 +39,7 @@ public class LLMBase
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         // Используем ConfigureAwait для библиотечного кода.
-        return await _chatLLMApi.SendWithoutContextTextAsync(text, streamId, cancellationToken);
+        return await _chatLLMApi.SendWithoutContextTextAsync(text, new GenerateSettings(streamId: streamId), cancellationToken);
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public class LLMBase
             throw new ArgumentNullException(nameof(messages));
 
         // Передаём запрос через клиент _chatLLMApi с поддержкой контекста
-        return await _chatLLMApi.SendWithContextTextAsync(messages, streamId, cancellationToken);
+        return await _chatLLMApi.SendWithContextTextAsync(messages, new GenerateSettings(streamId: streamId), cancellationToken);
     }
 
     public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
