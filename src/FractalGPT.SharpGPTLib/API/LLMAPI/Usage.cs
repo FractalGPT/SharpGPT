@@ -2,9 +2,11 @@
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
+
 /// <summary>
 /// Represents token usage information for a given request or session.
 /// </summary>
+[Serializable]
 public class Usage
 {
     /// <summary>
@@ -25,3 +27,4 @@ public class Usage
     [JsonPropertyName("total_tokens")]
     public int TotalTokens { get; set; }
 }
+

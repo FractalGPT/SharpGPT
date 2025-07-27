@@ -47,7 +47,7 @@ public class ChatLLMApi : IText2TextChat
         else { _webApi = new WithoutProxyClient(key); }
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
-        _sendData = new SendDataLLM(modelName, defaultPrompt, temperature: temperature);
+        _sendData = new SendDataLLM(modelName, defaultPrompt, new GenerateSettings(temperature: temperature));
     }
 
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
@@ -97,14 +97,15 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, string streamId = null, CancellationToken cancellationToken = default, int maxTokens = 2248)
+    public async Task<string> SendWithoutContextTextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
     {
+        generateSettings ??= new();
+
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId), maxTokens:maxTokens);
-
+        var sendData = new SendDataLLM(_modelName, _prompt, generateSettings);
         sendData.AddUserMessage(text);
 
         Exception exception = new Exception();
@@ -122,9 +123,9 @@ public class ChatLLMApi : IText2TextChat
 
             try
             {
-                if (!string.IsNullOrEmpty(streamId))
+                if (generateSettings.Stream)
                 {
-                    var result = await _streamSender.StartStreamAsync(streamId, response);
+                    var result = await _streamSender.StartStreamAsync(generateSettings.StreamId, response);
                     //TODOS Подумать как обработать ошибки
                     if (!string.IsNullOrEmpty(result))
                         return result;
@@ -165,13 +166,15 @@ public class ChatLLMApi : IText2TextChat
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, string streamId = null, CancellationToken cancellationToken = default)
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
     {
+        generateSettings ??= new();
+
         if (context == null)
             throw new ArgumentNullException(nameof(context));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature, stream: !string.IsNullOrEmpty(streamId));
+        var sendData = new SendDataLLM(_modelName, _prompt, generateSettings);
         sendData.SetMessages(context);
 
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
@@ -182,9 +185,9 @@ public class ChatLLMApi : IText2TextChat
             throw new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
         }
 
-        if (!string.IsNullOrEmpty(streamId))
+        if (generateSettings.Stream)
         {
-            var result = await _streamSender.StartStreamAsync(streamId, response);
+            var result = await _streamSender.StartStreamAsync(generateSettings.StreamId, response);
             return result;
         }
         else
@@ -209,10 +212,12 @@ public class ChatLLMApi : IText2TextChat
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text)
+    public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
     {
+        generateSettings ??= new();
+
         var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, _prompt, temperature: _temperature);
+        var sendData = new SendDataLLM(_modelName, _prompt, generateSettings);
 
         sendData.AddUserMessage(text);
         using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData);
