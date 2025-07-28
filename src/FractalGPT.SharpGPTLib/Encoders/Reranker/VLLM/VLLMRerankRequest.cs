@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace FractalGPT.SharpGPTLib.Encoders.Reranker.Infinity;
+namespace FractalGPT.SharpGPTLib.Encoders.Reranker.VLLM;
 
-/// <summary>
-/// Класс для тела запроса на ранжирование.
-/// </summary>
-public class RerankRequest
+public class VLLMRerankRequest
 {
+    [JsonPropertyName("temperature")]
+    public double Temperature { get; set; } = 0;
+
     /// <summary>
     /// Модель для ранжирования.
     /// </summary>

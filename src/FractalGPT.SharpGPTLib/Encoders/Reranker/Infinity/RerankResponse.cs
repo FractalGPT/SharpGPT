@@ -20,7 +20,7 @@ public class RerankResponse
     public List<RerankResult> Results { get; set; }
 
     /// <summary>
-    /// Использованная модель
+    /// Используемая модель
     /// </summary>
     [JsonPropertyName("model")]
     public string Model { get; set; }
