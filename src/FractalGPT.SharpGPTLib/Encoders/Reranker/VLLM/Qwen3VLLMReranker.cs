@@ -17,7 +17,7 @@ public class Qwen3VLLMReranker
     private readonly string _apiUrl;
 
     /// <summary>
-    /// Инициализирует новый экземпляр класса <see cref="InfinityReranker"/>
+    /// Инициализирует новый экземпляр класса <see cref="Qwen3VLLMReranker"/>
     /// </summary>
     /// <param name="apiUrl">Базовый URL API</param>
     /// <param name="rerankerModelName"> Имя модели реранкера</param>
