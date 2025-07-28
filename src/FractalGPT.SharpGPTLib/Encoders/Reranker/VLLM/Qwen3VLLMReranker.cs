@@ -1,11 +1,8 @@
 ﻿using System.Net.Http.Json;
 
-namespace FractalGPT.SharpGPTLib.Encoders.Reranker.Infinity;
+namespace FractalGPT.SharpGPTLib.Encoders.Reranker.VLLM;
 
-/// <summary>
-/// Класс для работы с API ранжирования документов
-/// </summary>
-public class InfinityReranker
+public class Qwen3VLLMReranker
 {
     private readonly HttpClient _httpClient;
 
@@ -24,7 +21,7 @@ public class InfinityReranker
     /// </summary>
     /// <param name="apiUrl">Базовый URL API</param>
     /// <param name="rerankerModelName"> Имя модели реранкера</param>
-    public InfinityReranker(string apiUrl, string rerankerModelName)
+    public Qwen3VLLMReranker(string apiUrl, string rerankerModelName)
     {
         _apiUrl = apiUrl;
         RerankerModelName = rerankerModelName;
@@ -41,7 +38,7 @@ public class InfinityReranker
     /// <param name="query">Запрос, относительно которого ранжируются документы</param>
     /// <param name="documents">Список документов для ранжирования</param>
     /// <returns>Ответ от сервера с результатами ранжирования</returns>
-    public async Task<RerankResponse> RerankAsync(string query, IEnumerable<string> documents)
+    public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents)
     {
         Exception lastException = new Exception();
 
@@ -50,7 +47,7 @@ public class InfinityReranker
             try
             {
 
-                using var response = await _httpClient.PostAsJsonAsync("/v1/rerank", new RerankRequest
+                using var response = await _httpClient.PostAsJsonAsync("/rerank", new VLLMRerankRequest
                 {
                     Model = RerankerModelName,
                     Query = query,
@@ -61,8 +58,8 @@ public class InfinityReranker
                     throw new Exception(await response.Content.ReadAsStringAsync());
 
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<RerankResponse>();
-                result.Results = result.Results.OrderBy(t => t.Index).ToList();
+                var result = await response.Content.ReadFromJsonAsync<VLLMRerankResponse>();
+                result.Results = [.. result.Results.OrderBy(t => t.Index)];
                 return result;
             }
             catch (Exception ex)

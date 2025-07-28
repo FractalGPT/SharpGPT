@@ -5,9 +5,9 @@ namespace FractalGPT.SharpGPTLib.Encoders.Reranker;
 /// <summary>
 /// Базовый (абстрактный) класс реранкера
 /// </summary>
-/// <typeparam name="InpDataType">Тип данных запроса</typeparam>
-/// <typeparam name="OutDataType">Тип данных ответа</typeparam>
-public abstract class RerankerBase<InpDataType, OutDataType> : IRerankerService<InpDataType, OutDataType>
+/// <typeparam name="QueryDataType">Тип данных запроса</typeparam>
+/// <typeparam name="DocumentDataType">Тип данных документа</typeparam>
+public abstract class RerankerBase<QueryDataType, DocumentDataType> : IRerankerService<QueryDataType, DocumentDataType>
 {
     /// <summary>
     /// Мера схожести
@@ -15,7 +15,7 @@ public abstract class RerankerBase<InpDataType, OutDataType> : IRerankerService<
     /// <param name="query"></param>
     /// <param name="outData"></param>
     /// <returns></returns>
-    public abstract double Sim(InpDataType query, OutDataType outData);
+    public abstract double Sim(QueryDataType query, DocumentDataType outData);
 
     /// <summary>
     /// Мера схожести (Асинхронный метод)
@@ -23,53 +23,35 @@ public abstract class RerankerBase<InpDataType, OutDataType> : IRerankerService<
     /// <param name="query"></param>
     /// <param name="outData"></param>
     /// <returns></returns>
-    public abstract Task<double> SimAsync(InpDataType query, OutDataType outData);
+    public abstract Task<double> SimAsync(QueryDataType query, DocumentDataType outData);
 
     /// <summary>
     /// Выдает вектор близостей
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="documents"></param>
     /// <returns></returns>
-    public virtual async Task<Vector> SimsAsync(InpDataType query, IEnumerable<OutDataType> outData)
-    {
-        OutDataType[] outDatasArray = outData.ToArray();
-        Vector sims = new Vector(outDatasArray.Length);
-
-        for (int i = 0; i < outDatasArray.Length; i++)
-            sims[i] = await SimAsync(query, outDatasArray[i]);
-
-        return sims;
-    }
+    public abstract Task<Vector> SimsAsync(QueryDataType query, IEnumerable<DocumentDataType> documents);
 
     /// <summary>
     /// Выдает вектор близостей
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="documents"></param>
     /// <returns></returns>
-    public virtual Vector Sims(InpDataType query, IEnumerable<OutDataType> outData)
-    {
-        OutDataType[] outDatasArray = outData.ToArray();
-        Vector sims = new Vector(outDatasArray.Length);
-
-        for (int i = 0; i < outDatasArray.Length; i++)
-            sims[i] = Sim(query, outDatasArray[i]);
-
-        return sims;
-    }
+    public abstract Vector Sims(QueryDataType query, IEnumerable<DocumentDataType> documents);
 
     /// <summary>
     /// Выдает топ-k вектор близостей с индексами
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="documents"></param>
     /// <param name="k">Количество наилучших результатов</param>
     /// <returns>Список кортежей (индекс, мера схожести)</returns>
-    public virtual List<(int, double)> TopKSims(InpDataType query, IEnumerable<OutDataType> outData, int k = 5)
+    public virtual List<(int, double)> TopKSims(QueryDataType query, IEnumerable<DocumentDataType> documents, int k = 5)
     {
-        Vector sims = Sims(query, outData);
-        OutDataType[] outDatasArray = outData.ToArray();
+        Vector sims = Sims(query, documents);
+        DocumentDataType[] outDatasArray = documents.ToArray();
 
         List<(int, double)> sortedSims = outDatasArray
             .Select((data, index) => (index, sims[index]))
@@ -84,13 +66,13 @@ public abstract class RerankerBase<InpDataType, OutDataType> : IRerankerService<
     /// Выдает топ-k вектор близостей с индексами (Асинхронный метод)
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="documents"></param>
     /// <param name="k">Количество наилучших результатов</param>
     /// <returns>Список кортежей (индекс, мера схожести)</returns>
-    public virtual async Task<List<(int, double)>> TopKSimsAsync(InpDataType query, IEnumerable<OutDataType> outData, int k = 5)
+    public virtual async Task<List<(int, double)>> TopKSimsAsync(QueryDataType query, IEnumerable<DocumentDataType> documents, int k = 5)
     {
-        Vector sims = await SimsAsync(query, outData);
-        OutDataType[] outDatasArray = outData.ToArray();
+        Vector sims = await SimsAsync(query, documents);
+        DocumentDataType[] outDatasArray = documents.ToArray();
 
         List<(int, double)> sortedSims = outDatasArray
             .Select((data, index) => (index, sims[index]))

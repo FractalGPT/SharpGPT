@@ -2,29 +2,29 @@
 
 namespace FractalGPT.SharpGPTLib.Encoders.Reranker;
 
-public interface IRerankerService<InpDataType, OutDataType>
+public interface IRerankerService<QueryDataType, DocumentDataType>
 {
     /// <summary>
     /// Мера схожести
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="document"></param>
     /// <returns></returns>
-    double Sim(InpDataType query, OutDataType outData);
+    double Sim(QueryDataType query, DocumentDataType document);
 
     /// <summary>
     /// Мера схожести (Асинхронный метод)
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="document"></param>
     /// <returns></returns>
-    Task<double> SimAsync(InpDataType query, OutDataType outData);
+    Task<double> SimAsync(QueryDataType query, DocumentDataType document);
 
     /// <summary>
     /// Выдает вектор близостей
     /// </summary>
     /// <param name="query"></param>
-    /// <param name="outData"></param>
+    /// <param name="document"></param>
     /// <returns></returns>
-    Task<Vector> SimsAsync(InpDataType query, IEnumerable<OutDataType> outData);
+    Task<Vector> SimsAsync(QueryDataType query, IEnumerable<DocumentDataType> document);
 }
