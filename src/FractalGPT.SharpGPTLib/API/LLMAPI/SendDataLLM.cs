@@ -18,6 +18,12 @@ public class SendDataLLM
     public string ModelName { get; }
 
     /// <summary>
+    /// Input
+    /// </summary>
+    [JsonPropertyName("input")]
+    public string Input { get; set; }
+
+    /// <summary>
     /// Gets the temperature value for text generation (degree of randomness).
     /// </summary>
     [JsonPropertyName("temperature")]
