@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
-using FractalGPT.SharpGPTLib.Encoders.Reranker.Infinity;
+﻿using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.Encoders.Reranker.VLLM;
 
@@ -36,5 +32,5 @@ public class VLLMRerankResponse
     /// Результаты ранжирования
     /// </summary>
     [JsonPropertyName("results")]
-    public List<RerankResult> Results { get; set; }
+    public List<VLLMRerankResult> Results { get; set; }
 }
