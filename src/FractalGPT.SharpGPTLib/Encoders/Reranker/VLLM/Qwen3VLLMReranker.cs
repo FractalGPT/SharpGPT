@@ -4,6 +4,12 @@ namespace FractalGPT.SharpGPTLib.Encoders.Reranker.VLLM;
 
 public class Qwen3VLLMReranker
 {
+    public const string Prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n";
+    public const string Suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
+    public const string Instruction = "Given a web search query, retrieve relevant passages that answer the query";
+    public const string QueryTemplate = "{Prefix}<Instruct>: {Instruction}\n<Query>: {Query}\n";
+    public const string DocumentTemplate = "<Document>: {Document}{Suffix}";
+
     private readonly HttpClient _httpClient;
 
     /// <summary>
@@ -40,7 +46,17 @@ public class Qwen3VLLMReranker
     /// <returns>Ответ от сервера с результатами ранжирования</returns>
     public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents)
     {
-        Exception lastException = new Exception();
+        var queryPrompt = QueryTemplate
+            .Replace("{Prefix}", Prefix)
+            .Replace("{Instruction}", Instruction)
+            .Replace("{Query}", query);
+
+        var documentPrompts = documents
+            .Select(doc => doc.Replace("{Suffix}", Suffix)
+                              .Replace("{Document}", doc))
+            .ToArray();
+
+        Exception lastException = new();
 
         for (int attempt = 0; attempt < 2; attempt++)
         {
@@ -50,8 +66,8 @@ public class Qwen3VLLMReranker
                 using var response = await _httpClient.PostAsJsonAsync("/rerank", new VLLMRerankRequest
                 {
                     Model = RerankerModelName,
-                    Query = query,
-                    Documents = documents
+                    Query = queryPrompt,
+                    Documents = documentPrompts
                 });
 
                 if (!response.IsSuccessStatusCode)
