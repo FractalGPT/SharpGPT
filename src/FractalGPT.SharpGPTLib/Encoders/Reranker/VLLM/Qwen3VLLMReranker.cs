@@ -52,7 +52,7 @@ public class Qwen3VLLMReranker
             .Replace("{Query}", query);
 
         var documentPrompts = documents
-            .Select(doc => doc.Replace("{Suffix}", Suffix)
+            .Select(doc => DocumentTemplate.Replace("{Suffix}", Suffix)
                               .Replace("{Document}", doc))
             .ToArray();
 
