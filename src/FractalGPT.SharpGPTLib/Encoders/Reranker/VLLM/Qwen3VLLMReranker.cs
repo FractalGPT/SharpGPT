@@ -53,7 +53,7 @@ public class Qwen3VLLMReranker
 
         var documentPrompts = documents
             .Select(doc => DocumentTemplate.Replace("{Suffix}", Suffix)
-                              .Replace("{Document}", doc))
+                                           .Replace("{Document}", doc))
             .ToArray();
 
         Exception lastException = new();
