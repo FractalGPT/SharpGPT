@@ -7,7 +7,7 @@ public class Qwen3VLLMReranker
     public const string Prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n";
     public const string Suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
     //public const string BaseInstruction = "Given a web search query, retrieve relevant passages that answer the query";
-    public const string BaseInstruction = "Ты - интеллектуальная поисковая система для поиска релевантных документов по их описанию. Укажи набилее релевантные документы к запросу.";
+    public const string BaseInstruction = "Ты - интеллектуальная поисковая система для поиска релевантных документов по их описанию. Укажи набилее релевантные документы к запросу";
     public const string ProductInstruction = "Ты - интеллектуальная поисковая система для поиска товаров по их описанию. Укажи наиболее релевантные товары к запросу";
     public const string QueryTemplate = "{Prefix}<Instruct>: {Instruction}\n<Query>: {Query}\n";
     public const string DocumentTemplate = "<Document>: {Document}{Suffix}";
