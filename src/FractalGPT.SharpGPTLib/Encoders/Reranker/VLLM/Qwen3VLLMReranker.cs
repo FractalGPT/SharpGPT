@@ -6,7 +6,8 @@ public class Qwen3VLLMReranker
 {
     public const string Prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n";
     public const string Suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n";
-    public const string Instruction = "Given a web search query, retrieve relevant passages that answer the query";
+    public const string BaseInstruction = "Given a web search query, retrieve relevant passages that answer the query";
+    public const string ProductInstruction = "Ты - интеллектуальная поисковая система для поиска товаров по их описанию. Укажи наиболее релевантные товары к запросу";
     public const string QueryTemplate = "{Prefix}<Instruct>: {Instruction}\n<Query>: {Query}\n";
     public const string DocumentTemplate = "<Document>: {Document}{Suffix}";
 
@@ -44,11 +45,11 @@ public class Qwen3VLLMReranker
     /// <param name="query">Запрос, относительно которого ранжируются документы</param>
     /// <param name="documents">Список документов для ранжирования</param>
     /// <returns>Ответ от сервера с результатами ранжирования</returns>
-    public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents)
+    public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents, string instruct = null)
     {
         var queryPrompt = QueryTemplate
             .Replace("{Prefix}", Prefix)
-            .Replace("{Instruction}", Instruction)
+            .Replace("{Instruction}", instruct ?? BaseInstruction)
             .Replace("{Query}", query);
 
         var documentPrompts = documents
