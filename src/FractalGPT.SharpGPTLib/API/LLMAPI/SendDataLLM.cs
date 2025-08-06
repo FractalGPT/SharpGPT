@@ -48,6 +48,18 @@ public class SendDataLLM
     public int MaxTokens { get; set; }
 
     /// <summary>
+    /// Whether to print logarithms of token probabilities
+    /// </summary>
+    [JsonPropertyName("logprobs")]
+    public bool LogProbs { get; set; }
+
+    /// <summary>
+    /// Number of logists
+    /// </summary>
+    [JsonPropertyName("top_logprobs")]
+    public int TopLogprobs { get; set; }
+
+    /// <summary>
     /// Reasoning data 
     /// </summary>
     [JsonPropertyName("reasoning")]
@@ -101,6 +113,8 @@ public class SendDataLLM
         MinTokens = generateSettings.MinTokens;
         Stream = generateSettings.Stream;
         ReasoningSettings = generateSettings.ReasoningSettings;
+        LogProbs = generateSettings.LogProbs;
+        TopLogprobs = generateSettings.TopLogprobs;
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize);

@@ -36,7 +36,7 @@ public class Choice
     /// Log probabilities (optional, may be null).
     /// </summary>
     [JsonPropertyName("logprobs")]
-    public object Logprobs { get; set; }
+    public Logprobs Logprobs { get; set; }
 
     /// <summary>
     /// Refusal reason (optional, may be null).
@@ -55,4 +55,74 @@ public class Choice
     /// </summary>
     [JsonPropertyName("reasoning_details")]
     public List<ReasoningDetail> ReasoningDetails { get; set; }
+}
+
+
+/// <summary>
+/// Represents the log probabilities data for the generated tokens.
+/// </summary>
+[Serializable]
+public class Logprobs
+{
+    /// <summary>
+    /// List of token-level log probability details.
+    /// </summary>
+    [JsonPropertyName("content")]
+    public List<TokenLogprob> Content { get; set; }
+}
+
+/// <summary>
+/// Represents log probability details for a single token.
+/// </summary>
+[Serializable]
+public class TokenLogprob
+{
+    /// <summary>
+    /// The generated token.
+    /// </summary>
+    [JsonPropertyName("token")]
+    public string Token { get; set; }
+
+    /// <summary>
+    /// The log probability of the token.
+    /// </summary>
+    [JsonPropertyName("logprob")]
+    public double Logprob { get; set; }
+
+    /// <summary>
+    /// The byte representation of the token.
+    /// </summary>
+    [JsonPropertyName("bytes")]
+    public List<int> Bytes { get; set; }
+
+    /// <summary>
+    /// The top alternative tokens and their log probabilities.
+    /// </summary>
+    [JsonPropertyName("top_logprobs")]
+    public List<TopLogprob> TopLogprobs { get; set; }
+}
+
+/// <summary>
+/// Represents a single top alternative token and its log probability.
+/// </summary>
+[Serializable]
+public class TopLogprob
+{
+    /// <summary>
+    /// The alternative token.
+    /// </summary>
+    [JsonPropertyName("token")]
+    public string Token { get; set; }
+
+    /// <summary>
+    /// The log probability of the alternative token.
+    /// </summary>
+    [JsonPropertyName("logprob")]
+    public double Logprob { get; set; }
+
+    /// <summary>
+    /// The byte representation of the alternative token.
+    /// </summary>
+    [JsonPropertyName("bytes")]
+    public List<int> Bytes { get; set; }
 }
