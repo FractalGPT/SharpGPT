@@ -12,6 +12,7 @@ public class GenerateSettings
     private int _topK;
     private int _maxTokens;
     private int _minTokens;
+    private int _numLogprobs;
 
     /// <summary>
     /// Gets the temperature controlling the randomness of the output. Higher values make output more creative, lower values make it more focused.
@@ -26,7 +27,25 @@ public class GenerateSettings
         }
     }
 
-    
+
+    /// <summary>
+    /// Top logists for each step
+    /// Valid range: 1 to 20.
+    /// </summary>
+    public int TopLogprobs 
+    {
+        get => _numLogprobs;
+        set 
+        {
+            _numLogprobs = ValidateRange(value, 1, 20, nameof(TopLogprobs)); 
+        }
+    }
+
+    /// <summary>
+    /// Whether to print logarithms of token probabilities
+    /// </summary>
+    public bool LogProbs { get; set; } = false;
+
     /// <summary>
     /// Gets or sets the penalty for repeated tokens to discourage repetitive output.
     /// Valid range: 0.0 to 2.0.
@@ -129,6 +148,24 @@ public class GenerateSettings
     /// <returns>The validated value.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is out of range.</exception>
     private static double ValidateRange(double value, double min, double max, string paramName)
+    {
+        if (value < min || value > max)
+            throw new ArgumentOutOfRangeException(paramName, $"Value must be between {min} and {max}.");
+        return value;
+    }
+
+
+
+    /// <summary>
+    /// Validates that a double value is within the specified range.
+    /// </summary>
+    /// <param name="value">The value to validate.</param>
+    /// <param name="min">The minimum allowed value.</param>
+    /// <param name="max">The maximum allowed value.</param>
+    /// <param name="paramName">The name of the parameter for error reporting.</param>
+    /// <returns>The validated value.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when the value is out of range.</exception>
+    private static int ValidateRange(int value, int min, int max, string paramName)
     {
         if (value < min || value > max)
             throw new ArgumentOutOfRangeException(paramName, $"Value must be between {min} and {max}.");
