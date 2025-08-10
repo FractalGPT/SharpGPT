@@ -1,9 +1,9 @@
 ﻿namespace FractalGPT.SharpGPTLib.Stream;
 public interface IStreamHandler
 {
-    Task<string> StartStreamAsync(string streamId, HttpResponseMessage response);
+    Task<string> StartAsync(string streamId, HttpResponseMessage response, string method);
 
-    Task<string> StartStreamAsync(string streamId, string message);
+    Task<string> SendAsync(string streamId, string message, string method);
 
-    Task<string> StartStreamAsync<T>(string streamId, T message) where T: class;
+    Task<string> SendAsync<T>(string streamId, T message, string method) where T: class;
 }

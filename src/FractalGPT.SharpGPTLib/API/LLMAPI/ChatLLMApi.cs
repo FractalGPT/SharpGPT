@@ -30,7 +30,7 @@ public class ChatLLMApi : IText2TextChat
     /// <summary>
     /// Constructor for API initialization.
     /// </summary>
-    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature, IStreamHandler streamSender)
+    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, double temperature, IStreamHandler streamSender = null)
     {
         _apiKey = key;
         _modelName = modelName;
@@ -125,7 +125,8 @@ public class ChatLLMApi : IText2TextChat
             {
                 if (generateSettings.Stream)
                 {
-                    var result = await _streamSender.StartStreamAsync(generateSettings.StreamId, response);
+                    var result = await _streamSender.StartAsync(streamId: generateSettings.StreamId, response: response,
+                        method: generateSettings.StreamMethod);
                     //TODOS Подумать как обработать ошибки
                     if (!string.IsNullOrEmpty(result))
                         return result;
@@ -187,7 +188,8 @@ public class ChatLLMApi : IText2TextChat
 
         if (generateSettings.Stream)
         {
-            var result = await _streamSender.StartStreamAsync(generateSettings.StreamId, response);
+            var result = await _streamSender.StartAsync(streamId: generateSettings.StreamId, response: response,
+                method: generateSettings.StreamMethod);
             return result;
         }
         else

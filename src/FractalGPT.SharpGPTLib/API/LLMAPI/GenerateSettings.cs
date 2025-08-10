@@ -76,6 +76,8 @@ public class GenerateSettings
 
     public readonly string StreamId;
 
+    public readonly string StreamMethod;
+
     /// <summary>
     /// Gets or sets the maximum number of tokens to generate.
     /// Must be a positive integer.
@@ -104,7 +106,8 @@ public class GenerateSettings
         int topK = 5,
         int minTokens = 8,
         int maxTokens = 2248,
-        string streamId = null)
+        string streamId = null,
+        string streamMethod = "StreamMessage")
     {
         Temperature = temperature;
         _repetitionPenalty = repetitionPenalty;
