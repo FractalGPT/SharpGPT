@@ -135,6 +135,7 @@ public class GenerateSettings
         _minTokens = minTokens; 
         _maxTokens = maxTokens;
         StreamId = streamId;
+        StreamMethod = streamMethod;
         ReasoningSettings = null;
     }
 
