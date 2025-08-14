@@ -49,4 +49,18 @@ public class ChatCompletionsResponse
     /// </summary>
     [JsonPropertyName("usage")]
     public Usage Usage { get; set; } = new();
+
+
+    public ChatCompletionsResponse() { }
+
+    /// <summary>
+    /// Создание ChatCompletionsResponse с текстом сообщения ассистента
+    /// </summary>
+    /// <param name="content"></param>
+    public ChatCompletionsResponse(string content) 
+    {
+        Choice choice = new Choice();
+        choice.Message = LLMMessage.CreateMessage(Roles.Assistant, content);
+        Choices.Add(choice);
+    }
 }

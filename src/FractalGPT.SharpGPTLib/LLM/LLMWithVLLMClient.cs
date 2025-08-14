@@ -21,7 +21,6 @@ public class LLMWithVLLMClient : LLMBase
         VLLMClient client = new VLLMClient(
             vLLMSettings.ModelName,
             vLLMSettings.SystemPrompt,
-            vLLMSettings.Temperature,
             vLLMSettings.Host,
             vLLMSettings.ApiKey,
             streamHandler

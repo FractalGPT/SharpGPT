@@ -24,7 +24,7 @@ public class LLMBase
     /// <param name="prompt"></param>
     public void SetPrompt(string prompt)
     {
-        _chatLLMApi.SetPrompt(prompt);
+        //_chatLLMApi.SetPrompt(prompt);
     }
 
     /// <summary>
