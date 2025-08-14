@@ -125,4 +125,14 @@ public class TopLogprob
     /// </summary>
     [JsonPropertyName("bytes")]
     public List<int> Bytes { get; set; }
+
+
+    public TopLogprob() { }
+
+    public TopLogprob(string token, double logprob, List<int> bytes)
+    {
+        Token = token;
+        Logprob = logprob;
+        Bytes = bytes;
+    }   
 }
