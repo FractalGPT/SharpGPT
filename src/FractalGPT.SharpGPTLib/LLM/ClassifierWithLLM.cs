@@ -7,6 +7,9 @@ namespace FractalGPT.SharpGPTLib.LLM;
 /// </summary>
 public class ClassifierWithLLM
 {
+    /// <summary>
+    /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
+    /// </summary>
     public ChatLLMApi ChatLLMApi { get; set; }
 
     protected HashSet<string> TokenValues { get; set; } // Разрешённые токены (case-insensitive после очистки)

@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
 /// <summary>
-/// Class for interacting with LLM through API.
+/// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
 /// </summary>
 [Serializable]
 public class ChatLLMApi
@@ -21,7 +21,7 @@ public class ChatLLMApi
     public event Action<string> ProxyInfo;
 
     /// <summary>
-    /// Constructor for API initialization.
+    /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
     /// </summary>
     public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, IStreamHandler streamSender = null)
     {
@@ -30,7 +30,6 @@ public class ChatLLMApi
         _prompt = prompt;
         _streamSender = streamSender;
 
-        // Use the default prompt if a custom one is not provided.
         if (useProxy)
         {
             _webApi = new ProxyHTTPClient(proxyPath, key);
@@ -41,11 +40,12 @@ public class ChatLLMApi
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
     }
 
-    private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
-    {
-        ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
-    }
-
+    /// <summary>
+    /// Определяет число токенов в запросе
+    /// </summary>
+    /// <param name="messages">Запрос</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
     {
         using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, new
@@ -66,7 +66,7 @@ public class ChatLLMApi
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
     public async Task<string> SendWithoutContextTextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
-        (await SendWithoutContextAsync(text, generateSettings, cancellationToken)).Choices[0].Message.Content;
+        (await SendWithoutContextAsync(text, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
 
     /// <summary>
     /// Отправка сообщения с учетом контекста (потокобезопасная версия).
@@ -75,7 +75,7 @@ public class ChatLLMApi
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
     public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
-        (await SendWithContextAsync(context, generateSettings, cancellationToken)).Choices[0].Message.Content;
+        (await SendWithContextAsync(context, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
 
     /// <summary>
     /// Отправка сообщения без учета контекста
@@ -147,7 +147,7 @@ public class ChatLLMApi
                         throw new InvalidOperationException("Некорректный ответ от LLM API.");
                     }
 
-                    var textResult = chatCompletionsResponse.Choices[0].Message.Content;
+                    var textResult = chatCompletionsResponse.Choices[0].Message.Content.ToString();
                     if (!string.IsNullOrEmpty(textResult))
                         return chatCompletionsResponse;
                 }
@@ -155,7 +155,7 @@ public class ChatLLMApi
             }
             catch (Exception ex)
             {
-                string text = context.Last().Content; // Получение последнего сообщения для отображения в логах
+                string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
                 exception = new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 500)), ex);
 
@@ -167,6 +167,9 @@ public class ChatLLMApi
 
     }
 
-
+    private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
+    {
+        ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
+    }
 
 }
