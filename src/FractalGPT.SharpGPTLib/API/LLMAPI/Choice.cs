@@ -134,5 +134,5 @@ public class TopLogprob
         Token = token;
         Logprob = logprob;
         Bytes = bytes;
-    }   
+    }
 }

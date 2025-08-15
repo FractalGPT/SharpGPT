@@ -1,128 +1,129 @@
 ﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace FractalGPT.SharpGPTLib.LLM
+namespace FractalGPT.SharpGPTLib.LLM;
+
+/// <summary>
+/// Классификатор на базе LLM с использованием вероятностей токенов.
+/// </summary>
+public class ClassifierWithLLM
 {
+    public ChatLLMApi ChatLLMApi { get; set; }
+
+    protected HashSet<string> TokenValues { get; set; } // Разрешённые токены (case-insensitive после очистки)
+
+    protected int ClTokenPosition { get; set; } // Позиция токена класса в генерируемом выводе
+
+    public string ClPrompt { get; set; } = "{{input_text}}"; // Шаблон промпта
+
+    public bool CleanTokens { get; set; } = true; // Флаг для очистки токенов от пунктуации
+
     /// <summary>
-    /// Классификатор на базе LLM 
+    /// Конструктор по умолчанию.
     /// </summary>
-    public class ClassifierWithLLM
+    public ClassifierWithLLM() { }
+
+    /// <summary>
+    /// Конструктор с параметрами.
+    /// </summary>
+    /// <param name="chatLLMApi">API для LLM.</param>
+    /// <param name="tokenValues">Разрешённые значения токенов (null для дефолтных 0-9).</param>
+    /// <param name="clTokenPosition">Позиция токена класса (должна быть >= 0).</param>
+    public ClassifierWithLLM(ChatLLMApi chatLLMApi, IEnumerable<string> tokenValues, int clTokenPosition)
     {
-        public ChatLLMApi ChatLLMApi { get; set; }
+        if (clTokenPosition < 0) throw new ArgumentException("clTokenPosition must be >= 0.");
 
-        protected HashSet<string> TokenValues { get; set; }
+        ChatLLMApi = chatLLMApi ?? throw new ArgumentNullException(nameof(chatLLMApi));
+        TokenValues = tokenValues == null
+            ? GetBaseTokenCls()
+            : new HashSet<string>(tokenValues.Select(t => ClearStr(t).ToLower()), StringComparer.OrdinalIgnoreCase);
+        ClTokenPosition = clTokenPosition;
+    }
 
-        protected int ClTokenPosition { get; set; } // Позиция токена для определения класса
+    /// <summary>
+    /// Асинхронный метод классификации текста.
+    /// </summary>
+    /// <param name="inputText">Текст для классификации.</param>
+    /// <param name="topk">Количество топ-вариантов logprobs (default=10).</param>
+    /// <param name="genTemperature">Температура генерации LLM (default=0.2 для детерминизма).</param>
+    /// <param name="softmaxTemperature">Температура для softmax (default=5.0 для стандартного поведения).</param>
+    /// <returns>Список классов с вероятностями, отсортированный по убыванию.</returns>
+    public async Task<List<ClassifyData>> TextClassifyAsync(string inputText, int topk = 10, double genTemperature = 0.2, double softmaxTemperature = 5.0)
+    {
+        if (string.IsNullOrEmpty(inputText)) throw new ArgumentException("inputText cannot be null or empty.");
 
-        public string ClPrompt { get; set; } = "{{input_text}}";
+        // Экранирование плейсхолдера для безопасности
+        string inputSafe = inputText.Replace("{{input_text}}", "[input_text]");
+        string inputWithPrompt = ClPrompt.Replace("{{input_text}}", inputSafe);
 
-        public ClassifierWithLLM() { }
-
-        /// <summary>
-        /// Классификатор на базе LLM 
-        /// </summary>
-        public ClassifierWithLLM(ChatLLMApi chatLLMApi, IEnumerable<string> tokenValues, int clTokenPosition)
+        GenerateSettings generateSettings = new GenerateSettings()
         {
-            ChatLLMApi = chatLLMApi;
-            TokenValues = tokenValues == null ? GetBaseTokenCls() : new HashSet<string>(tokenValues.Select(ClearStr).ToList()); // Значения токенов, без пробелов и знаков припинания
+            Temperature = genTemperature,
+            MinTokens = ClTokenPosition + 1,
+            MaxTokens = ClTokenPosition + 2,
+            LogProbs = true,
+            TopLogprobs = topk
+        };
 
-        }
-
-        /// <summary>
-        /// Асинхронный метод классификации текстов
-        /// </summary>
-        /// <param name="inputText">Текст для классификации</param>
-        /// <param name="topk">Топ значение</param>
-        /// <param name="temperature">Температура</param>
-        /// <returns></returns>
-        public async Task<List<ClassifyData>> TextClassifyAsync(string inputText, int topk = 5, double temperature = 5) 
+        try
         {
-            string inputSafe = inputText.Replace("{{input_text}}", "{input_text}"); // Убираем возможность неверной вставки
-            string inputWithPrompt = ClPrompt.Replace("{{input_text}}", inputSafe);
-            GenerateSettings generateSettings = new GenerateSettings()
-            {
-                Temperature = 0.2,
-                MinTokens = ClTokenPosition+1,
-                MaxTokens = ClTokenPosition+2,
-                LogProbs = true,
-                TopLogprobs = topk
-            };
-
-
             var llmAnswer = await ChatLLMApi.SendWithoutContextAsync(inputWithPrompt, generateSettings);
-            var logProbs = llmAnswer.Choices[0].Logprobs.Content[ClTokenPosition].TopLogprobs; // Получение логарифмов вероятности 
+            var logProbs = llmAnswer.Choices[0].Logprobs.Content[ClTokenPosition].TopLogprobs; // Logprobs на позиции
 
-            // Получение вероятностей классов
-            return Softmax(logProbs, temperature);
-        }
+            // Вычисление softmax
+            var classifyDatas = Softmax(logProbs, softmaxTemperature);
 
-        // Очистка строки
-        private string ClearStr(string str) 
-            => str.Trim("- —,.!?;:\"'_+{}[]()<>".ToCharArray());
-
-        // Словарь доступных токенов по умолчанию
-        private HashSet<string> GetBaseTokenCls() => new HashSet<string>()
-            {
-                "0","1", "2", "3", "4", "5", "6", "7", "8", "9"
-            };
-
-
-        // Софтмак с фильтрами невозможных токенов и объединением похожих
-        private List<ClassifyData> Softmax(List<TopLogprob> topLogprobs, double temperature) 
-        {
-            var topExp = topLogprobs.Select(x => 
-                new TopLogprob(ClearStr(x.Token), 
-                Math.Exp(x.Logprob / temperature), 
-                x.Bytes)).ToList();
-
-            Dictionary<string, double> tokenProbs = new Dictionary<string, double>();
-            List<ClassifyData> classifyDatas = new List<ClassifyData>();
-
-
-            double sum = double.Epsilon;
-
-            // Составление словаря и расчет суммы
-            for (int i = 0; i < topExp.Count; i++)
-            {
-                string token = topExp[i].Token;
-                double prob = topExp[i].Logprob;
-
-                if (TokenValues.Contains(token))
-                {
-                    if (!tokenProbs.ContainsKey(token))
-                        tokenProbs.Add(token, prob);
-                    else 
-                        tokenProbs[token] += prob;
-
-                    sum += topExp[i].Logprob; 
-                }
-            }
-
-            // Рассчет вероятностей
-            foreach(var tokenProb in tokenProbs)
-                classifyDatas.Add(new ClassifyData() 
-                { ClToken = tokenProb.Key, Prob = tokenProb.Value / sum });
+            // Сортировка по вероятности descending
+            classifyDatas.Sort((a, b) => b.Prob.CompareTo(a.Prob));
 
             return classifyDatas;
         }
-
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Error during LLM classification.", ex);
+        }
     }
+
+    // Очистка строки от пунктуации и пробелов (trim)
+    private string ClearStr(string str)
+    {
+        return str?.Trim(" -—,.!?;:\"'_+{}[]()<>".ToCharArray()).ToLower() ?? string.Empty;
+    }
+
+    // Дефолтные токены (0-9 для шкалы)
+    private HashSet<string> GetBaseTokenCls() => new HashSet<string>(Enumerable.Range(0, 10).Select(i => i.ToString()), StringComparer.OrdinalIgnoreCase);
+
+    // Softmax с фильтрацией и объединением
+    private List<ClassifyData> Softmax(List<TopLogprob> topLogprobs, double temperature)
+    {
+        if (temperature <= 0) throw new ArgumentException("softmaxTemperature must be > 0.");
+
+        // Преобразование: (token, exp(logprob / temp))
+        var expProbs = topLogprobs
+            .Select(lp => (Token: CleanTokens ? ClearStr(lp.Token) : lp.Token.ToLower(), ExpProb: Math.Exp(lp.Logprob / temperature)))
+            .Where(t => !string.IsNullOrEmpty(t.Token) && TokenValues.Contains(t.Token))
+            .GroupBy(t => t.Token) // Объединение дубликатов
+            .Select(g => (Token: g.Key, ExpProb: g.Sum(t => t.ExpProb)))
+            .ToList();
+
+        double sumExp = expProbs.Sum(t => t.ExpProb);
+        if (sumExp <= double.Epsilon) return new List<ClassifyData>(); // Нет валидных токенов
+
+        return expProbs.Select(t => new ClassifyData { ClToken = t.Token, Prob = t.ExpProb / sumExp }).ToList();
+    }
+}
+
+/// <summary>
+/// Данные классификации.
+/// </summary>
+public class ClassifyData
+{
+    /// <summary>
+    /// Токен класса.
+    /// </summary>
+    public string ClToken { get; set; }
 
     /// <summary>
-    /// Данные для классификатора
+    /// Вероятность (0-1).
     /// </summary>
-    public class ClassifyData 
-    {
-        /// <summary>
-        /// Имя токена
-        /// </summary>
-        public string ClToken { get; set; }
-
-        /// <summary>
-        /// Вероятность
-        /// </summary>
-        public double Prob { get; set; }
-    }
+    public double Prob { get; set; }
 }

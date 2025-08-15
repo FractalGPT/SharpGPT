@@ -57,7 +57,7 @@ public class ChatCompletionsResponse
     /// Создание ChatCompletionsResponse с текстом сообщения ассистента
     /// </summary>
     /// <param name="content"></param>
-    public ChatCompletionsResponse(string content) 
+    public ChatCompletionsResponse(string content)
     {
         Choice choice = new Choice();
         choice.Message = LLMMessage.CreateMessage(Roles.Assistant, content);

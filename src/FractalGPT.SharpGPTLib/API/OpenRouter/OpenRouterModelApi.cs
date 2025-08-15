@@ -1,8 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Stream;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FractalGPT.SharpGPTLib.API.OpenRouter
 {

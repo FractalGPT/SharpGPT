@@ -43,7 +43,7 @@ public class SendDataLLM
 
     [JsonPropertyName("stream")]
     public bool Stream { get; set; }
-    
+
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
 

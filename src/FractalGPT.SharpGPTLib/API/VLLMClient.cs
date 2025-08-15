@@ -25,7 +25,7 @@ public class VLLMClient : ChatLLMApi
         string modelName,
         string systemPrompt,
         string host,
-        string apiKey = null, 
+        string apiKey = null,
         IStreamHandler streamHandler = null)
         : base(apiKey, false, string.Empty, modelName, systemPrompt, streamHandler)
     {

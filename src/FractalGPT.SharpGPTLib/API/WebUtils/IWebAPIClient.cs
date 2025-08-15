@@ -1,5 +1,4 @@
 ﻿using System.Net.Http.Headers;
-using System.Threading;
 
 namespace FractalGPT.SharpGPTLib.API.WebUtils;
 

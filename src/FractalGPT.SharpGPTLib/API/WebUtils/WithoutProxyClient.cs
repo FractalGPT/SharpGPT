@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -19,7 +18,8 @@ public class WithoutProxyClient : IWebAPIClient
     /// <summary>
     /// Static HttpClient instance reused across requests for better performance.
     /// </summary>
-    private readonly HttpClient HttpClient = new() {
+    private readonly HttpClient HttpClient = new()
+    {
         Timeout = TimeSpan.FromMinutes(6),
     };
 
@@ -87,7 +87,7 @@ public class WithoutProxyClient : IWebAPIClient
             var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
 
             var response = isStreamingRequest ?
-                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) : 
+                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) :
                 await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
 
             //_ = response.EnsureSuccessStatusCode();

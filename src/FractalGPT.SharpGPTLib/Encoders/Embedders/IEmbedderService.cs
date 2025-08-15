@@ -42,6 +42,6 @@ public interface IEmbedderService : IBiEncoder
         IEnumerable<string> processedTexts,
         IEnumerable<int> blockSizes,
         IEnumerable<int> excludeBlockSizes = null);
-        
+
     double TanhCosineNormalize(double cosine);
 }

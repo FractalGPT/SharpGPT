@@ -65,7 +65,7 @@ public class ChatLLMApi
     /// <param name="text">Текст запроса</param>
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
-    public async Task<string> SendWithoutContextTextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) => 
+    public async Task<string> SendWithoutContextTextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
         (await SendWithoutContextAsync(text, generateSettings, cancellationToken)).Choices[0].Message.Content;
 
     /// <summary>
@@ -74,7 +74,7 @@ public class ChatLLMApi
     /// <param name="context">Контекст сообщений LLM.</param>
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
-    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) => 
+    public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
         (await SendWithContextAsync(context, generateSettings, cancellationToken)).Choices[0].Message.Content;
 
     /// <summary>
@@ -86,7 +86,7 @@ public class ChatLLMApi
     public async Task<ChatCompletionsResponse> SendWithoutContextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
     {
         List<LLMMessage> context = [
-            LLMMessage.CreateMessage(Roles.System, _prompt), 
+            LLMMessage.CreateMessage(Roles.System, _prompt),
             LLMMessage.CreateMessage(Roles.User, text)
             ];
 

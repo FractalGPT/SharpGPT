@@ -32,12 +32,12 @@ public class GenerateSettings
     /// Top logists for each step
     /// Valid range: 1 to 20.
     /// </summary>
-    public int TopLogprobs 
+    public int TopLogprobs
     {
         get => _numLogprobs;
-        set 
+        set
         {
-            _numLogprobs = ValidateRange(value, 1, 20, nameof(TopLogprobs)); 
+            _numLogprobs = ValidateRange(value, 1, 20, nameof(TopLogprobs));
         }
     }
 
@@ -56,7 +56,7 @@ public class GenerateSettings
         set => _repetitionPenalty = ValidateRange(value, 0.0, 2.0, nameof(RepetitionPenalty));
     }
 
-    
+
     /// <summary>
     /// Gets or sets the value for nucleus sampling, where only the smallest set of tokens whose cumulative probability exceeds TopP is considered.
     /// Valid range: 0.0 to 1.0.
@@ -67,7 +67,7 @@ public class GenerateSettings
         set => _topP = ValidateRange(value, 0.0, 1.0, nameof(TopP));
     }
 
-    
+
     /// <summary>
     /// Gets or sets the number of top tokens to consider during sampling.
     /// Must be a positive integer.
@@ -132,7 +132,7 @@ public class GenerateSettings
         _repetitionPenalty = repetitionPenalty;
         _topP = topP;
         _topK = topK;
-        _minTokens = minTokens; 
+        _minTokens = minTokens;
         _maxTokens = maxTokens;
         StreamId = streamId;
         StreamMethod = streamMethod;

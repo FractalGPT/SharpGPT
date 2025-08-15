@@ -5,5 +5,5 @@ public interface IStreamHandler
 
     Task<bool> SendAsync(string streamId, string message, string method);
 
-    Task<bool> SendAsync<T>(string streamId, T message, string method) where T: class;
+    Task<bool> SendAsync<T>(string streamId, T message, string method) where T : class;
 }
