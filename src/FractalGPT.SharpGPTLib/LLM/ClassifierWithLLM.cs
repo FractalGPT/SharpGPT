@@ -18,6 +18,8 @@ public class ClassifierWithLLM
 
     public string ClPrompt { get; set; } = "{{input_text}}"; // Шаблон промпта
 
+    public string AnswerStart { get; set; } = "";
+
     public bool CleanTokens { get; set; } = true; // Флаг для очистки токенов от пунктуации
 
     /// <summary>
@@ -62,14 +64,14 @@ public class ClassifierWithLLM
         {
             Temperature = genTemperature,
             MinTokens = ClTokenPosition + 1,
-            MaxTokens = ClTokenPosition + 2,
+            MaxTokens = ClTokenPosition + 1,
             LogProbs = true,
             TopLogprobs = topk
         };
 
         try
         {
-            var llmAnswer = await ChatLLMApi.SendWithoutContextAsync(inputWithPrompt, generateSettings);
+            var llmAnswer = await ChatLLMApi.SendWithoutContextWithStartAsync(inputWithPrompt, AnswerStart, generateSettings);
             var logProbs = llmAnswer.Choices[0].Logprobs.Content[ClTokenPosition].TopLogprobs; // Logprobs на позиции
 
             // Вычисление softmax

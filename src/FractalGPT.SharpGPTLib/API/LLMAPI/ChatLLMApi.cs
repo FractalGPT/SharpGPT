@@ -94,6 +94,25 @@ public class ChatLLMApi
 
     }
 
+    /// <summary>
+    /// Отправка сообщения без учета контекста
+    /// (потокобезопасная версия)
+    /// </summary>
+    /// <param name="text">Начало ответа</param>
+    /// <param name="answerStart">Начало ответа</param>
+    /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
+    public async Task<ChatCompletionsResponse> SendWithoutContextWithStartAsync(string text, string answerStart, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
+    {
+        List<LLMMessage> context = [
+            LLMMessage.CreateMessage(Roles.System, _prompt),
+            LLMMessage.CreateMessage(Roles.User, text),
+            LLMMessage.CreateMessage(Roles.Assistant, answerStart)
+            ];
+
+        return await SendWithContextAsync(context, generateSettings, cancellationToken);
+
+    }
+
 
     /// <summary>
     /// Отправка сообщения без учета контекста
