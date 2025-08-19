@@ -33,7 +33,7 @@ public class ClassifierWithLLM
     /// <param name="chatLLMApi">API для LLM.</param>
     /// <param name="tokenValues">Разрешённые значения токенов (null для дефолтных 0-9).</param>
     /// <param name="clTokenPosition">Позиция токена класса (должна быть >= 0).</param>
-    public ClassifierWithLLM(ChatLLMApi chatLLMApi, IEnumerable<string> tokenValues, int clTokenPosition)
+    public ClassifierWithLLM(ChatLLMApi chatLLMApi, IEnumerable<string> tokenValues = null, int clTokenPosition = 0)
     {
         if (clTokenPosition < 0) throw new ArgumentException("clTokenPosition must be >= 0.");
 
