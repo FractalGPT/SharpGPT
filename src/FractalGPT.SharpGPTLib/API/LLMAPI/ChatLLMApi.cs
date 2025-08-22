@@ -83,6 +83,15 @@ public class ChatLLMApi
         (await SendWithContextAsync(context, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
 
     /// <summary>
+    /// Отправка сообщения без учета контекста, с заданным началом ответа
+    /// </summary>
+    /// <param name="context">Контекст сообщений LLM.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    /// <returns>Возвращает текст ответа.</returns>
+    public async Task<string> SendWithoutContextWithStartReturnTextAsync(string text, string answerStart, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
+        (await SendWithoutContextWithStartAsync(text, answerStart, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
+
+    /// <summary>
     /// Отправка сообщения без учета контекста
     /// (потокобезопасная версия)
     /// </summary>
