@@ -12,21 +12,26 @@ namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 public class ChatLLMApi
 {
     private readonly IWebAPIClient _webApi;
-    private readonly string _modelName;
     private readonly string _apiKey;
     private readonly string _prompt;
     private readonly IStreamHandler _streamSender;
+
+    public virtual string ModelName { get; set; }
     public virtual string ApiUrl { get; set; }
     public virtual string TokenizeApiUrl { get; set; }
     public event Action<string> ProxyInfo;
+    
 
     /// <summary>
     /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
     /// </summary>
     public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, IStreamHandler streamSender = null)
     {
+        if (string.IsNullOrWhiteSpace(modelName))
+            throw new ArgumentNullException(nameof(modelName), "Имя модели не может быть пустым");
+
         _apiKey = key;
-        _modelName = modelName;
+        ModelName = modelName;
         _prompt = prompt;
         _streamSender = streamSender;
 
@@ -51,7 +56,7 @@ public class ChatLLMApi
         using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, new
         {
             messages,
-            model = _modelName,
+            model = ModelName,
         }, cancellationToken);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken);
@@ -122,13 +127,13 @@ public class ChatLLMApi
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
     public async Task<ChatCompletionsResponse> SendWithContextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
     {
-        generateSettings ??= new();
+        generateSettings = Validate(generateSettings);
 
         if (context == null)
             throw new ArgumentException("Контекст не может быть null.", nameof(context));
 
         using var webApi = new WithoutProxyClient(_apiKey);
-        var sendData = new SendDataLLM(_modelName, generateSettings);
+        var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.SetMessages(context);
 
         Exception exception = new Exception();
@@ -186,9 +191,53 @@ public class ChatLLMApi
 
     }
 
+    /// <summary>
+    /// Валидация настроек генерации
+    /// </summary>
+    /// <param name="generateSettings">Начальные настройки</param>
+    /// <returns></returns>
+    public GenerateSettings Validate(GenerateSettings generateSettings) 
+    {
+        generateSettings ??= new();
+
+        generateSettings.Temperature = ValidateTemperature(generateSettings.Temperature);
+        generateSettings.MaxTokens = ValidateMaxTokens(generateSettings.MaxTokens);
+
+        if (generateSettings.ReasoningSettings != null)
+            if (generateSettings.ReasoningSettings.MaxTokens != null)
+                generateSettings.ReasoningSettings.MaxTokens = ValidateMaxTokens(generateSettings.ReasoningSettings.MaxTokens.Value);
+
+        return generateSettings;
+    }
+
+
+    /// <summary>
+    /// Проверяет и нормализует значение температуры
+    /// </summary>
+    public static double ValidateTemperature(double temperature)
+    {
+        if (temperature > 1.5) return 1.5;
+        if (temperature < 0.0) return 0.0;
+        if (temperature > 1.0)
+            Console.WriteLine($"Установлена температура > 1.0 ({temperature}), высокая вероятность галлюцинаций !!!");
+
+        return temperature;
+    }
+
+    /// <summary>
+    /// Проверяет максимальное количество токенов
+    /// </summary>
+    public static int ValidateMaxTokens(int maxTokens)
+    {
+        return Math.Max(1, maxTokens);
+    }
+
+
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
     {
         ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
     }
+
+
 
 }
