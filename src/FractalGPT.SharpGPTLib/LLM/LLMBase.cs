@@ -19,15 +19,6 @@ public class LLMBase
     }
 
     /// <summary>
-    /// Установка системного промпта
-    /// </summary>
-    /// <param name="prompt"></param>
-    public void SetPrompt(string prompt)
-    {
-        //_chatLLMApi.SetPrompt(prompt);
-    }
-
-    /// <summary>
     /// Отправка запроса к LLM
     /// </summary>
     /// <param name="text">Текст запроса</param>
