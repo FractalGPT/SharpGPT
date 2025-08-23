@@ -224,10 +224,10 @@ public class ChatLLMApi
     /// </summary>
     public static double ValidateTemperature(double temperature)
     {
-        if (temperature > 1.5) return 1.5;
-        if (temperature < 0.0) return 0.0;
-        if (temperature > 1.0)
-            Console.WriteLine($"Установлена температура > 1.0 ({temperature}), высокая вероятность галлюцинаций !!!");
+        if (temperature > 1.5) 
+            return 1.5;
+        if (temperature < 0.0) 
+            return 0.0;
 
         return temperature;
     }
