@@ -52,8 +52,10 @@ public class LLMMessage
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
 
         Role = role;
-        if (role == "user") Content = content;
-        else Content = content.ToString();
+        if (role == "user")
+            Content = content;
+        else
+            Content = content.ToString();
     }
 
     /// <summary>
