@@ -59,8 +59,9 @@ public class ChatCompletionsResponse
     /// <param name="content"></param>
     public ChatCompletionsResponse(string content)
     {
-        Choice choice = new Choice();
-        choice.Message = LLMMessage.CreateMessage(Roles.Assistant, content);
-        Choices.Add(choice);
+        Choices.Add(new Choice
+        {
+            Message = LLMMessage.CreateMessage(Roles.Assistant, content),
+        });
     }
 }
