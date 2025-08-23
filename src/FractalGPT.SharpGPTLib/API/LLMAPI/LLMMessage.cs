@@ -28,7 +28,7 @@ public class LLMMessage
     public LLMMessage() // Parameterless constructor for deserialization
     {
         Role = string.Empty;
-        Content = null!;
+        Content = null;
     }
 
     /// <summary>
