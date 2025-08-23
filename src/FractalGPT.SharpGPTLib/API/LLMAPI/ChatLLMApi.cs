@@ -212,9 +212,8 @@ public class ChatLLMApi
         generateSettings.Temperature = ValidateTemperature(generateSettings.Temperature);
         generateSettings.MaxTokens = ValidateMaxTokens(generateSettings.MaxTokens);
 
-        if (generateSettings.ReasoningSettings != null)
-            if (generateSettings.ReasoningSettings.MaxTokens != null)
-                generateSettings.ReasoningSettings.MaxTokens = ValidateMaxTokens(generateSettings.ReasoningSettings.MaxTokens.Value);
+        if (generateSettings.ReasoningSettings?.MaxTokens != null)
+            generateSettings.ReasoningSettings.MaxTokens = ValidateMaxTokens(generateSettings.ReasoningSettings.MaxTokens.Value);
 
         return generateSettings;
     }
