@@ -43,7 +43,7 @@ public class SendDataLLM
 
     [JsonPropertyName("stream")]
     public bool Stream { get; set; }
-    
+
     [JsonPropertyName("max_tokens")]
     public int MaxTokens { get; set; }
 
@@ -66,13 +66,6 @@ public class SendDataLLM
     public ReasoningSettings ReasoningSettings { get; set; }
 
     /// <summary>
-    /// Gets or sets the system prompt used at the beginning of every message exchange.
-    /// This property is not serialized because it is included as part of the initial messages.
-    /// </summary>
-    [JsonIgnore]
-    public string Prompt { get; set; }
-
-    /// <summary>
     /// Gets the list of messages to be sent to the LLM.
     /// Messages are stored in chronological order with a fixed size limit.
     /// </summary>
@@ -91,7 +84,6 @@ public class SendDataLLM
     /// Thrown when <paramref name="modelName"/> or <paramref name="systemPrompt"/> is null or empty.
     /// </exception>
     public SendDataLLM(string modelName,
-        string systemPrompt,
         GenerateSettings generateSettings = null,
         int bufferSize = 5
         )
@@ -99,16 +91,12 @@ public class SendDataLLM
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");
 
-        //if (string.IsNullOrWhiteSpace(systemPrompt))
-        //    throw new ArgumentNullException(nameof(systemPrompt), "System prompt cannot be null or empty.");
-
         generateSettings ??= new();
         ModelName = modelName;
         Temperature = generateSettings.Temperature;
         TopK = generateSettings.TopK;
         TopP = generateSettings.TopP;
         RepetitionPenalty = generateSettings.RepetitionPenalty;
-        Prompt = systemPrompt;
         MaxTokens = generateSettings.MaxTokens;
         MinTokens = generateSettings.MinTokens;
         Stream = generateSettings.Stream;
@@ -118,9 +106,6 @@ public class SendDataLLM
 
         this.bufferSize = bufferSize;
         Messages = new List<LLMMessage>(bufferSize);
-
-        if (!string.IsNullOrEmpty(systemPrompt))
-            Messages.Add(LLMMessage.CreateMessage(Roles.System, systemPrompt));
 
         currentIndex = 1;
     }
@@ -183,8 +168,7 @@ public class SendDataLLM
     public void Clear()
     {
         Messages.Clear();
-        Messages.Add(new LLMMessage("system", Prompt));
-        currentIndex = 1;
+        currentIndex = 0;
     }
 
     /// <summary>

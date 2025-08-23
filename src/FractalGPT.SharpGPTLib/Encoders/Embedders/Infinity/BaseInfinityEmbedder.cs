@@ -6,12 +6,12 @@ namespace FractalGPT.SharpGPTLib.Encoders.Embedders.Infinity;
 public class BaseInfinityEmbedder : IEmbedderService
 {
     private readonly HttpClient _httpClient;
-    
+
     /// <summary>
     /// Параметры тангенса "k", f(x) = tanh(k*x+b) 
     /// </summary>
     public double TanhNormParamK { get; set; } = 0.64;
-    
+
     /// <summary>
     /// Параметры тангенса "b", f(x) = tanh(k*x+b) 
     /// </summary>
@@ -60,7 +60,7 @@ public class BaseInfinityEmbedder : IEmbedderService
     /// <summary>
     /// Нормализация косинуса через гиперболический тангенс
     /// </summary>
-    public virtual double TanhCosineNormalize(double cosine) => 
+    public virtual double TanhCosineNormalize(double cosine) =>
         Math.Tanh(TanhNormParamK * (cosine - MeanCos) / StdCos + TanhNormParamB);
 
     public async Task<Vector[]> EncodeAsyncWithBlockSize(IEnumerable<string> processedTexts, IEnumerable<int> blockSizes, IEnumerable<int> excludeBlockSizes = null)

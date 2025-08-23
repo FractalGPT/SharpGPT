@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI.MessageTypes;
+using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -18,12 +19,17 @@ public class LLMMessage
     /// Gets or sets the content of the message (can be null).
     /// </summary>
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    [JsonConverter(typeof(ContentJsonConverter))]
+    public object Content { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="LLMMessage"/> class for serialization.
+    /// Initializes a new instance of the <see cref="Message"/> class.
     /// </summary>
-    private LLMMessage() { }
+    public LLMMessage() // Parameterless constructor for deserialization
+    {
+        Role = string.Empty;
+        Content = null;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LLMMessage"/> class with the specified role and content.
@@ -37,7 +43,19 @@ public class LLMMessage
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
 
         Role = role;
-        Content = content; // Allow null content
+        Content = content;
+    }
+
+    public LLMMessage(string role, MessageContent content)
+    {
+        if (string.IsNullOrWhiteSpace(role))
+            throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
+
+        Role = role;
+        if (role == "user")
+            Content = content;
+        else
+            Content = content.ToString();
     }
 
     /// <summary>
@@ -59,16 +77,8 @@ public class LLMMessage
     /// <returns>A new <see cref="LLMMessage"/> instance with the same properties.</returns>
     public LLMMessage DeepClone()
     {
-        return new LLMMessage(Role, Content);
+        if(Content is string) 
+            return new LLMMessage(Role, Content as string);
+        else return new LLMMessage(Role, Content as MessageContent);
     }
-}
-
-/// <summary>
-/// Roles for chat messages.
-/// </summary>
-public enum Roles : byte
-{
-    Assistant = 1,
-    User = 2,
-    System = 3
 }
