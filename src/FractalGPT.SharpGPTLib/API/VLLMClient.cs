@@ -27,7 +27,7 @@ public class VLLMClient : ChatLLMApi
         string host,
         string apiKey = null,
         IStreamHandler streamHandler = null)
-        : base(apiKey, false, string.Empty, modelName, systemPrompt, streamHandler)
+        : base(apiKey: apiKey, useProxy: false, proxyPath: string.Empty, modelName: modelName, prompt: systemPrompt, streamSender: streamHandler)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");

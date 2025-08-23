@@ -25,22 +25,22 @@ public class ChatLLMApi
     /// <summary>
     /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
     /// </summary>
-    public ChatLLMApi(string key, bool useProxy, string proxyPath, string modelName, string prompt, IStreamHandler streamSender = null)
+    public ChatLLMApi(string apiKey, bool useProxy, string proxyPath, string modelName, string prompt, IStreamHandler streamSender = null)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Имя модели не может быть пустым");
 
-        _apiKey = key;
+        _apiKey = apiKey;
         ModelName = modelName;
         _prompt = prompt;
         _streamSender = streamSender;
 
         if (useProxy)
         {
-            _webApi = new ProxyHTTPClient(proxyPath, key);
+            _webApi = new ProxyHTTPClient(proxyPath, apiKey);
             (_webApi as ProxyHTTPClient).OnProxyError += LLMApi_OnProxyError;
         }
-        else { _webApi = new WithoutProxyClient(key); }
+        else { _webApi = new WithoutProxyClient(apiKey); }
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
     }
