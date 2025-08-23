@@ -1,4 +1,5 @@
-﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+﻿using System.Text.RegularExpressions;
+using FractalGPT.SharpGPTLib.API.LLMAPI;
 
 namespace FractalGPT.SharpGPTLib.LLM;
 
@@ -88,10 +89,18 @@ public class ClassifierWithLLM
         }
     }
 
-    // Очистка строки от пунктуации и пробелов (trim)
+    /// <summary>
+    /// Очистка строки от пунктуации и пробелов (trim)
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
     private string ClearStr(string str)
     {
-        return str?.Trim(" -—,.!?;:\"'_+{}[]()<>".ToCharArray()).ToLower() ?? string.Empty;
+        if (string.IsNullOrEmpty(str))
+            return string.Empty;
+
+        // Удаляем все символы кроме английских/русских букв и цифр с начала и конца
+        return Regex.Replace(str, @"^[^a-zA-Zа-яА-ЯёЁ0-9]+|[^a-zA-Zа-яА-ЯёЁ0-9]+$", "").ToLower();
     }
 
     // Дефолтные токены (0-9 для шкалы)
