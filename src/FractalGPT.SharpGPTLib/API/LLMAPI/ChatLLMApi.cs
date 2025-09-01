@@ -1,7 +1,7 @@
-﻿using FractalGPT.SharpGPTLib.API.WebUtils;
+﻿using System.Net.Http.Json;
+using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 using FractalGPT.SharpGPTLib.Stream;
-using System.Net.Http.Json;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -145,7 +145,7 @@ public class ChatLLMApi
         var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.SetMessages(context);
 
-        Exception exception = new Exception();
+        Exception exception = new Exception("Базовая ошибка");
 
         for (int attempts = 0; attempts < 2; attempts++)
         {
@@ -154,8 +154,12 @@ public class ChatLLMApi
             // Проверка, что HTTP-запрос выполнен успешно
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                exception = new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
+                string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
+                var content = await response.Content.ReadAsStringAsync();
+                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
+
+                await Task.Delay(2000);
+                continue;
             }
 
             try
@@ -170,8 +174,7 @@ public class ChatLLMApi
                 }
                 else
                 {
-                    var chatCompletionsResponse = await response.Content
-                        .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+                    var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
                     if (chatCompletionsResponse == null ||
                         chatCompletionsResponse.Choices == null ||
@@ -188,11 +191,12 @@ public class ChatLLMApi
             }
             catch (Exception ex)
             {
+
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
-                exception = new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 500)), ex);
+                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n", ex);
 
-                await Task.Delay(500);
+                await Task.Delay(2000);
             }
         }
 
