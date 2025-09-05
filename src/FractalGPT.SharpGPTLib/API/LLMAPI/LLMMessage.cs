@@ -9,6 +9,13 @@ namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 [Serializable]
 public class LLMMessage
 {
+    [JsonIgnore]
+    public const string UserRole = "user";
+    [JsonIgnore]
+    public const string AssistantRole = "assistant";
+    [JsonIgnore]
+    public const string SystemRole = "system";
+
     /// <summary>
     /// Gets the role of the message sender (e.g., "user" or "assistant").
     /// </summary>
