@@ -28,12 +28,12 @@ public class MessageContent : List<IContentItem>
         Add(imageContent);
     }
 
-    public override string ToString() 
+    public override string ToString()
     {
         foreach (var contentItem in this)
             if (contentItem is TextContentItem)
                 return (contentItem as TextContentItem).Text;
-        
+
         return string.Empty;
     }
 }

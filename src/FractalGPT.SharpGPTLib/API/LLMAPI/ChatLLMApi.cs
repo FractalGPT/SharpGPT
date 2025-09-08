@@ -1,7 +1,7 @@
-﻿using System.Net.Http.Json;
-using FractalGPT.SharpGPTLib.API.WebUtils;
+﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 using FractalGPT.SharpGPTLib.Stream;
+using System.Net.Http.Json;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -20,7 +20,7 @@ public class ChatLLMApi
     public virtual string ApiUrl { get; set; }
     public virtual string TokenizeApiUrl { get; set; }
     public event Action<string> ProxyInfo;
-    
+
 
     /// <summary>
     /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
@@ -209,7 +209,7 @@ public class ChatLLMApi
     /// </summary>
     /// <param name="generateSettings">Начальные настройки</param>
     /// <returns></returns>
-    public GenerateSettings Validate(GenerateSettings generateSettings) 
+    public GenerateSettings Validate(GenerateSettings generateSettings)
     {
         generateSettings ??= new();
 
@@ -228,9 +228,9 @@ public class ChatLLMApi
     /// </summary>
     public static double ValidateTemperature(double temperature)
     {
-        if (temperature > 1.5) 
+        if (temperature > 1.5)
             return 1.5;
-        if (temperature < 0.0) 
+        if (temperature < 0.0)
             return 0.0;
 
         return temperature;
