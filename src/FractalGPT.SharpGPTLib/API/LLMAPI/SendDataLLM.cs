@@ -57,7 +57,7 @@ public class SendDataLLM
     /// Number of logists
     /// </summary>
     [JsonPropertyName("top_logprobs")]
-    public int TopLogprobs { get; set; }
+    public int? TopLogprobs { get; set; }
 
     /// <summary>
     /// Reasoning data 

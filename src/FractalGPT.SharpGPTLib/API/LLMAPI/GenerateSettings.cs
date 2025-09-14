@@ -12,7 +12,7 @@ public class GenerateSettings
     private int _topK;
     private int _maxTokens;
     private int _minTokens;
-    private int _numLogprobs;
+    private int? _numLogprobs;
 
     /// <summary>
     /// Gets the temperature controlling the randomness of the output. Higher values make output more creative, lower values make it more focused.
@@ -32,12 +32,12 @@ public class GenerateSettings
     /// Top logists for each step
     /// Valid range: 1 to 20.
     /// </summary>
-    public int TopLogprobs
+    public int? TopLogprobs
     {
         get => _numLogprobs;
         set
         {
-            _numLogprobs = ValidateRange(value, 1, 20, nameof(TopLogprobs));
+            _numLogprobs = ValidateRange(value.Value, 1, 20, nameof(TopLogprobs));
         }
     }
 
