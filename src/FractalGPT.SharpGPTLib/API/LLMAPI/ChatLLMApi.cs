@@ -156,6 +156,8 @@ public class ChatLLMApi
             {
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(content))
+                    content = content.Substring(0, Math.Min(content.Length, 1024));
                 exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
 
                 await Task.Delay(2000);
@@ -194,6 +196,8 @@ public class ChatLLMApi
 
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(content))
+                    content = content.Substring(0, Math.Min(content.Length, 1024));
                 exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n", ex);
 
                 await Task.Delay(2000);
