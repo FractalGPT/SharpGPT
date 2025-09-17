@@ -124,7 +124,7 @@ public class GenerateSettings
         double topP = 0.8,
         int topK = 5,
         int minTokens = 8,
-        int maxTokens = 2248,
+        int maxTokens = 2500,
         string streamId = null,
         string streamMethod = "StreamMessage")
     {
