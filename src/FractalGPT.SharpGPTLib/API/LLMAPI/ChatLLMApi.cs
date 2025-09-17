@@ -20,7 +20,7 @@ public class ChatLLMApi
     public virtual string ApiUrl { get; set; }
     public virtual string TokenizeApiUrl { get; set; }
     public event Action<string> ProxyInfo;
-    
+
 
     /// <summary>
     /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
@@ -145,7 +145,7 @@ public class ChatLLMApi
         var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.SetMessages(context);
 
-        Exception exception = new Exception();
+        Exception exception = new Exception("Базовая ошибка");
 
         for (int attempts = 0; attempts < 2; attempts++)
         {
@@ -154,8 +154,14 @@ public class ChatLLMApi
             // Проверка, что HTTP-запрос выполнен успешно
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                exception = new HttpRequestException($"Ошибка при вызове LLM API. Код статуса: {response.StatusCode}. Ответ: {errorContent}");
+                string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
+                var content = await response.Content.ReadAsStringAsync();
+                if (!string.IsNullOrEmpty(content))
+                    content = content.Substring(0, Math.Min(content.Length, 1024));
+                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
+
+                await Task.Delay(2000);
+                continue;
             }
 
             try
@@ -170,8 +176,7 @@ public class ChatLLMApi
                 }
                 else
                 {
-                    var chatCompletionsResponse = await response.Content
-                        .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+                    var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
                     if (chatCompletionsResponse == null ||
                         chatCompletionsResponse.Choices == null ||
@@ -188,11 +193,14 @@ public class ChatLLMApi
             }
             catch (Exception ex)
             {
+
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
-                exception = new Exception(content + "\n############\n" + text.Substring(0, Math.Min(text.Length, 500)), ex);
+                if (!string.IsNullOrEmpty(content))
+                    content = content.Substring(0, Math.Min(content.Length, 1024));
+                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n", ex);
 
-                await Task.Delay(500);
+                await Task.Delay(2000);
             }
         }
 
@@ -205,7 +213,7 @@ public class ChatLLMApi
     /// </summary>
     /// <param name="generateSettings">Начальные настройки</param>
     /// <returns></returns>
-    public GenerateSettings Validate(GenerateSettings generateSettings) 
+    public GenerateSettings Validate(GenerateSettings generateSettings)
     {
         generateSettings ??= new();
 
@@ -224,9 +232,9 @@ public class ChatLLMApi
     /// </summary>
     public static double ValidateTemperature(double temperature)
     {
-        if (temperature > 1.5) 
+        if (temperature > 1.5)
             return 1.5;
-        if (temperature < 0.0) 
+        if (temperature < 0.0)
             return 0.0;
 
         return temperature;

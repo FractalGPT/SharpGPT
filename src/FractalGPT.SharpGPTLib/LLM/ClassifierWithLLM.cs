@@ -1,5 +1,5 @@
-﻿using System.Text.RegularExpressions;
-using FractalGPT.SharpGPTLib.API.LLMAPI;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Text.RegularExpressions;
 
 namespace FractalGPT.SharpGPTLib.LLM;
 

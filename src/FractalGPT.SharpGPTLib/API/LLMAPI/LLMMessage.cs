@@ -9,11 +9,18 @@ namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 [Serializable]
 public class LLMMessage
 {
+    [JsonIgnore]
+    public const string UserRole = "user";
+    [JsonIgnore]
+    public const string AssistantRole = "assistant";
+    [JsonIgnore]
+    public const string SystemRole = "system";
+
     /// <summary>
     /// Gets the role of the message sender (e.g., "user" or "assistant").
     /// </summary>
     [JsonPropertyName("role")]
-    public string Role { get; private set; }
+    public string Role { get; set; }
 
     /// <summary>
     /// Gets or sets the content of the message (can be null).
@@ -77,7 +84,7 @@ public class LLMMessage
     /// <returns>A new <see cref="LLMMessage"/> instance with the same properties.</returns>
     public LLMMessage DeepClone()
     {
-        if(Content is string) 
+        if (Content is string)
             return new LLMMessage(Role, Content as string);
         else return new LLMMessage(Role, Content as MessageContent);
     }
