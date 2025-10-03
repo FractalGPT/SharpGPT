@@ -28,6 +28,14 @@ public class MessageContent : List<IContentItem>
         Add(imageContent);
     }
 
+
+    public void AddText(string text) 
+    {
+        TextContentItem textContent = new TextContentItem(text);
+        Add(textContent);
+    }
+
+
     public override string ToString()
     {
         foreach (var contentItem in this)

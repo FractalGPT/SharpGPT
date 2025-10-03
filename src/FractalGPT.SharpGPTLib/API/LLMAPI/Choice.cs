@@ -57,6 +57,44 @@ public class Choice
     public List<ReasoningDetail> ReasoningDetails { get; set; }
 }
 
+/// <summary>
+/// Represents an image URL object, typically containing base64 data.
+/// </summary>
+[Serializable]
+public class ImageUrl
+{
+    /// <summary>
+    /// The URL of the image, often a data URI (e.g., "data:image/png;base64,...").
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string Url { get; set; }
+}
+
+/// <summary>
+/// Represents image information included in a message.
+/// </summary>
+[Serializable]
+public class ImageInfo
+{
+    /// <summary>
+    /// The type of the content, e.g., "image_url".
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+
+    /// <summary>
+    /// The image URL object containing the image data.
+    /// </summary>
+    [JsonPropertyName("image_url")]
+    public ImageUrl ImageUrl { get; set; }
+
+    /// <summary>
+    /// The index of the image in the sequence.
+    /// </summary>
+    [JsonPropertyName("index")]
+    public int Index { get; set; }
+}
+
 
 /// <summary>
 /// Represents the log probabilities data for the generated tokens.

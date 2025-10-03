@@ -13,4 +13,11 @@ public class TextContentItem : IContentItem
 
     [JsonPropertyName("text")]
     public string Text { get; set; }
+
+    public TextContentItem() { }
+
+    public TextContentItem(string text)
+    {
+        Text = text;
+    }
 }

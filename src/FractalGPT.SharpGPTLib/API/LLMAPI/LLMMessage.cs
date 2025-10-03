@@ -29,6 +29,20 @@ public class LLMMessage
     [JsonConverter(typeof(ContentJsonConverter))]
     public object Content { get; set; }
 
+
+    /// <summary>
+    /// A list of images included in the message.
+    /// Will be null or empty for text-only responses.
+    /// </summary>
+    [JsonPropertyName("images")]
+    public List<ImageInfo> Images { get; set; }
+
+    [JsonPropertyName("refusal")]
+    public string Refusal { get; set; }
+
+    [JsonPropertyName("reasoning")]
+    public string Reasoning { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="Message"/> class.
     /// </summary>

@@ -186,8 +186,7 @@ public class ChatLLMApi
                     }
 
                     var textResult = chatCompletionsResponse.Choices[0].Message.Content.ToString();
-                    if (!string.IsNullOrEmpty(textResult))
-                        return chatCompletionsResponse;
+                    return chatCompletionsResponse;
                 }
 
             }
