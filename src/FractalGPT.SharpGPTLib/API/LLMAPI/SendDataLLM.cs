@@ -125,7 +125,7 @@ public class SendDataLLM
             if (fixedMessages.Count == 0)
             {
                 if (message.Role == "assistant")
-                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, ""));
+                    fixedMessages.Add(LLMMessage.CreateMessage(Roles.User, " "));
 
                 fixedMessages.Add(message);
             }
