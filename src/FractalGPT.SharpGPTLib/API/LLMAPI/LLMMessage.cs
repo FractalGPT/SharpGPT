@@ -58,7 +58,22 @@ public class LLMMessage
     /// <param name="role">The role of the message sender (e.g., "user", "assistant").</param>
     /// <param name="content">The text content of the message (can be null).</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="role"/> is null or whitespace.</exception>
-    public LLMMessage(string role, string content)
+    public LLMMessage(string role, string content) => InitText(role, content);
+
+    public LLMMessage(string role, MessageContent content) => InitMC(role, content);
+
+    public LLMMessage(string role, object content)
+    {
+        if (content is string)
+            InitText(role, content as string);
+        else if (content is MessageContent)
+            InitMC(role, content as MessageContent);
+        else throw new Exception("Не поддерживаемый тип контента, используйте string или MessageContent");
+    }
+
+
+    // Инициализация строкой
+    private void InitText(string role, string content)
     {
         if (string.IsNullOrWhiteSpace(role))
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
@@ -67,7 +82,8 @@ public class LLMMessage
         Content = content;
     }
 
-    public LLMMessage(string role, MessageContent content)
+    // Инициализация MessageContent
+    private void InitMC(string role, MessageContent content)
     {
         if (string.IsNullOrWhiteSpace(role))
             throw new ArgumentException("Role cannot be null or whitespace.", nameof(role));
