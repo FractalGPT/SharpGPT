@@ -102,4 +102,6 @@ public class LLMMessage
             return new LLMMessage(Role, Content as string);
         else return new LLMMessage(Role, Content as MessageContent);
     }
+
+    
 }

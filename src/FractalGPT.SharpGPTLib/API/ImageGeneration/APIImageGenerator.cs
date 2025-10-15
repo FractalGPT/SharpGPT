@@ -22,10 +22,14 @@ public class APIImageGenerator
 
     public async Task<ImageGenerationAnswer> GenerateAsync(LLMMessage prompt)
     {
+        List<LLMMessage> context = new List<LLMMessage>() { prompt };
+        return await GenerateAsync(context);
+    }
+
+    public async Task<ImageGenerationAnswer> GenerateAsync(IEnumerable<LLMMessage> context)
+    {
         try
         {
-            List<LLMMessage> context = new List<LLMMessage>() { prompt };
-
             var response = await _imageGenerativeModelApi.SendWithContextAsync(context);
 
             var firstChoice = response?.Choices?.FirstOrDefault();
