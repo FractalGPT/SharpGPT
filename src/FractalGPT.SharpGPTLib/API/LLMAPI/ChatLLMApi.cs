@@ -2,6 +2,8 @@
 using FractalGPT.SharpGPTLib.Prompts;
 using FractalGPT.SharpGPTLib.Stream;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 
@@ -192,12 +194,14 @@ public class ChatLLMApi
             }
             catch (Exception ex)
             {
+                string sendDataJson = JsonSerializer.Serialize(sendData);
+                sendDataJson = sendDataJson.Substring(0, Math.Min(sendDataJson.Length, 512));
 
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
                 var content = await response.Content.ReadAsStringAsync();
                 if (!string.IsNullOrEmpty(content))
-                    content = content.Substring(0, Math.Min(content.Length, 1024));
-                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n", ex);
+                    content = Regex.Replace(content.Substring(0, Math.Min(content.Length, 512)), @"\s+", "Too match spaces");
+                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nSendData: {sendDataJson}\nContent: {content}\n###\n", ex);
 
                 await Task.Delay(2000);
             }
