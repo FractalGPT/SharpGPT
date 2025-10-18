@@ -48,12 +48,12 @@ public class GenerateSettings
 
     /// <summary>
     /// Gets or sets the penalty for repeated tokens to discourage repetitive output.
-    /// Valid range: 0.0 to 2.0.
+    /// Valid range: 1.0 to 2.0.
     /// </summary>
     public double RepetitionPenalty
     {
         get => _repetitionPenalty;
-        set => _repetitionPenalty = ValidateRange(value, 0.0, 2.0, nameof(RepetitionPenalty));
+        set => _repetitionPenalty = ValidateRange(value, 1.0, 2.0, nameof(RepetitionPenalty));
     }
 
 
