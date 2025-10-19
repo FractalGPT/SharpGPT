@@ -66,7 +66,7 @@ public class ProxyHTTPClient : IWebAPIClient
     /// <exception cref="InvalidOperationException">Thrown if unable to connect through any of the proxy servers.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? cancellationToken = default)
     {
-        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(6)).Token;
+        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token;
 
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
