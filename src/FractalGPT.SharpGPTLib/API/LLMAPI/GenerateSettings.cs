@@ -120,7 +120,7 @@ public class GenerateSettings
     /// <exception cref="ArgumentException">Thrown when <paramref name="modelName"/> is null or empty.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="temperature"/> is out of range.</exception>
     public GenerateSettings(double temperature = 0.1,
-        double repetitionPenalty = 1.04,
+        double repetitionPenalty = 1.05,
         double topP = 0.8,
         int topK = 5,
         int minTokens = 8,
