@@ -44,7 +44,7 @@ public class GenerateSettings
     /// <summary>
     /// Whether to print logarithms of token probabilities
     /// </summary>
-    public bool LogProbs { get; set; } = false;
+    public bool? LogProbs { get; set; }
 
     /// <summary>
     /// Gets or sets the penalty for repeated tokens to discourage repetitive output.

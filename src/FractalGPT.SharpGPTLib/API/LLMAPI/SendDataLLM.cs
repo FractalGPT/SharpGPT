@@ -51,7 +51,7 @@ public class SendDataLLM
     /// Whether to print logarithms of token probabilities
     /// </summary>
     [JsonPropertyName("logprobs")]
-    public bool LogProbs { get; set; }
+    public bool? LogProbs { get; set; }
 
     /// <summary>
     /// Number of logists
