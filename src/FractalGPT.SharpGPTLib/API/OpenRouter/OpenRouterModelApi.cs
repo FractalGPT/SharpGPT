@@ -11,6 +11,7 @@ namespace FractalGPT.SharpGPTLib.API.OpenRouter
         public OpenRouterModelApi(string apiKey, string modelName, IStreamHandler streamSender = null, string prompt = "", bool useProxy = false, string proxyPath = null) : base(apiKey: apiKey, useProxy: useProxy, proxyPath: proxyPath, modelName: modelName, prompt: prompt, streamSender: streamSender)
         {
             ApiUrl = "https://openrouter.ai/api/v1/chat/completions";
+            StreamOptions = new();
         }
     }
 }

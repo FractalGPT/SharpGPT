@@ -21,6 +21,9 @@ public class ChatLLMApi
     public virtual string ModelName { get; set; }
     public virtual string ApiUrl { get; set; }
     public virtual string TokenizeApiUrl { get; set; }
+
+    public StreamOptions StreamOptions { get; set; }
+
     public event Action<string> ProxyInfo;
 
 
@@ -145,6 +148,7 @@ public class ChatLLMApi
 
         using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(ModelName, generateSettings);
+        sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
         Exception exception = new Exception("Базовая ошибка");

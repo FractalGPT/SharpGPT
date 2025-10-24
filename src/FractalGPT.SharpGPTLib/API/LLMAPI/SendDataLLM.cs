@@ -72,6 +72,9 @@ public class SendDataLLM
     [JsonPropertyName("messages")]
     public List<LLMMessage> Messages { get; }
 
+    [JsonPropertyName("stream_options")]
+    public StreamOptions StreamOptions { get; set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SendDataLLM"/> class with the specified model name, 
     /// system prompt, buffer size, and temperature.
