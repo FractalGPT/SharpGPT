@@ -1,6 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.API.WebUtils;
 using FractalGPT.SharpGPTLib.Prompts;
 using FractalGPT.SharpGPTLib.Stream;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -30,7 +31,8 @@ public class ChatLLMApi
     /// <summary>
     /// Апи для отправки запросов на LLM по стандарту OpenAI (также поддерживается DeepSeek, VLLM, OpenRouter, Replicate и тп.)
     /// </summary>
-    public ChatLLMApi(string apiKey, bool useProxy, string proxyPath, string modelName, string prompt, IStreamHandler streamSender = null)
+    public ChatLLMApi(string apiKey, string modelName, string prompt, IStreamHandler streamSender = null,
+        IEnumerable<WebProxy> proxies = null)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Имя модели не может быть пустым");
@@ -40,9 +42,9 @@ public class ChatLLMApi
         _prompt = prompt;
         _streamSender = streamSender;
 
-        if (useProxy)
+        if (proxies != null && proxies.Any())
         {
-            _webApi = new ProxyHTTPClient(proxyPath, apiKey);
+            _webApi = new ProxyHTTPClient(proxies, apiKey);
             (_webApi as ProxyHTTPClient).OnProxyError += LLMApi_OnProxyError;
         }
         else { _webApi = new WithoutProxyClient(apiKey); }

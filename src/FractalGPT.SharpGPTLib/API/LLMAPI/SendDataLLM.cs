@@ -65,6 +65,9 @@ public class SendDataLLM
     [JsonPropertyName("reasoning")]
     public ReasoningSettings ReasoningSettings { get; set; }
 
+    [JsonPropertyName("reasoning_effort")]
+    public string ReasoningEffort { get; set; }
+
     /// <summary>
     /// Gets the list of messages to be sent to the LLM.
     /// Messages are stored in chronological order with a fixed size limit.
@@ -104,6 +107,7 @@ public class SendDataLLM
         MinTokens = generateSettings.MinTokens;
         Stream = generateSettings.Stream;
         ReasoningSettings = generateSettings.ReasoningSettings;
+        ReasoningEffort = generateSettings?.ReasoningSettings?.Enabled == true ? "medium" : "none";
         LogProbs = generateSettings.LogProbs;
         TopLogprobs = generateSettings.TopLogprobs;
 

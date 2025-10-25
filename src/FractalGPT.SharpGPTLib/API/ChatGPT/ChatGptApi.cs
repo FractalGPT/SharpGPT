@@ -1,4 +1,5 @@
-﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+﻿using System.Net;
+using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Stream;
 
 namespace FractalGPT.SharpGPTLib.API.ChatGPT
@@ -27,12 +28,11 @@ namespace FractalGPT.SharpGPTLib.API.ChatGPT
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="apiKey"/> or <paramref name="modelName"/> is null or empty.</exception>
         public ChatGptApi(
             string apiKey,
-            bool useProxy = false,
-            string proxyPath = "proxy.json",
             string modelName = "gpt-3.5-turbo",
             string prompt = null,
-            IStreamHandler streamSender = null)
-            : base(apiKey, useProxy, proxyPath, modelName, prompt, streamSender)
+            IStreamHandler streamSender = null,
+            IEnumerable<WebProxy> proxies = null)
+            : base(apiKey, modelName, prompt, streamSender, proxies: proxies)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
                 throw new ArgumentNullException(nameof(apiKey), "API key cannot be null or empty.");

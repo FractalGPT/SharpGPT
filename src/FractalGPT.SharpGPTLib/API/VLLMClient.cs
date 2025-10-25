@@ -1,4 +1,5 @@
-﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+﻿using System.Net;
+using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Stream;
 
 namespace FractalGPT.SharpGPTLib.API;
@@ -26,8 +27,9 @@ public class VLLMClient : ChatLLMApi
         string systemPrompt,
         string host,
         string apiKey = null,
-        IStreamHandler streamHandler = null)
-        : base(apiKey: apiKey, useProxy: false, proxyPath: string.Empty, modelName: modelName, prompt: systemPrompt, streamSender: streamHandler)
+        IStreamHandler streamHandler = null,
+        IEnumerable<WebProxy> proxies = null)
+        : base(apiKey: apiKey, modelName: modelName, prompt: systemPrompt, streamSender: streamHandler, proxies: proxies)
     {
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Model name cannot be null or empty.");

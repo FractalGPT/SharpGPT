@@ -27,18 +27,18 @@ public class ProxyHTTPClient : IWebAPIClient
     /// Initializes a new instance of the ProxyHTTPClient class with a given list of proxies.
     /// </summary>
     /// <param name="proxies">List of proxy servers.</param>
-    public ProxyHTTPClient(List<WebProxy> proxies)
+    public ProxyHTTPClient(IEnumerable<WebProxy> proxies)
     {
-        _proxies = proxies ?? throw new ArgumentNullException(nameof(proxies));
+        _proxies = proxies?.ToList() ?? throw new ArgumentNullException(nameof(proxies));
     }
 
     /// <summary>
     /// Initializes a new instance of the ProxyHTTPClient class with a given list of proxies.
     /// </summary>
     /// <param name="proxies">List of proxy servers.</param>
-    public ProxyHTTPClient(List<WebProxy> proxies, string apiKey)
+    public ProxyHTTPClient(IEnumerable<WebProxy> proxies, string apiKey)
     {
-        _proxies = proxies ?? throw new ArgumentNullException(nameof(proxies));
+        _proxies = proxies?.ToList() ?? throw new ArgumentNullException(nameof(proxies));
         Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
     }
 
