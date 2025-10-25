@@ -1,4 +1,4 @@
-# SharpGPT
+﻿# SharpGPT
 
 ![Stars](https://img.shields.io/github/stars/FractalGPT/SharpGPT?style=flat-square)
 ![Forks](https://img.shields.io/github/forks/FractalGPT/SharpGPT?style=flat-square)
@@ -6,7 +6,7 @@
 ![License](https://img.shields.io/github/license/FractalGPT/SharpGPT?style=flat-square)
 ![.NET](https://img.shields.io/badge/.NET-Standard%202.0-purple?style=flat-square)
 
-<img src="https://github.com/FractalGPT/SharpGPT/blob/main/IMG/logo.png?raw=true" width=500 />
+<img src="https://github.com/FractalGPT/SharpGPT/blob/main/IMG/logo.svg?raw=true" width=500 />
 
 ## 🚀 **SharpGPT от ООО "АватарМашина"** 🚀
 
