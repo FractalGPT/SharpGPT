@@ -14,20 +14,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="AI">
-      <HintPath>..\..\Binary\AIFramework2.2\AI.dll</HintPath>
-    </Reference>
-    <Reference Include="AI.DataPrepaire">
-      <HintPath>..\..\Binary\AIFramework2.2\AI.DataPrepaire.dll</HintPath>
-    </Reference>
-    <Reference Include="AI.ONNX">
-      <HintPath>..\..\Binary\AIFramework2.2\AI.ONNX.dll</HintPath>
-    </Reference>
+    <Folder Include="Clients\FractalGPTAPI\" />
+    <Folder Include="Core\Exceptions\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Clients\FractalGPTAPI\" />
-    <Folder Include="Core\Exceptions\" />
+    <ProjectReference Include="..\..\..\AIFrameworkOpen\src\AICrossPlatform\AICrossPlatform.csproj" />
   </ItemGroup>
 
 </Project>
