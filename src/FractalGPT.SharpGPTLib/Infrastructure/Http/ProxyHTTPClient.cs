@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -64,7 +65,7 @@ public class ProxyHTTPClient : IWebAPIClient
     /// <param name="sendData">Data to be sent in the request.</param>
     /// <returns>HTTP response from the server.</returns>
     /// <exception cref="InvalidOperationException">Thrown if unable to connect through any of the proxy servers.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? cancellationToken = default)
+    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
         cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token;
 

@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Net.Http.Headers;
 
 namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 
@@ -9,5 +10,5 @@ namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 public interface IWebAPIClient : IDisposable
 {
     AuthenticationHeaderValue Authentication { get; set; }
-    Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? concelationToken = default);
+    Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? concelationToken = default);
 }

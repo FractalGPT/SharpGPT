@@ -9,7 +9,6 @@ namespace FractalGPT.SharpGPTLib.API.LLMAPI;
 /// <summary>
 /// Представляет данные, отправляемые в LLM (большую языковую модель), включая сообщения и параметры запроса
 /// </summary>
-// SendDataLLM.cs - Основная часть с бизнес-логикой
 public partial class SendDataLLM
 {
     /// <summary>

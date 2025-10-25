@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -57,7 +58,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="sendData">Data to send in the request.</param>
     /// <returns>The HttpResponseMessage from the request.</returns>
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, object sendData, CancellationToken? cancellationToken = default)
+    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
         cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token;
 
@@ -68,10 +69,7 @@ public class WithoutProxyClient : IWebAPIClient
 
         try
         {
-            var jsonContent = JsonSerializer.Serialize(sendData, new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            });
+            var jsonContent = sendData.GetJson(); // Сериализация
 
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(apiUrl))
             {

@@ -1,8 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
@@ -16,7 +13,7 @@ public partial class SendDataLLM
     /// Получает название модели LLM
     /// </summary>
     [JsonPropertyName("model")]
-    public string ModelName { get; }
+    public string ModelName { get; protected set; }
 
     /// <summary>
     /// Входные данные
@@ -38,37 +35,37 @@ public partial class SendDataLLM
     /// Получает значение температуры для генерации текста (степень случайности)
     /// </summary>
     [JsonPropertyName("temperature")]
-    public double Temperature { get; set; }
+    public double? Temperature { get; set; }
 
     /// <summary>
     /// Штраф за повторение токенов
     /// </summary>
     [JsonPropertyName("repetition_penalty")]
-    public double RepetitionPenalty { get; set; }
+    public double? RepetitionPenalty { get; set; }
 
     /// <summary>
     /// Параметр top_p для nucleus sampling
     /// </summary>
     [JsonPropertyName("top_p")]
-    public double TopP { get; set; }
+    public double? TopP { get; set; }
 
     /// <summary>
     /// Параметр top_k - количество наиболее вероятных токенов для выбора
     /// </summary>
     [JsonPropertyName("top_k")]
-    public int TopK { get; set; }
+    public int? TopK { get; set; }
 
     /// <summary>
     /// Минимальное количество токенов в ответе
     /// </summary>
     [JsonPropertyName("min_tokens")]
-    public int MinTokens { get; set; }
+    public int? MinTokens { get; set; }
 
     /// <summary>
     /// Максимальное количество токенов в ответе
     /// </summary>
     [JsonPropertyName("max_tokens")]
-    public int MaxTokens { get; set; }
+    public int? MaxTokens { get; set; }
 
     #endregion
 
@@ -78,7 +75,7 @@ public partial class SendDataLLM
     /// Включить потоковую передачу ответа
     /// </summary>
     [JsonPropertyName("stream")]
-    public bool Stream { get; set; }
+    public bool? Stream { get; set; }
 
     /// <summary>
     /// Опции потоковой передачи

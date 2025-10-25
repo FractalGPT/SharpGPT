@@ -19,7 +19,6 @@ namespace FractalGPT.SharpGPTLib.Clients.Base;
 public class ChatLLMApi
 {
     private readonly IWebAPIClient _webApi;
-    private readonly string _apiKey;
     private readonly string _prompt;
     private readonly IStreamHandler _streamSender;
 
@@ -41,10 +40,11 @@ public class ChatLLMApi
         if (string.IsNullOrWhiteSpace(modelName))
             throw new ArgumentNullException(nameof(modelName), "Имя модели не может быть пустым");
 
-        _apiKey = apiKey;
         ModelName = modelName;
         _prompt = prompt;
         _streamSender = streamSender;
+        // Возможно стоит заменить на логер
+        ProxyInfo += ChatLLMApi_ProxyInfo;
 
         if (proxies != null && proxies.Any())
         {
@@ -56,6 +56,8 @@ public class ChatLLMApi
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
     }
 
+    
+
     /// <summary>
     /// Определяет число токенов в запросе
     /// </summary>
@@ -64,11 +66,10 @@ public class ChatLLMApi
     /// <returns></returns>
     public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
     {
-        using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, new
-        {
-            messages,
-            model = ModelName,
-        }, cancellationToken);
+        SendDataLLM sendData = new SendDataLLM(ModelName);
+        sendData.SetMessages(messages);
+
+        using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, sendData, cancellationToken);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken);
 
@@ -139,6 +140,10 @@ public class ChatLLMApi
     }
 
 
+     
+    
+
+
     /// <summary>
     /// Отправка сообщения без учета контекста
     /// (потокобезопасная версия)
@@ -152,7 +157,6 @@ public class ChatLLMApi
         if (context == null)
             throw new ArgumentException("Контекст не может быть null.", nameof(context));
 
-        using var webApi = new WithoutProxyClient(_apiKey);
         var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
@@ -161,7 +165,7 @@ public class ChatLLMApi
 
         for (int attempts = 0; attempts < 2; attempts++)
         {
-            using var response = await webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
+            using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
 
             // Проверка, что HTTP-запрос выполнен успешно
             if (!response.IsSuccessStatusCode)
@@ -256,9 +260,11 @@ public class ChatLLMApi
     /// <summary>
     /// Проверяет максимальное количество токенов
     /// </summary>
-    public static int ValidateMaxTokens(int maxTokens)
+    public static int? ValidateMaxTokens(int? maxTokens)
     {
-        return Math.Max(1, maxTokens);
+        if (maxTokens == null) return null;
+
+        return Math.Max(1, maxTokens.Value);
     }
 
 
@@ -267,6 +273,42 @@ public class ChatLLMApi
         ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
     }
 
+    private void ChatLLMApi_ProxyInfo(string obj)
+    {
+        
+    }
 
 
+
+    #region Тестирование
+
+    /// <summary>
+    /// Метод предназначенный в первую очередь для тестирования 
+    /// (он показывает, что отправляется в модель)
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="generateSettings"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public SendDataLLM GetSendDataAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
+    {
+        List<LLMMessage> context = [
+            LLMMessage.CreateMessage(Roles.System, _prompt),
+            LLMMessage.CreateMessage(Roles.User, text)
+            ];
+
+        generateSettings = Validate(generateSettings);
+
+        if (context == null)
+            throw new ArgumentException("Контекст не может быть null.", nameof(context));
+
+        var sendData = new SendDataLLM(ModelName, generateSettings);
+        sendData.StreamOptions = StreamOptions;
+        sendData.SetMessages(context);
+
+        return sendData;
+    }
+
+    #endregion
 }
