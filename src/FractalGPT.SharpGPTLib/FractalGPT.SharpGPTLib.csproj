@@ -26,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="API\FractalGPTAPI\" />
+    <Folder Include="Clients\FractalGPTAPI\" />
+    <Folder Include="Core\Exceptions\" />
   </ItemGroup>
 
 </Project>

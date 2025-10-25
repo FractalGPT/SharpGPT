@@ -1,149 +1,237 @@
 # SharpGPT
+
 ![Stars](https://img.shields.io/github/stars/FractalGPT/SharpGPT?style=flat-square)
 ![Forks](https://img.shields.io/github/forks/FractalGPT/SharpGPT?style=flat-square)
 ![Watchers](https://img.shields.io/github/watchers/FractalGPT/SharpGPT?style=flat-square)
-
+![License](https://img.shields.io/github/license/FractalGPT/SharpGPT?style=flat-square)
+![.NET](https://img.shields.io/badge/.NET-Standard%202.0-purple?style=flat-square)
 
 <img src="https://github.com/FractalGPT/SharpGPT/blob/main/IMG/logo.png?raw=true" width=500 />
 
+## 🚀 **SharpGPT от ООО "АватарМашина"** 🚀
 
-- #### [Русская версия описания](https://github.com/FractalGPT/SharpGPT/blob/main/Docs/Files/Ru_README.md)
-
-
-## 🚀 **SharpGPT by FractalTech** 🚀
-
-### ✨ **Key Features**:
-- 🖥️ **Cross-platform** C# library for working with LLMs.
-- 🤖 Integration with **ChatGPT**, **GigaChat**, and our project **"[FractalGPT](https://fractalgpt.ru/)"**.
-- 📝 Hallucination checking, extractive summarization, text vectorization, and more.
-- 🔍 Search system, QAAgent, MathAgent, TextProcessor, and image description.
-- 🛠️ **AI Framework**: create your own projects, customize our client for your tasks!
-
-### 🔗 **Capabilities**:
-- 📚 Text summarization.
-- 💬 Conversational interaction.
-- 🧮 Solving mathematical problems.
-- 📄 Text and document-based Q&A system.
-- 🖼️ Image description and image-related questions.
-
-### 🌐 **Extensibility**:
-- ✍️ Building custom projects with **AI Framework**.
-- 🎓 Training classifiers, neural networks, and other algorithms.
-- 🎨 Working with images, texts, audio, and other data.
-- 🔄 Support for **ONNX models**.
-
-⭐️ **Auto-tracking**: Don't forget to star and fork our project!
-
-🔗 Join us and dive into the world of artificial intelligence! 🌍
-
-🤝 **FractalTech** is ready to be your reliable partner in research and development! 🌐
-
-----
-
-**SharpGPT** is a cross-platform library by [FractalTech LLC](https://fractaltech.ru/), offering a wide range of features for working with large language models (LLMs) in C#.
-
-Our API allows you to interact with various models, including ChatGPT from OpenAI, GigaChat from Sber, and many models and agents from our project "FractalGPT." You can perform hallucination checking, perform extractive summarization and text vectorization, and use the function invocation model and search system. To solve your tasks, we also offer modules for working with QAAgent, MathAgent, TextProcessor, and image description.
-
-Tasks addressed by our library include text summarization, conversation management, function invocation, solving mathematical problems, text and document-based Q&A, and image description with the ability to ask questions about images. We aim to provide you with a comprehensive set of tools for working with language models.
-
-SharpGPT will also support the [AI Framework](https://github.com/AIFramework/AIFrameworkOpen), which allows developers to create their own projects based on our client, extending its functionality and adapting it to their tasks using the capabilities of AIFramework, such as training classifiers, neural networks, autoregressive algorithms, and reinforcement learning. It also supports working with images, texts, audio, signals, and more, in addition to ONNX model support.
-
-Join us in our exciting journey into the world of artificial intelligence! We are confident that SharpGPT by FractalTech LLC will become your reliable partner in many of your tasks and projects.
+Современная кроссплатформенная библиотека на C# для работы с большими языковыми моделями (LLM) и AI-сервисами от компании [ООО "АватарМашина"](https://fractalgpt.ru/).
 
 ---
 
+## ✨ **Основные возможности**
 
-## 🌟 Why C#?
+### 🔌 **Универсальный API для LLM**
+- 🤖 **OpenAI** (ChatGPT, GPT-4, GPT-3.5)
+- 🧠 **Anthropic** (Claude, DeepSeek)
+- 🌐 **Google AI Studio** (Gemini)
+- 🔀 **OpenRouter** - доступ к десяткам моделей
+- 💡 **Perplexity AI**
+- 🏠 **vLLM** - локальное развертывание моделей
+- 🖥️ **Локальные серверы** - работа без интернета
 
-#### 1️⃣ **Performance**
-🚀 C# is a compiled programming language, which allows achieving higher performance compared to interpreted languages like Python.
+### 🛠️ **Расширенные возможности**
+- 📝 **Embeddings** - векторизация текстов
+- 🔍 **Reranking** - переранжирование результатов поиска
+- 🎨 **Image Generation** - генерация изображений
+- 💬 **Streaming** - потоковая передача ответов
+- 🔄 **Few-Shot Learning** - обучение на примерах
+- 👤 **Persona Chat** - персонализированные диалоги
 
-#### 2️⃣ **Integration with the .NET Ecosystem**
-🔗 C# is the primary programming language in the .NET ecosystem, providing extensive opportunities for integration with other libraries and infrastructure, such as Unity, XNA, databases, web servers, and more.
-
-#### 3️⃣ **Strong Support and Stability**
-🛡️ C# has a long history of development and broad support from Microsoft. This means developers can rely on the language and its tools' stability and reliability, especially important for projects requiring long-term support and development.
-
-#### 4️⃣ **Security**
-🔒 C# provides tools to ensure code security, such as strong typing and access control. This allows developers to create reliable and secure applications, including artificial intelligence models.
-
----
-
-## 🛣️ **Roadmap**
-
----
-
-### 🌐 **API**
-
-- ✅ **ChatGPT (OpenAI)**  
-- ✅ **AI21 (AI21 Labs)**
-- ✅ **[Local Server](https://github.com/FractalGPT/SimpleLLMServer) (FractalGPT Open)**
-- ✅ **vLLM**  
-- ❌ **Hallucination Checking (FractalGPT)**  
-- ❌ **Extractive Summarization (FractalGPT)**  
-- ✅ **Text Vectorization**  
-- ✅ **Text Similarity Search**  
-   - ✅ Bi-Encoder  
-   - ✅ Cross-Encoder  
-- ❌ **Function Invocation Model (FractalGPT)**  
-- ❌ **Search System (FractalGPT)**  
-- ✅ **QAAgent (FractalGPT)**  
-- ✅ **TextProcessor (FractalGPT)**  
-- ❌ **Image Description (FractalGPT)**  
-- ❌ **Logical Inference Module (FractalGPT)**  
-- ❌ **Signal Processing Module (FractalGPT)**  
+### 🎯 **Решаемые задачи**
+- 📚 Суммаризация текстов
+- 💬 Диалоговые системы
+- 📋 Вопросно-ответные системы (QA)
+- 🧮 Решение математических задач
+- 📄 Работа с документами
+- 🔍 Семантический поиск
+- 🎭 Классификация текстов
+- ✍️ Генерация контента
 
 ---
 
-### 📋 **Tasks**
+## 🏗️ **Архитектура проекта**
 
-- ✅ **Summarization**  
-- ✅ **Conversational System**  
-- ✅ **Text-based Q&A**  
-- ✅ **Text-based Dialogue**  
-- ✅ **Text Generation**  
-    - ✅ Descriptions  
-    - ✅ Greetings  
-    - ✅ Letters  
-    - ✅ Prompts  
-      - ✅ System  
-      - ✅ Adaptive  
-    - ✅ Code
-- ✅ **Persona chat**
-- ✅ **Persona chat (local)** 
-- ❌ **Automatic Review Generation**  
-- ❌ **Calling a functions**  
-- ✅ **Math Problem Solving**  
-- ✅ **Document-based Q&A**  
-- ❌ **Image Description**  
-- ❌ **Image-based Q&A**  
-- ❌ **Forecasting**  
-- ❌ **Fast-trainable Classifiers**
-    - ❌ Signals  
-    - ❌ Sounds  
-    - ❌ Music  
-    - ❌ Speaker Recognition  
-- ❌ **PC Control**
-   - ✅ ASR
-   - ✅ TTS
-   - ❌ Software-controlled task manager  
+```
+SharpGPT/
+├── Core/                    # Базовые абстракции и модели
+│   ├── Abstractions/        # Интерфейсы
+│   ├── Models/              # Модели данных
+│   │   ├── Common/          # Общие модели
+│   │   └── Providers/       # Специфичные для провайдеров
+│   └── Exceptions/          # Исключения
+│
+├── Clients/                 # API клиенты
+│   ├── OpenAI/             # ChatGPT
+│   ├── Anthropic/          # Claude, DeepSeek
+│   ├── Google/             # Gemini
+│   ├── VLLM/               # vLLM
+│   └── LocalServer/        # Локальные серверы
+│
+├── Services/                # Бизнес-логика
+│   ├── LLM/                # Работа с языковыми моделями
+│   ├── Embeddings/         # Векторизация
+│   ├── Reranking/          # Переранжирование
+│   └── Prompts/            # Управление промптами
+│
+├── Infrastructure/          # Инфраструктурный код
+│   └── Http/               # HTTP клиенты
+│
+└── Utilities/              # Вспомогательные утилиты
+    └── Extensions/         # Расширения
+```
 
 ---
 
-### 🛠️ **Additional Modules**
+## 🚀 **Быстрый старт**
 
-- ✅ **FractalGPT Graphical Interface**  
-- ✅ **AIFramework**
-- ✅ **Vosk**  
+### Установка
+
+```bash
+# Клонирование репозитория
+git clone https://github.com/FractalGPT/SharpGPT.git
+
+# Переход в директорию проекта
+cd SharpGPT/src
+```
+---
+
+## 🌟 **Почему C#?**
+
+### 1️⃣ **Производительность**
+🚀 C# — компилируемый язык с высокой производительностью, что критично для работы с большими объемами данных и моделями.
+
+### 2️⃣ **Интеграция с .NET экосистемой**
+🔗 Бесшовная интеграция с Unity, ASP.NET, WPF, Xamarin, MAUI и другими фреймворками .NET.
+
+### 3️⃣ **Кроссплатформенность**
+🖥️ Работает на Windows, Linux, macOS благодаря .NET Standard 2.0.
+
+### 4️⃣ **Стабильность и поддержка**
+🛡️ Многолетняя поддержка от Microsoft и активное сообщество разработчиков.
+
+### 5️⃣ **Безопасность**
+🔒 Строгая типизация, контроль доступа и современные средства обеспечения безопасности кода.
+
+### 6️⃣ **Современные возможности**
+✨ Async/await, LINQ, pattern matching, records и другие современные языковые конструкции.
 
 ---
 
-### 📦 **Distribution Methods**
+## 🛣️ **Дорожная карта**
 
-- ✅ **Source Code (Library for Developers)**
-- ❌ **NuGet Package**
-- ❌ **Compiled Application (For Use)** 
+### 🌐 **API и интеграции**
 
-----
+| Функционал | Статус |
+|-----------|--------|
+| OpenAI (ChatGPT, GPT-4) | ✅ |
+| DeepSeek | ✅ |
+| Google AI Studio (Gemini) | ✅ |
+| OpenRouter | ✅ |
+| Perplexity AI | ✅ |
+| vLLM | ✅ |
+| Локальный сервер | ✅ |
+| Infinity Embeddings | ✅ |
+| Infinity Reranking | ✅ |
+| VLLM Reranking | ✅ |
+| Image Generation | ✅ |
+| Streaming | ✅ |
+| Function Calling | 🔄 |
+| Vision API | 🔄 |
+| Audio API | ❌ |
 
-## License [Apache License 2.0](https://github.com/FractalGPT/SharpGPT/blob/main/LICENSE)
+### 📋 **Задачи и возможности**
+
+#### ✅ Реализовано
+- Суммаризация текстов
+- Диалоговые системы
+- Вопрос-ответ по тексту
+- Генерация контента (описания, письма, код)
+- Персонализированный чат
+- Решение математических задач
+- Работа с документами
+- Few-Shot обучение
+- Векторизация и поиск
+- Переранжирование результатов
+
+#### 🔄 В разработке
+- Автоматическое создание обзоров
+- Проверка галлюцинаций
+- Модуль логического вывода
+- Vision API интеграция
+
+#### ❌ Планируется
+- Работа с поисковыми системами
+- Быстрообучаемые классификаторы
+- Прогнозирование временных рядов
+- Синтез речи (TTS)
+- Управление ПК через AI
+
+---
+
+## 🤝 **Вклад в проект**
+
+Мы приветствуем вклад сообщества! 
+
+### Как помочь проекту:
+1. 🌟 Поставьте звезду проекту
+2. 🔀 Сделайте Fork
+3. 🔧 Создайте feature branch (`git checkout -b feature/AmazingFeature`)
+4. 💾 Закоммитьте изменения (`git commit -m 'Add some AmazingFeature'`)
+5. 📤 Сделайте Push (`git push origin feature/AmazingFeature`)
+6. 🎉 Откройте Pull Request
+
+### Правила контрибуции:
+- Следуйте архитектуре проекта
+- Используйте XML-документацию для публичных API
+- Пишите unit-тесты для новой функциональности
+- Придерживайтесь стиля кода проекта
+
+---
+
+## 📦 **Методы распространения**
+
+| Метод | Статус |
+|-------|--------|
+| Исходный код (GitHub) | ✅ |
+| NuGet пакет | 🔄 В разработке |
+| Скомпилированное приложение | 📅 Планируется |
+
+---
+
+## 🔗 **Связанные проекты**
+
+- [FractalGPT](https://fractalagents.ai/) - Платформа для работы с AI
+- [SimpleLLMServer](https://github.com/FractalGPT/SimpleLLMServer) - Локальный сервер для LLM
+- [AI Framework](https://github.com/AIFramework/AIFrameworkOpen) - Фреймворк для машинного обучения
+
+---
+
+## 📧 **Контакты**
+
+- 🌐 Сайт: [fractalgpt.ru](https://fractalagents.ai/)
+- 💼 GitHub: [FractalGPT](https://github.com/FractalGPT)
+- 📧 Email: support@fractalgpt.ru
+
+---
+
+## 📄 **Лицензия**
+
+Этот проект лицензирован под [Apache License 2.0](./LICENSE)
+
+```
+Copyright 2024 ООО "АватарМашина"
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+---
+
+## **Благодарности**
+
+Спасибо всем контрибьюторам и пользователям библиотеки за поддержку проекта!
