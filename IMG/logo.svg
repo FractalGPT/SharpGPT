@@ -1,21 +1,21 @@
-﻿<svg width="800" height="900" viewBox="0 0 800 900" xmlns="http://www.w3.org/2000/svg">
+<svg width="650" height="650" viewBox="0 0 650 650" xmlns="http://www.w3.org/2000/svg">
   <!-- Outer circle -->
-  <circle cx="400" cy="350" r="220" fill="none" stroke="url(#circleGrad)" stroke-width="4"/>
+  <circle cx="350" cy="280" r="220" fill="none" stroke="url(#circleGrad)" stroke-width="4"/>
   
   <!-- Circuit pattern background -->
   <g opacity="0.15" stroke="#00d4ff" stroke-width="1.5" fill="none">
-    <line x1="240" y1="350" x2="180" y2="350"/>
-    <line x1="560" y1="350" x2="620" y2="350"/>
-    <line x1="400" y1="190" x2="400" y2="130"/>
-    <line x1="400" y1="510" x2="400" y2="570"/>
-    <circle cx="180" cy="350" r="3" fill="#00d4ff"/>
-    <circle cx="620" cy="350" r="3" fill="#00d4ff"/>
-    <circle cx="400" cy="130" r="3" fill="#00d4ff"/>
-    <circle cx="400" cy="570" r="3" fill="#00d4ff"/>
+    <line x1="190" y1="280" x2="130" y2="280"/>
+    <line x1="510" y1="280" x2="570" y2="280"/>
+    <line x1="350" y1="120" x2="350" y2="60"/>
+    <line x1="350" y1="440" x2="350" y2="500"/>
+    <circle cx="130" cy="280" r="3" fill="#00d4ff"/>
+    <circle cx="570" cy="280" r="3" fill="#00d4ff"/>
+    <circle cx="350" cy="60" r="3" fill="#00d4ff"/>
+    <circle cx="350" cy="500" r="3" fill="#00d4ff"/>
   </g>
   
   <!-- Main S letter -->
-  <g transform="translate(0, -50)">
+  <g transform="translate(-50, -80)">
     <!-- Top part (cyan) -->
     <path d="M 450 250 L 500 250 L 420 380 L 370 380 Z" fill="url(#topGrad)" opacity="0.95"/>
     
@@ -30,12 +30,12 @@
   </g>
   
   <!-- Text -->
-  <text x="400" y="680" font-family="'Segoe UI', Arial, sans-serif" font-size="72" font-weight="600" fill="url(#textGrad)" text-anchor="middle" letter-spacing="2">
+  <text x="350" y="590" font-family="'Segoe UI', Arial, sans-serif" font-size="72" font-weight="600" fill="url(#textGrad)" text-anchor="middle" letter-spacing="2">
     SharpGPT
   </text>
   
   <!-- Subtle tagline -->
-  <text x="400" y="730" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#4a9eff" text-anchor="middle" opacity="0.7">
+  <text x="350" y="640" font-family="'Segoe UI', Arial, sans-serif" font-size="18" fill="#4a9eff" text-anchor="middle" opacity="0.7">
     OPEN SOURCE AI
   </text>
   
