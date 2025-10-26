@@ -8,18 +8,6 @@ namespace FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
 [Serializable]
 public class ReasoningSettings
 {
-    #region Константы уровней рассуждения (усилий)
-
-    /// <summary>Высокий уровень усилий для сложных задач.</summary>
-    public const string EffortHigh = "high";
-
-    /// <summary>Средний уровень усилий (по умолчанию).</summary>
-    public const string EffortMedium = "medium";
-
-    /// <summary>Низкий уровень усилий для простых задач.</summary>
-    public const string EffortLow = "low";
-
-    #endregion
 
     #region Основные настройки
 
@@ -109,26 +97,43 @@ public class ReasoningSettings
     /// <summary>
     /// Определяет, настроены ли рассуждения на основе Effort или MaxTokens.
     /// </summary>
-    private static bool IsReasoningConfigured(string effort, int? maxTokens)
-    {
-        return !string.IsNullOrEmpty(effort) || maxTokens.HasValue;
-    }
+    private static bool IsReasoningConfigured(string effort, int? maxTokens) =>
+        !string.IsNullOrEmpty(effort) || maxTokens.HasValue;
+    
 
     /// <summary>
     /// Создает настройки с высоким уровнем усилий.
     /// </summary>
-    public static ReasoningSettings CreateHighEffort(bool excludeSteps = false)
-    {
-        return new ReasoningSettings(effort: EffortHigh, exclude: excludeSteps);
-    }
+    public static ReasoningSettings CreateHighEffort(bool excludeSteps = false) =>
+            new ReasoningSettings(effort: EffortLevels.High, exclude: excludeSteps);
+    
 
     /// <summary>
     /// Создает настройки с ограничением по токенам.
     /// </summary>
-    public static ReasoningSettings CreateWithTokenLimit(int maxTokens, bool excludeSteps = false)
-    {
-        return new ReasoningSettings(maxTokens: maxTokens, exclude: excludeSteps);
-    }
+    public static ReasoningSettings CreateWithTokenLimit(int maxTokens, bool excludeSteps = false) =>
+            new ReasoningSettings(maxTokens: maxTokens, exclude: excludeSteps);
+    
 
     #endregion
+
+
+    /// <summary>
+    /// Уровни усилий для рассуждения
+    /// </summary>
+    [Serializable]
+    public static class EffortLevels 
+    {
+        /// <summary>Высокий уровень усилий для сложных задач.</summary>
+        public const string High = "high";
+
+        /// <summary>Средний уровень усилий (по умолчанию).</summary>
+        public const string Medium = "medium";
+
+        /// <summary>Низкий уровень усилий для простых задач.</summary>
+        public const string Low = "low";
+
+        /// <summary>Отсутсвие усилия и рассуждения в целом.</summary>
+        public const string None = "none";
+    }
 }

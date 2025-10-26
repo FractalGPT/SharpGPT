@@ -10,7 +10,7 @@ public class GenerateSettings
     /// <summary>
     /// Температура (0.0-2.0). Выше = креативнее, ниже = сфокусированнее.
     /// </summary>
-    public double Temperature { get; set; }
+    public double? Temperature { get; set; }
 
     /// <summary>
     /// Nucleus sampling (0.0-1.0). Рассматриваются токены с суммарной вероятностью TopP.
@@ -76,6 +76,11 @@ public class GenerateSettings
     /// </summary>
     public ReasoningSettings ReasoningSettings { get; set; }
 
+    /// <summary>
+    /// Настройки усилий размышления для некоторых моделей, например GoogleAIStudio (Gemini, etc.).
+    /// </summary>
+    public string ReasoningEffort { get; set; }
+
     #endregion
 
     #region Конструктор
@@ -88,6 +93,7 @@ public class GenerateSettings
         int? minTokens = 8,
         int? maxTokens = 2500,
         string streamId = null,
+        string reasoningEffort = null,
         string streamMethod = "StreamMessage")
     {
         Temperature = temperature;
@@ -98,6 +104,7 @@ public class GenerateSettings
         MaxTokens = maxTokens;
         StreamId = streamId;
         StreamMethod = streamMethod;
+        ReasoningEffort = reasoningEffort;
     }
 
     #endregion

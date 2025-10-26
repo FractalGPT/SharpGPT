@@ -247,8 +247,11 @@ public class ChatLLMApi
     /// <summary>
     /// Проверяет и нормализует значение температуры
     /// </summary>
-    public static double ValidateTemperature(double temperature)
+    public static double? ValidateTemperature(double? temperature)
     {
+        if (temperature == null) 
+            return null;
+
         if (temperature > 1.5)
             return 1.5;
         if (temperature < 0.0)

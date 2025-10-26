@@ -32,11 +32,9 @@ public partial class SendDataLLM
         MinTokens = generateSettings.MinTokens;
         Stream = generateSettings.Stream;
         ReasoningSettings = generateSettings.ReasoningSettings;
-        ReasoningEffort = generateSettings?.ReasoningSettings?.Enabled == true
-            ? "medium"
-            : "none";
         LogProbs = generateSettings.LogProbs;
         TopLogprobs = generateSettings.TopLogprobs;
+        ReasoningEffort = generateSettings.ReasoningEffort;
         Messages = new List<LLMMessage>();
     }
 
