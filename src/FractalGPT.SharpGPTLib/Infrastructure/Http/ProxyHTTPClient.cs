@@ -1,4 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -7,191 +8,495 @@ using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 
-
 [Serializable]
 public class ProxyHTTPClient : IWebAPIClient
 {
-    /// <summary>
-    /// List of proxy servers for iteration.
-    /// </summary>
-    private readonly List<WebProxy> _proxies;
+    private readonly ConcurrentBag<ProxyStatus> _proxyStatuses;
+    private readonly SemaphoreSlim _semaphore;
+    private readonly ProxyHTTPClientOptions _options;
+    private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromMinutes(10);
+    private readonly int _maxProxyFailures = 3;
 
     /// <summary>
-    /// Event triggered on a proxy connection error.
+    /// Срабатывает когда прокси упал
     /// </summary>
     public event EventHandler<ProxyErrorEventArgs> OnProxyError;
 
+    /// <summary>
+    /// Срабатывает при отладочных событиях
+    /// </summary>
+    public event EventHandler<DebugLogEventArgs> OnDebugLog;
 
     public AuthenticationHeaderValue Authentication { get; set; }
 
     /// <summary>
-    /// Initializes a new instance of the ProxyHTTPClient class with a given list of proxies.
+    /// Создаем клиент со списком прокси
     /// </summary>
-    /// <param name="proxies">List of proxy servers.</param>
-    public ProxyHTTPClient(IEnumerable<WebProxy> proxies)
+    public ProxyHTTPClient(IEnumerable<WebProxy> proxies, ProxyHTTPClientOptions options = null)
     {
-        _proxies = proxies?.ToList() ?? throw new ArgumentNullException(nameof(proxies));
+        if (proxies == null)
+            throw new ArgumentNullException(nameof(proxies));
+
+        var proxyList = proxies.ToList();
+        if (!proxyList.Any())
+            throw new ArgumentException("Список прокси не может быть пустым.", nameof(proxies));
+
+        _options = options ?? new ProxyHTTPClientOptions();
+        _options.Cookie ??= new CookieContainer();
+
+        _proxyStatuses = new ConcurrentBag<ProxyStatus>(
+            proxyList.Select(p => new ProxyStatus { Proxy = p })
+        );
+        _semaphore = new SemaphoreSlim(_options.MaxConcurrentRequests, _options.MaxConcurrentRequests);
     }
 
     /// <summary>
-    /// Initializes a new instance of the ProxyHTTPClient class with a given list of proxies.
+    /// Создаем клиент со списком прокси и API ключом
     /// </summary>
-    /// <param name="proxies">List of proxy servers.</param>
-    public ProxyHTTPClient(IEnumerable<WebProxy> proxies, string apiKey)
+    public ProxyHTTPClient(IEnumerable<WebProxy> proxies, string apiKey, ProxyHTTPClientOptions options = null)
+        : this(proxies, options)
     {
-        _proxies = proxies?.ToList() ?? throw new ArgumentNullException(nameof(proxies));
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new ArgumentException("API ключ не может быть пустым.", nameof(apiKey));
+
         Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
     }
 
     /// <summary>
-    /// Initializes a new instance of the ProxyHTTPClient class
+    /// Загружаем прокси из JSON файла
     /// </summary>
-    /// <param name="proxyPath">List of proxy servers.</param>
-    public ProxyHTTPClient(string proxyPath)
+    public ProxyHTTPClient(string proxyPath, ProxyHTTPClientOptions options = null)
+        : this(LoadProxiesFromJson(proxyPath), options)
     {
-        _proxies = LoadProxiesFromJson(proxyPath);
-    }
-
-    public ProxyHTTPClient(string proxyPath, string apiKey)
-    {
-        _proxies = LoadProxiesFromJson(proxyPath);
-        Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
     }
 
     /// <summary>
-    /// Sends an asynchronous HTTP POST request to the specified URL using proxies from the list.
+    /// Загружаем прокси из файла и сразу добавляем API ключ
     /// </summary>
-    /// <param name="apiUrl">URL to send the request to.</param>
-    /// <param name="sendData">Data to be sent in the request.</param>
-    /// <returns>HTTP response from the server.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if unable to connect through any of the proxy servers.</exception>
-    public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
+    public ProxyHTTPClient(string proxyPath, string apiKey, ProxyHTTPClientOptions options = null)
+        : this(LoadProxiesFromJson(proxyPath), apiKey, options)
     {
-        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token;
+    }
 
+    /// <summary>
+    /// Отправляем POST запрос через рабочий прокси
+    /// </summary>
+    public async Task<HttpResponseMessage> PostAsJsonAsync(
+        string apiUrl,
+        SendDataLLM sendData,
+        CancellationToken? cancellationToken = null)
+    {
         if (string.IsNullOrWhiteSpace(apiUrl))
             throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
         if (sendData == null)
             throw new ArgumentNullException(nameof(sendData));
 
-        foreach (var proxy in _proxies)
+        var effectiveToken = cancellationToken ?? CancellationToken.None;
+
+        await _semaphore.WaitAsync(effectiveToken);
+        try
         {
-            try
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(effectiveToken);
+            cts.CancelAfter(_options.GlobalTimeout);
+
+            // Берем только живые прокси, сначала те что реже падали
+            var availableProxies = _proxyStatuses
+                .Where(ps => !IsBlacklisted(ps))
+                .OrderBy(ps => ps.FailureCount)
+                .ToList();
+
+            if (!availableProxies.Any())
             {
-                var handler = new HttpClientHandler
-                {
-                    Proxy = proxy,
-                    UseProxy = true,
-                };
+                throw new InvalidOperationException(
+                    "Нет доступных прокси. Все прокси в черном списке или отсутствуют.");
+            }
 
-                using var httpClient = new HttpClient(handler);
-
-                if (Authentication != null)
+            foreach (var proxyStatus in availableProxies)
+            {
+                try
                 {
-                    httpClient.DefaultRequestHeaders.Authorization = Authentication;
+                    var response = await SendRequestThroughProxy(
+                        apiUrl,
+                        sendData,
+                        proxyStatus.Proxy,
+                        cts.Token);
+
+                    MarkProxySuccess(proxyStatus);
+                    return response;
                 }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    MarkProxyFailure(proxyStatus, ex);
+                    OnProxyError?.Invoke(this, new ProxyErrorEventArgs(proxyStatus.Proxy, ex));
+                }
+            }
 
-                HttpResponseMessage response = await httpClient
-                    .PostAsJsonAsync(apiUrl, sendData, cancellationToken.Value);
+            throw new InvalidOperationException(
+                "Не удалось подключиться через ни один из доступных прокси.");
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
 
-                response.EnsureSuccessStatusCode();
-                return response;
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                OnProxyError?.Invoke(this, new ProxyErrorEventArgs(proxy, ex));
-            }
+    /// <summary>
+    /// Отправляем запрос через конкретный прокси
+    /// </summary>
+    private async Task<HttpResponseMessage> SendRequestThroughProxy(
+        string apiUrl,
+        SendDataLLM sendData,
+        WebProxy proxy,
+        CancellationToken cancellationToken)
+    {
+        var handler = new HttpClientHandler
+        {
+            Proxy = proxy,
+            UseProxy = true,
+            AllowAutoRedirect = _options.AllowAutoRedirect,
+            UseCookies = _options.UseCookies,
+            CookieContainer = _options.Cookie,
+            MaxAutomaticRedirections = 3,
+            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+        };
+
+        if (_options.DecompressionMethods.HasValue)
+        {
+            handler.AutomaticDecompression = _options.DecompressionMethods.Value;
         }
 
-        throw new InvalidOperationException("Не удалось подключиться через ни один из прокси.");
+        using var httpClient = new HttpClient(handler, disposeHandler: true)
+        {
+            Timeout = TimeSpan.FromSeconds(_options.RequestTimeout)
+        };
+
+        if (Authentication != null)
+        {
+            httpClient.DefaultRequestHeaders.Authorization = Authentication;
+        }
+
+        // Используем User Agent из опций или дефолтный
+        var userAgent = _options.UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+        httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+        httpClient.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+
+        // Явная сериализация с настройками
+        var jsonOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = false
+        };
+
+        var jsonContent = JsonSerializer.Serialize(sendData, jsonOptions);
+
+        if (_options.EnableDebugLogging)
+        {
+            LogDebug($"Отправляемый JSON: {jsonContent}");
+            LogDebug($"URL: {apiUrl}");
+            LogDebug($"Proxy: {proxy.Address}");
+        }
+
+        var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+
+        var response = await httpClient.PostAsync(apiUrl, content, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+
+            if (_options.EnableDebugLogging)
+            {
+                LogDebug($"Статус ошибки: {response.StatusCode}");
+                LogDebug($"Ответ сервера: {errorContent}");
+            }
+
+            throw new HttpRequestException($"Ошибка {response.StatusCode}: {errorContent}");
+        }
+
+        response.EnsureSuccessStatusCode();
+        return response;
     }
 
+    /// <summary>
+    /// Проверяем не забанен ли прокси
+    /// </summary>
+    private bool IsBlacklisted(ProxyStatus proxyStatus)
+    {
+        if (proxyStatus.FailureCount < _maxProxyFailures)
+            return false;
+
+        if (proxyStatus.LastFailure == null)
+            return false;
+
+        var blacklistExpiration = proxyStatus.LastFailure.Value.Add(_proxyBlacklistDuration);
+
+        if (DateTime.UtcNow >= blacklistExpiration)
+        {
+            // Время вышло, даем прокси второй шанс
+            proxyStatus.FailureCount = 0;
+            proxyStatus.LastFailure = null;
+            return false;
+        }
+
+        return true;
+    }
 
     /// <summary>
-    /// Load proxy list
+    /// Прокси молодец, уменьшаем счетчик косяков
     /// </summary>
-    /// <param name="jsonFilePath"></param>
-    /// <returns></returns>
+    private void MarkProxySuccess(ProxyStatus proxyStatus)
+    {
+        proxyStatus.FailureCount = Math.Max(0, proxyStatus.FailureCount - 1);
+        proxyStatus.LastSuccess = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Прокси накосячил, помечаем это
+    /// </summary>
+    private void MarkProxyFailure(ProxyStatus proxyStatus, Exception exception)
+    {
+        proxyStatus.FailureCount++;
+        proxyStatus.LastFailure = DateTime.UtcNow;
+        proxyStatus.LastException = exception;
+    }
+
+    /// <summary>
+    /// Логируем отладочную информацию через событие
+    /// </summary>
+    private void LogDebug(string message)
+    {
+        OnDebugLog?.Invoke(this, new DebugLogEventArgs(message));
+    }
+
+    /// <summary>
+    /// Читаем список прокси из JSON файла
+    /// </summary>
     public static List<WebProxy> LoadProxiesFromJson(string jsonFilePath)
     {
-        var jsonData = File.ReadAllText(jsonFilePath);
-        var proxyDataList = JsonSerializer.Deserialize<List<ProxyData>>(jsonData);
+        if (string.IsNullOrWhiteSpace(jsonFilePath))
+            throw new ArgumentException("Путь к файлу не может быть пустым.", nameof(jsonFilePath));
 
-        var proxies = new List<WebProxy>();
-        foreach (var proxyData in proxyDataList)
-            proxies.Add(GetWebProxy(proxyData));
+        if (!File.Exists(jsonFilePath))
+            throw new FileNotFoundException($"Файл не найден: {jsonFilePath}");
 
-        return proxies;
+        try
+        {
+            var jsonData = File.ReadAllText(jsonFilePath);
+            var proxyDataList = JsonSerializer.Deserialize<List<ProxyData>>(jsonData);
+
+            if (proxyDataList == null || !proxyDataList.Any())
+                throw new InvalidOperationException("Файл не содержит данных о прокси.");
+
+            return proxyDataList.Select(GetWebProxy).ToList();
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException(
+                $"Ошибка при разборе JSON файла: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
-    /// Getting a web proxy
+    /// Собираем WebProxy из данных
     /// </summary>
-    /// <param name="proxyData"></param>
-    /// <returns></returns>
     public static WebProxy GetWebProxy(ProxyData proxyData)
     {
+        if (proxyData == null)
+            throw new ArgumentNullException(nameof(proxyData));
 
-        var proxy = new WebProxy($"{proxyData.Address}:{proxyData.Port}")
-        {
-            BypassProxyOnLocal = false,
-            UseDefaultCredentials = false,
-            Credentials = new NetworkCredential(
-                userName: proxyData.Login,
-                password: proxyData.Password)
-        };
+        if (string.IsNullOrWhiteSpace(proxyData.Address))
+            throw new ArgumentException("Адрес прокси не может быть пустым.");
+
+        if (proxyData.Port <= 0 || proxyData.Port > 65535)
+            throw new ArgumentException($"Некорректный порт: {proxyData.Port}");
+
+        var proxyAddress = $"{proxyData.Address}:{proxyData.Port}";
+
+        var proxy = !string.IsNullOrEmpty(proxyData.Login) && !string.IsNullOrEmpty(proxyData.Password)
+            ? new WebProxy(proxyAddress)
+            {
+                BypassProxyOnLocal = false,
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(
+                    userName: proxyData.Login,
+                    password: proxyData.Password)
+            }
+            : new WebProxy(proxyAddress);
+
         return proxy;
+    }
+
+    /// <summary>
+    /// Показываем статистику по всем прокси
+    /// </summary>
+    public IEnumerable<ProxyStatistics> GetProxyStatistics()
+    {
+        return _proxyStatuses.Select(ps => new ProxyStatistics
+        {
+            ProxyAddress = $"{ps.Proxy.Address}",
+            FailureCount = ps.FailureCount,
+            LastSuccess = ps.LastSuccess,
+            LastFailure = ps.LastFailure,
+            IsBlacklisted = IsBlacklisted(ps),
+            LastException = ps.LastException?.Message
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Обнуляем всю статистику и даем всем прокси чистый лист
+    /// </summary>
+    public void ResetProxyStatistics()
+    {
+        foreach (var proxyStatus in _proxyStatuses)
+        {
+            proxyStatus.FailureCount = 0;
+            proxyStatus.LastFailure = null;
+            proxyStatus.LastSuccess = null;
+            proxyStatus.LastException = null;
+        }
     }
 
     public void Dispose()
     {
-        // throw new NotImplementedException();
+        _semaphore?.Dispose();
     }
+}
+
+/// <summary>
+/// Настройки для HTTP клиента с прокси
+/// </summary>
+public class ProxyHTTPClientOptions
+{
+    /// <summary>
+    /// Разрешить автоматические редиректы
+    /// </summary>
+    public bool AllowAutoRedirect { get; set; } = true;
+
+    /// <summary>
+    /// Использовать куки
+    /// </summary>
+    public bool UseCookies { get; set; } = false;
+
+    /// <summary>
+    /// Контейнер для кук
+    /// </summary>
+    public CookieContainer Cookie { get; set; }
+
+    /// <summary>
+    /// Методы декомпрессии
+    /// </summary>
+    public DecompressionMethods? DecompressionMethods { get; set; } =
+        System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate;
+
+    /// <summary>
+    /// User Agent для запросов
+    /// </summary>
+    public string UserAgent { get; set; }
+
+    /// <summary>
+    /// Таймаут на один запрос в секундах
+    /// </summary>
+    public int RequestTimeout { get; set; } = 30;
+
+    /// <summary>
+    /// Глобальный таймаут для всех попыток
+    /// </summary>
+    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(10);
+
+    /// <summary>
+    /// Максимум одновременных запросов
+    /// </summary>
+    public int MaxConcurrentRequests { get; set; } = 5;
+
+    /// <summary>
+    /// Включить отладочное логирование через события
+    /// </summary>
+    public bool EnableDebugLogging { get; set; } = false;
+}
+
+/// <summary>
+/// Внутренний класс для отслеживания состояния прокси
+/// </summary>
+internal class ProxyStatus
+{
+    public WebProxy Proxy { get; set; }
+    public int FailureCount { get; set; }
+    public DateTime? LastFailure { get; set; }
+    public DateTime? LastSuccess { get; set; }
+    public Exception LastException { get; set; }
+}
+
+/// <summary>
+/// Статистика по прокси для внешнего использования
+/// </summary>
+public class ProxyStatistics
+{
+    public string ProxyAddress { get; set; }
+    public int FailureCount { get; set; }
+    public DateTime? LastSuccess { get; set; }
+    public DateTime? LastFailure { get; set; }
+    public bool IsBlacklisted { get; set; }
+    public string LastException { get; set; }
 }
 
 [Serializable]
 public class ProxyData
 {
     /// <summary>
-    /// Quality or priority of the proxy.
+    /// Качество или приоритет прокси
     /// </summary>
     [JsonPropertyName("q")]
     public double Quality { get; set; }
 
     /// <summary>
-    /// Geographical location of the proxy server.
+    /// Где находится прокси-сервер
     /// </summary>
     [JsonPropertyName("location")]
     public string Location { get; set; }
 
     /// <summary>
-    /// IP address or hostname of the proxy server.
+    /// IP адрес или домен прокси
     /// </summary>
     [JsonPropertyName("ip")]
     public string Address { get; set; }
 
     /// <summary>
-    /// Port number on which the proxy server is listening.
+    /// Порт на котором слушает прокси (от 0 до 65535)
     /// </summary>
-    /// <remarks>
-    /// Valid port numbers range from 0 to 65535.
-    /// </remarks>
     [JsonPropertyName("port")]
     public int Port { get; set; }
 
     /// <summary>
-    /// Login from proxy server
+    /// Логин для авторизации на прокси
     /// </summary>
     [JsonPropertyName("login")]
     public string Login { get; set; }
 
     /// <summary>
-    /// Password from proxy server
+    /// Пароль для авторизации на прокси
     /// </summary>
     [JsonPropertyName("password")]
     public string Password { get; set; }
+}
+
+
+/// <summary>
+/// Данные отладочного лога для события
+/// </summary>
+public class DebugLogEventArgs : EventArgs
+{
+    public string Message { get; }
+    public DateTime Timestamp { get; }
+
+    public DebugLogEventArgs(string message)
+    {
+        Message = message;
+        Timestamp = DateTime.UtcNow;
+    }
 }
