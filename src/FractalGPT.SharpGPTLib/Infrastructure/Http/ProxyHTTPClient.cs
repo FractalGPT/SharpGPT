@@ -402,12 +402,12 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос в секундах
     /// </summary>
-    public int RequestTimeout { get; set; } = 30;
+    public int RequestTimeout { get; set; } = 500;
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
     /// </summary>
-    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(10);
+    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(20);
 
     /// <summary>
     /// Максимум одновременных запросов
