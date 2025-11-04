@@ -163,7 +163,7 @@ public class ChatLLMApi
 
         Exception exception = new Exception("Базовая ошибка");
 
-        for (int attempts = 0; attempts < 2; attempts++)
+        for (int attempts = 0; attempts < 3; attempts++) // TODO: Были 2 попытки
         {
             using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
 
@@ -176,7 +176,7 @@ public class ChatLLMApi
                     content = content.Substring(0, Math.Min(content.Length, 1024));
                 exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
 
-                await Task.Delay(2000);
+                await Task.Delay(1000);
                 continue;
             }
 
