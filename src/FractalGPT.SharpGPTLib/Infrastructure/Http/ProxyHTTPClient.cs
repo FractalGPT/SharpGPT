@@ -111,6 +111,8 @@ public class ProxyHTTPClient : IWebAPIClient
                     "Нет доступных прокси. Все прокси в черном списке или отсутствуют.");
             }
 
+            Exception lastException = new();
+
             foreach (var proxyStatus in availableProxies)
             {
                 try
@@ -132,11 +134,13 @@ public class ProxyHTTPClient : IWebAPIClient
                 {
                     MarkProxyFailure(proxyStatus, ex);
                     OnProxyError?.Invoke(this, new ProxyErrorEventArgs(proxyStatus.Proxy, ex));
+                    lastException = ex;
                 }
             }
 
-            throw new InvalidOperationException(
-                "Не удалось подключиться через ни один из доступных прокси.");
+            throw lastException;
+
+            // throw new InvalidOperationException("Не удалось подключиться через ни один из доступных прокси.");
         }
         finally
         {
