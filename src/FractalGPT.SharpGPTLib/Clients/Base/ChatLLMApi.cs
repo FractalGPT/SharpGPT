@@ -140,8 +140,8 @@ public class ChatLLMApi
     }
 
 
-     
-    
+
+
 
 
     /// <summary>
@@ -150,7 +150,10 @@ public class ChatLLMApi
     /// </summary>
     /// <param name="text"></param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
-    public async Task<ChatCompletionsResponse> SendWithContextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default)
+    public async Task<ChatCompletionsResponse> SendWithContextAsync(
+    IEnumerable<LLMMessage> context,
+    GenerateSettings generateSettings = null,
+    CancellationToken cancellationToken = default)
     {
         generateSettings = Validate(generateSettings);
 
@@ -161,68 +164,172 @@ public class ChatLLMApi
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
-        Exception exception = new Exception("Базовая ошибка");
+        const int maxAttempts = 5;
+        const int initialDelaySeconds = 1;
+        Exception lastException = new Exception("Базовая ошибка");
 
-        for (int attempts = 0; attempts < 3; attempts++) // TODO: Были 2 попытки
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
-
-            // Проверка, что HTTP-запрос выполнен успешно
-            if (!response.IsSuccessStatusCode)
-            {
-                string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
-                var content = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(content))
-                    content = content.Substring(0, Math.Min(content.Length, 1024));
-                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
-
-                await Task.Delay(1000);
-                continue;
-            }
-
             try
             {
+                using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
+
+                // Проверка успешности HTTP-запроса
+                if (!response.IsSuccessStatusCode)
+                {
+                    lastException = await CreateHttpErrorException(
+                        attempt,
+                        response,
+                        context,
+                        cancellationToken);
+
+                    // Ждем перед следующей попыткой (если это не последняя)
+                    if (attempt < maxAttempts - 1)
+                    {
+                        await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
+                    }
+                    continue;
+                }
+
+                // Обработка успешного ответа
                 if (generateSettings.Stream)
                 {
-                    var result = await _streamSender.StartAsync(streamId: generateSettings.StreamId, response: response,
-                        method: generateSettings.StreamMethod);
-                    //TODOS Подумать как обработать ошибки
-                    if (!string.IsNullOrEmpty(result))
-                        return new ChatCompletionsResponse(result); // Для общности обернуто в ChatCompletionsResponse
+                    return await ProcessStreamResponse(generateSettings, response);
                 }
                 else
                 {
-                    var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-                    if (chatCompletionsResponse == null ||
-                        chatCompletionsResponse.Choices == null ||
-                        chatCompletionsResponse.Choices.Count == 0)
-                    {
-                        throw new InvalidOperationException("Некорректный ответ от LLM API.");
-                    }
-
-                    var textResult = chatCompletionsResponse.Choices[0].Message.Content.ToString();
-                    return chatCompletionsResponse;
+                    return await ProcessStandardResponse(response, cancellationToken);
                 }
-
             }
             catch (Exception ex)
             {
-                string sendDataJson = JsonSerializer.Serialize(sendData);
-                sendDataJson = sendDataJson.Substring(0, Math.Min(sendDataJson.Length, 512));
+                lastException = await CreateProcessingErrorException(
+                    attempt,
+                    ex,
+                    context,
+                    sendData,
+                    cancellationToken);
 
-                string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
-                var content = await response.Content.ReadAsStringAsync();
-                if (!string.IsNullOrEmpty(content))
-                    content = Regex.Replace(content.Substring(0, Math.Min(content.Length, 512)), @"\s+", "Too match spaces");
-                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nSendData: {sendDataJson}\nContent: {content}\n###\n", ex);
-
-                await Task.Delay(2000);
+                // Ждем перед следующей попыткой (если это не последняя)
+                if (attempt < maxAttempts - 1)
+                {
+                    await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
+                }
             }
         }
 
-        throw exception;
+        throw lastException;
+    }
 
+    /// <summary>
+    /// Выполняет задержку с экспоненциальным увеличением времени ожидания
+    /// </summary>
+    /// <param name="attempt">Номер текущей попытки (начиная с 0)</param>
+    /// <param name="initialDelaySeconds">Начальная задержка в секундах</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    private static async Task DelayWithExponentialBackoff(
+        int attempt,
+        int initialDelaySeconds,
+        CancellationToken cancellationToken)
+    {
+        // Экспоненциальная задержка: 1, 2, 4, 8, 16 секунд
+        int delaySeconds = initialDelaySeconds * (int)Math.Pow(2, attempt);
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds), cancellationToken);
+    }
+
+    /// <summary>
+    /// Создает исключение для ошибки HTTP-запроса
+    /// </summary>
+    private async Task<Exception> CreateHttpErrorException(
+        int attempt,
+        HttpResponseMessage response,
+        IEnumerable<LLMMessage> context,
+        CancellationToken cancellationToken)
+    {
+        string lastMessage = context.Last().Content.ToString();
+        string truncatedMessage = lastMessage.Substring(0, Math.Min(lastMessage.Length, 512));
+
+        var content = await response.Content.ReadAsStringAsync();
+        if (!string.IsNullOrEmpty(content))
+        {
+            content = content.Substring(0, Math.Min(content.Length, 1024));
+        }
+
+        return new Exception(
+            $"Attempt #{attempt + 1}/{5}\n" +
+            $"Query: {truncatedMessage}\n" +
+            $"###\n" +
+            $"StatusCode: {response.StatusCode}\n" +
+            $"IsCancellationRequested: {cancellationToken.IsCancellationRequested}\n" +
+            $"Content: {content}\n" +
+            $"###");
+    }
+
+    /// <summary>
+    /// Создает исключение для ошибки обработки ответа
+    /// </summary>
+    private async Task<Exception> CreateProcessingErrorException(
+        int attempt,
+        Exception innerException,
+        IEnumerable<LLMMessage> context,
+        SendDataLLM sendData,
+        CancellationToken cancellationToken)
+    {
+        string sendDataJson = JsonSerializer.Serialize(sendData);
+        sendDataJson = sendDataJson.Substring(0, Math.Min(sendDataJson.Length, 512));
+
+        string lastMessage = context.Last().Content.ToString();
+        string truncatedMessage = lastMessage.Substring(0, Math.Min(lastMessage.Length, 512));
+
+        return new Exception(
+            $"Attempt #{attempt + 1}/{5}\n" +
+            $"Query: {truncatedMessage}\n" +
+            $"###\n" +
+            $"IsCancellationRequested: {cancellationToken.IsCancellationRequested}\n" +
+            $"SendData: {sendDataJson}\n" +
+            $"###",
+            innerException);
+    }
+
+    /// <summary>
+    /// Обрабатывает потоковый ответ
+    /// </summary>
+    private async Task<ChatCompletionsResponse> ProcessStreamResponse(
+        GenerateSettings generateSettings,
+        HttpResponseMessage response)
+    {
+        var result = await _streamSender.StartAsync(
+            streamId: generateSettings.StreamId,
+            response: response,
+            method: generateSettings.StreamMethod);
+
+        // TODO: Подумать как обработать ошибки
+        if (!string.IsNullOrEmpty(result))
+        {
+            return new ChatCompletionsResponse(result);
+        }
+
+        throw new InvalidOperationException("Потоковый ответ пуст.");
+    }
+
+    /// <summary>
+    /// Обрабатывает стандартный ответ
+    /// </summary>
+    private async Task<ChatCompletionsResponse> ProcessStandardResponse(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        var chatCompletionsResponse = await response.Content
+            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+
+        if (chatCompletionsResponse == null ||
+            chatCompletionsResponse.Choices == null ||
+            chatCompletionsResponse.Choices.Count == 0)
+        {
+            throw new InvalidOperationException("Некорректный ответ от LLM API.");
+        }
+
+        return chatCompletionsResponse;
     }
 
     /// <summary>
