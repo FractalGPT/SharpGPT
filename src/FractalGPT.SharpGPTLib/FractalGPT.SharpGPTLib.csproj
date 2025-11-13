@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\AIFrameworkOpen\src\AICrossPlatform\AICrossPlatform.csproj" />
+    <ProjectReference Include="..\..\..\AIFrameworkOpen\src\AI\AI.csproj" />
   </ItemGroup>
 
 </Project>
