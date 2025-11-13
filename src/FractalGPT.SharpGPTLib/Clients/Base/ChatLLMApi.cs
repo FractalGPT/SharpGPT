@@ -164,7 +164,7 @@ public class ChatLLMApi
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
-        const int maxAttempts = 5;
+        const int maxAttempts = 3;
         const int initialDelaySeconds = 1;
         Exception lastException = new Exception("Базовая ошибка");
 
