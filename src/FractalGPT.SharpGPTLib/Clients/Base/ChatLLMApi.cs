@@ -183,23 +183,18 @@ public class ChatLLMApi
                         context,
                         cancellationToken);
 
-                    // Ждем перед следующей попыткой (если это не последняя)
+                    // Задержка для сетевых ошибок
                     if (attempt < maxAttempts - 1)
-                    {
                         await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
-                    }
+
                     continue;
                 }
 
                 // Обработка успешного ответа
-                if (generateSettings.Stream)
-                {
+                if (generateSettings.Stream) 
                     return await ProcessStreamResponse(generateSettings, response);
-                }
-                else
-                {
+                else 
                     return await ProcessStandardResponse(response, cancellationToken);
-                }
             }
             catch (Exception ex)
             {
@@ -210,11 +205,9 @@ public class ChatLLMApi
                     sendData,
                     cancellationToken);
 
-                // Ждем перед следующей попыткой (если это не последняя)
+                // Задержка для обработки исключений
                 if (attempt < maxAttempts - 1)
-                {
                     await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
-                }
             }
         }
 
@@ -282,7 +275,7 @@ public class ChatLLMApi
         string truncatedMessage = lastMessage.Substring(0, Math.Min(lastMessage.Length, 512));
 
         return new Exception(
-            $"Attempt #{attempt + 1}/{5}\n" +
+            $"Attempt #{attempt + 1}\n" +
             $"Query: {truncatedMessage}\n" +
             $"###\n" +
             $"IsCancellationRequested: {cancellationToken.IsCancellationRequested}\n" +
