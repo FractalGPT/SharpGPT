@@ -14,8 +14,8 @@ public class ProxyHTTPClient : IWebAPIClient
     private readonly ConcurrentBag<ProxyStatus> _proxyStatuses;
     private readonly SemaphoreSlim _semaphore;
     private readonly ProxyHTTPClientOptions _options;
-    private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromMinutes(10);
-    private readonly int _maxProxyFailures = 3;
+    private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromMinutes(30);
+    private readonly int _maxProxyFailures = 10;
 
     /// <summary>
     /// Срабатывает когда прокси упал
@@ -118,6 +118,8 @@ public class ProxyHTTPClient : IWebAPIClient
                     "Нет доступных прокси. Все прокси в черном списке или отсутствуют.");
             }
 
+            Exception lastException = new();
+
             foreach (var proxyStatus in availableProxies)
             {
                 try
@@ -139,11 +141,13 @@ public class ProxyHTTPClient : IWebAPIClient
                 {
                     MarkProxyFailure(proxyStatus, ex);
                     OnProxyError?.Invoke(this, new ProxyErrorEventArgs(proxyStatus.Proxy, ex));
+                    lastException = ex;
                 }
             }
 
-            throw new InvalidOperationException(
-                "Не удалось подключиться через ни один из доступных прокси.");
+            throw lastException;
+
+            // throw new InvalidOperationException("Не удалось подключиться через ни один из доступных прокси.");
         }
         finally
         {
@@ -261,11 +265,13 @@ public class ProxyHTTPClient : IWebAPIClient
         if (proxyStatus.LastFailure == null)
             return false;
 
-        var blacklistExpiration = proxyStatus.LastFailure.Value.Add(_proxyBlacklistDuration);
+        var lastFailureDt = proxyStatus.LastFailure.Value;
+        var blacklistExpiration = lastFailureDt.Add(_proxyBlacklistDuration);
 
         if (DateTime.UtcNow >= blacklistExpiration)
         {
-            // Время вышло, даем прокси второй шанс
+            // Время вышло, даем прокси второй шанс, но с меньшим приоритетом
+            // Сбрасываем счетчик
             proxyStatus.FailureCount = 0;
             proxyStatus.LastFailure = null;
             return false;
@@ -275,12 +281,16 @@ public class ProxyHTTPClient : IWebAPIClient
     }
 
     /// <summary>
-    /// Прокси молодец, уменьшаем счетчик косяков
+    /// Прокси молодец, полностью сбрасываем счетчик косяков
     /// </summary>
     private void MarkProxySuccess(ProxyStatus proxyStatus)
     {
-        proxyStatus.FailureCount = Math.Max(0, proxyStatus.FailureCount - 1);
+        // При любом успешном запросе полностью сбрасываем счетчик ошибок
+        // Если прокси работает - значит все прошлые проблемы неактуальны
+        proxyStatus.FailureCount = 0;
+        proxyStatus.LastFailure = null;
         proxyStatus.LastSuccess = DateTime.UtcNow;
+        proxyStatus.LastException = null;
     }
 
     /// <summary>
