@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 
 namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 
@@ -16,6 +17,10 @@ public class ProxyHTTPClient : IWebAPIClient
     private readonly ProxyHTTPClientOptions _options;
     private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromHours(24);
     private readonly int _maxProxyFailures = 8;
+    
+    // ThreadLocal Random для потокобезопасного случайного выбора прокси
+    private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => 
+        new Random(Guid.NewGuid().GetHashCode()));
 
     /// <summary>
     /// Срабатывает когда прокси упал
@@ -106,12 +111,21 @@ public class ProxyHTTPClient : IWebAPIClient
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(effectiveToken);
             cts.CancelAfter(_options.GlobalTimeout);
 
-            // Берем только живые прокси, сначала те что реже падали
-            var availableProxies = _proxyStatuses
+            // Берем только живые прокси и перемешиваем их случайно
+            var availableList = _proxyStatuses
                 .Where(ps => !IsBlacklisted(ps))
-                .OrderBy(ps => ps.FailureCount)
-                .Take(5)
                 .ToList();
+            
+            // Перемешиваем алгоритмом Fisher-Yates для равномерного распределения
+            for (int i = availableList.Count - 1; i > 0; i--)
+            {
+                int j = _random.Value.Next(i + 1);
+                var temp = availableList[i];
+                availableList[i] = availableList[j];
+                availableList[j] = temp;
+            }
+            
+            var availableProxies = availableList.Take(5).ToList();
 
             if (!availableProxies.Any())
             {
