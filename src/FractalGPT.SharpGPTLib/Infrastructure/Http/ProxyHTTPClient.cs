@@ -14,8 +14,8 @@ public class ProxyHTTPClient : IWebAPIClient
     private readonly ConcurrentBag<ProxyStatus> _proxyStatuses;
     private readonly SemaphoreSlim _semaphore;
     private readonly ProxyHTTPClientOptions _options;
-    private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromMinutes(30);
-    private readonly int _maxProxyFailures = 10;
+    private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromHours(24);
+    private readonly int _maxProxyFailures = 8;
 
     /// <summary>
     /// Срабатывает когда прокси упал
