@@ -110,6 +110,7 @@ public class ProxyHTTPClient : IWebAPIClient
             var availableProxies = _proxyStatuses
                 .Where(ps => !IsBlacklisted(ps))
                 .OrderBy(ps => ps.FailureCount)
+                .Take(5)
                 .ToList();
 
             if (!availableProxies.Any())
