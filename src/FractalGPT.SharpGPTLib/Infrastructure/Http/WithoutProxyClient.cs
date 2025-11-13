@@ -17,12 +17,9 @@ public class WithoutProxyClient : IWebAPIClient
     public string ApiKey { get; set; }
 
     /// <summary>
-    /// Static HttpClient instance reused across requests for better performance.
+    /// HttpClient instance reused across requests for better performance.
     /// </summary>
-    private readonly HttpClient HttpClient = new()
-    {
-        Timeout = TimeSpan.FromMinutes(10),
-    };
+    private readonly HttpClient HttpClient;
 
     /// <summary>
     /// Constructor to initialize the client with an API key.
@@ -30,6 +27,14 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="apiKey">API key for authentication.</param>
     public WithoutProxyClient(string apiKey)
     {
+        // Включаем поддержку современных протоколов TLS для .NET Framework
+        ConfigureSecurityProtocol();
+        
+        HttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+        
         ApiKey = apiKey;
         if (!string.IsNullOrEmpty(apiKey))
             Authentication = new AuthenticationHeaderValue("Bearer", apiKey);
@@ -38,7 +43,31 @@ public class WithoutProxyClient : IWebAPIClient
 
     public WithoutProxyClient()
     {
+        // Включаем поддержку современных протоколов TLS для .NET Framework
+        ConfigureSecurityProtocol();
+        
+        HttpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(10)
+        };
+    }
 
+    /// <summary>
+    /// Настраивает протоколы безопасности для совместимости с .NET Framework
+    /// </summary>
+    private static void ConfigureSecurityProtocol()
+    {
+        try
+        {
+            System.Net.ServicePointManager.SecurityProtocol =
+                System.Net.SecurityProtocolType.Tls12 |
+                (System.Net.SecurityProtocolType)0x00000C00 | // Tls13
+                System.Net.SecurityProtocolType.Tls11;
+        }
+        catch
+        {
+            // В .NET Core/5+ это может не требоваться, игнорируем
+        }
     }
 
     /// <summary>
@@ -85,10 +114,9 @@ public class WithoutProxyClient : IWebAPIClient
             var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
 
             var response = isStreamingRequest ?
-                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) :
-                await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
+                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value).ConfigureAwait(false) :
+                await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value).ConfigureAwait(false);
 
-            //_ = response.EnsureSuccessStatusCode();
             return response;
         }
         catch (OperationCanceledException)
