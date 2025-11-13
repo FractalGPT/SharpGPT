@@ -43,8 +43,6 @@ public class ChatLLMApi
         ModelName = modelName;
         _prompt = prompt;
         _streamSender = streamSender;
-        // Возможно стоит заменить на логер
-        ProxyInfo += ChatLLMApi_ProxyInfo;
 
         if (proxies != null && proxies.Any())
         {
@@ -52,8 +50,6 @@ public class ChatLLMApi
             (_webApi as ProxyHTTPClient).OnProxyError += LLMApi_OnProxyError;
         }
         else { _webApi = new WithoutProxyClient(apiKey); }
-
-        string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
     }
 
     
@@ -69,9 +65,9 @@ public class ChatLLMApi
         SendDataLLM sendData = new SendDataLLM(ModelName);
         sendData.SetMessages(messages);
 
-        using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, sendData, cancellationToken);
+        using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, sendData, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken).ConfigureAwait(false);
 
         return result?.Count ?? 0;
     }
@@ -83,7 +79,7 @@ public class ChatLLMApi
     /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает текст ответа</returns>
     public async Task<string> SendWithoutContextTextAsync(string text, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
-        (await SendWithoutContextAsync(text, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
+        (await SendWithoutContextAsync(text, generateSettings, cancellationToken).ConfigureAwait(false)).Choices[0].Message.Content.ToString();
 
     /// <summary>
     /// Отправка сообщения с учетом контекста (потокобезопасная версия).
@@ -92,7 +88,7 @@ public class ChatLLMApi
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
     public async Task<string> SendWithContextTextAsync(IEnumerable<LLMMessage> context, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
-        (await SendWithContextAsync(context, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
+        (await SendWithContextAsync(context, generateSettings, cancellationToken).ConfigureAwait(false)).Choices[0].Message.Content.ToString();
 
     /// <summary>
     /// Отправка сообщения без учета контекста, с заданным началом ответа
@@ -101,7 +97,7 @@ public class ChatLLMApi
     /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Возвращает текст ответа.</returns>
     public async Task<string> SendWithoutContextWithStartReturnTextAsync(string text, string answerStart, GenerateSettings generateSettings = null, CancellationToken cancellationToken = default) =>
-        (await SendWithoutContextWithStartAsync(text, answerStart, generateSettings, cancellationToken)).Choices[0].Message.Content.ToString();
+        (await SendWithoutContextWithStartAsync(text, answerStart, generateSettings, cancellationToken).ConfigureAwait(false)).Choices[0].Message.Content.ToString();
 
     /// <summary>
     /// Отправка сообщения без учета контекста
@@ -116,7 +112,7 @@ public class ChatLLMApi
             LLMMessage.CreateMessage(Roles.User, text)
             ];
 
-        return await SendWithContextAsync(context, generateSettings, cancellationToken);
+        return await SendWithContextAsync(context, generateSettings, cancellationToken).ConfigureAwait(false);
 
     }
 
@@ -135,7 +131,7 @@ public class ChatLLMApi
             LLMMessage.CreateMessage(Roles.Assistant, answerStart)
             ];
 
-        return await SendWithContextAsync(context, generateSettings, cancellationToken);
+        return await SendWithContextAsync(context, generateSettings, cancellationToken).ConfigureAwait(false);
 
     }
 
@@ -161,22 +157,26 @@ public class ChatLLMApi
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
-        Exception exception = new Exception("Базовая ошибка");
+        Exception lastException = null;
 
         for (int attempts = 0; attempts < 2; attempts++)
         {
-            using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken);
+            using var response = await _webApi.PostAsJsonAsync(ApiUrl, sendData, cancellationToken).ConfigureAwait(false);
 
             // Проверка, что HTTP-запрос выполнен успешно
             if (!response.IsSuccessStatusCode)
             {
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
-                var content = await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(content))
                     content = content.Substring(0, Math.Min(content.Length, 1024));
-                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
+                lastException = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nContent: {content}\n###\n");
 
-                await Task.Delay(2000);
+                if (attempts < 1) // Только если это не последняя попытка
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+                }
                 continue;
             }
 
@@ -185,14 +185,14 @@ public class ChatLLMApi
                 if (generateSettings.Stream)
                 {
                     var result = await _streamSender.StartAsync(streamId: generateSettings.StreamId, response: response,
-                        method: generateSettings.StreamMethod);
+                        method: generateSettings.StreamMethod).ConfigureAwait(false);
                     //TODOS Подумать как обработать ошибки
                     if (!string.IsNullOrEmpty(result))
                         return new ChatCompletionsResponse(result); // Для общности обернуто в ChatCompletionsResponse
                 }
                 else
                 {
-                    var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+                    var chatCompletionsResponse = await response.Content.ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken).ConfigureAwait(false);
 
                     if (chatCompletionsResponse == null ||
                         chatCompletionsResponse.Choices == null ||
@@ -212,16 +212,20 @@ public class ChatLLMApi
                 sendDataJson = sendDataJson.Substring(0, Math.Min(sendDataJson.Length, 512));
 
                 string text = context.Last().Content.ToString(); // Получение последнего сообщения для отображения в логах
-                var content = await response.Content.ReadAsStringAsync();
+                var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(content))
-                    content = Regex.Replace(content.Substring(0, Math.Min(content.Length, 512)), @"\s+", "Too match spaces");
-                exception = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nSendData: {sendDataJson}\nContent: {content}\n###\n", ex);
+                    content = Regex.Replace(content.Substring(0, Math.Min(content.Length, 512)), @"\s+", " ");
+                lastException = new Exception($"Attempt #{attempts}\nQuery: {text.Substring(0, Math.Min(text.Length, 500))}\n###\nStatusCode: {response.StatusCode}\nIsCancellationRequested={cancellationToken.IsCancellationRequested}\nSendData: {sendDataJson}\nContent: {content}\n###\n", ex);
 
-                await Task.Delay(2000);
+                if (attempts < 1) // Только если это не последняя попытка
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await Task.Delay(2000, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
 
-        throw exception;
+        throw lastException ?? new Exception("Не удалось выполнить запрос к LLM API.");
 
     }
 
@@ -273,15 +277,8 @@ public class ChatLLMApi
 
     private void LLMApi_OnProxyError(object sender, ProxyErrorEventArgs e)
     {
-        ProxyInfo($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
+        ProxyInfo?.Invoke($"Proxy: {e.Proxy.Address}\nError: {e.Exception}");
     }
-
-    private void ChatLLMApi_ProxyInfo(string obj)
-    {
-        
-    }
-
-
 
     #region Тестирование
 

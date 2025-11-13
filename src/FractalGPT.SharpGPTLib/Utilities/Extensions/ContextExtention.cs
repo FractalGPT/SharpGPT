@@ -5,9 +5,15 @@ namespace FractalGPT.SharpGPTLib.Utilities.Extensions;
 public static class ContextExtention
 {
     /// <summary>
-    /// Исправление контекста
+    /// Исправление контекста для соответствия требованиям OpenAI API.
+    /// API требует, чтобы:
+    /// 1. Сообщения чередовались между ролями (user/assistant)
+    /// 2. Первое сообщение не было от assistant
+    /// 3. После system не шло сразу assistant
+    /// Метод автоматически вставляет пустые сообщения для соблюдения этих требований.
     /// </summary>
     /// <param name="context">Контекст сообщений</param>
+    /// <returns>Исправленный контекст с корректным чередованием ролей</returns>
     public static List<LLMMessage> FixContext(this IEnumerable<LLMMessage> context)
     {
         List<LLMMessage> fixedMessages = [];

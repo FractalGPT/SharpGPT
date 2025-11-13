@@ -41,6 +41,13 @@ public class ProxyHTTPClient : IWebAPIClient
         if (!proxyList.Any())
             throw new ArgumentException("Список прокси не может быть пустым.", nameof(proxies));
 
+        // Валидация прокси
+        foreach (var proxy in proxyList)
+        {
+            if (proxy?.Address == null)
+                throw new ArgumentException("Один из прокси имеет некорректный адрес (null).", nameof(proxies));
+        }
+
         _options = options ?? new ProxyHTTPClientOptions();
         _options.Cookie ??= new CookieContainer();
 
@@ -153,6 +160,20 @@ public class ProxyHTTPClient : IWebAPIClient
         WebProxy proxy,
         CancellationToken cancellationToken)
     {
+        // Включаем поддержку современных протоколов TLS для совместимости
+        // с .NET Framework 4.8.1 (в .NET 5+ это не требуется, но не мешает)
+        try
+        {
+            ServicePointManager.SecurityProtocol = 
+                SecurityProtocolType.Tls12 | 
+                (SecurityProtocolType)0x00000C00 | // Tls13
+                SecurityProtocolType.Tls11;
+        }
+        catch
+        {
+            // В .NET 9 может не поддерживаться, игнорируем
+        }
+        
         var handler = new HttpClientHandler
         {
             Proxy = proxy,
@@ -160,9 +181,15 @@ public class ProxyHTTPClient : IWebAPIClient
             AllowAutoRedirect = _options.AllowAutoRedirect,
             UseCookies = _options.UseCookies,
             CookieContainer = _options.Cookie,
-            MaxAutomaticRedirections = 3,
-            ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true
+            MaxAutomaticRedirections = 3
         };
+
+        // ВНИМАНИЕ: Отключение проверки сертификатов снижает безопасность!
+        // Используйте только для тестирования или когда абсолютно необходимо.
+        if (_options.DisableCertificateValidation)
+        {
+            handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
+        }
 
         if (_options.DecompressionMethods.HasValue)
         {
@@ -316,20 +343,31 @@ public class ProxyHTTPClient : IWebAPIClient
         if (proxyData.Port <= 0 || proxyData.Port > 65535)
             throw new ArgumentException($"Некорректный порт: {proxyData.Port}");
 
-        var proxyAddress = $"{proxyData.Address}:{proxyData.Port}";
+        try
+        {
+            // Создаем Uri для совместимости с .NET Framework 4.8.1
+            var proxyUriString = $"http://{proxyData.Address}:{proxyData.Port}";
+            var proxyUri = new Uri(proxyUriString);
 
-        var proxy = !string.IsNullOrEmpty(proxyData.Login) && !string.IsNullOrEmpty(proxyData.Password)
-            ? new WebProxy(proxyAddress)
+            var proxy = new WebProxy(proxyUri, BypassOnLocal: false);
+
+            if (!string.IsNullOrEmpty(proxyData.Login) && !string.IsNullOrEmpty(proxyData.Password))
             {
-                BypassProxyOnLocal = false,
-                UseDefaultCredentials = false,
-                Credentials = new NetworkCredential(
+                proxy.UseDefaultCredentials = false;
+                proxy.Credentials = new NetworkCredential(
                     userName: proxyData.Login,
-                    password: proxyData.Password)
+                    password: proxyData.Password);
             }
-            : new WebProxy(proxyAddress);
 
-        return proxy;
+            return proxy;
+        }
+        catch (UriFormatException ex)
+        {
+            throw new ArgumentException(
+                $"Некорректный формат адреса прокси: {proxyData.Address}:{proxyData.Port}. Ошибка: {ex.Message}", 
+                nameof(proxyData), 
+                ex);
+        }
     }
 
     /// <summary>
@@ -360,6 +398,51 @@ public class ProxyHTTPClient : IWebAPIClient
             proxyStatus.LastSuccess = null;
             proxyStatus.LastException = null;
         }
+    }
+
+    /// <summary>
+    /// Проверяем корректность всех прокси (диагностический метод)
+    /// </summary>
+    public List<string> ValidateAllProxies()
+    {
+        var errors = new List<string>();
+        
+        foreach (var proxyStatus in _proxyStatuses)
+        {
+            var proxy = proxyStatus.Proxy;
+            
+            if (proxy == null)
+            {
+                errors.Add("Найден null прокси в списке");
+                continue;
+            }
+
+            if (proxy.Address == null)
+            {
+                errors.Add("Прокси с null адресом");
+                continue;
+            }
+
+            try
+            {
+                var uri = proxy.Address;
+                if (string.IsNullOrEmpty(uri.Host))
+                {
+                    errors.Add($"Прокси с пустым хостом: {uri}");
+                }
+                
+                if (uri.Port <= 0)
+                {
+                    errors.Add($"Прокси с некорректным портом: {uri}");
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"Ошибка при проверке прокси {proxy.Address}: {ex.Message}");
+            }
+        }
+        
+        return errors;
     }
 
     public void Dispose()
@@ -402,7 +485,7 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос в секундах
     /// </summary>
-    public int RequestTimeout { get; set; } = 500;
+    public int RequestTimeout { get; set; } = 60;
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
@@ -418,6 +501,13 @@ public class ProxyHTTPClientOptions
     /// Включить отладочное логирование через события
     /// </summary>
     public bool EnableDebugLogging { get; set; } = false;
+
+    /// <summary>
+    /// ВНИМАНИЕ: Отключить проверку SSL-сертификатов (небезопасно!)
+    /// Используйте только для тестирования или когда абсолютно необходимо.
+    /// По умолчанию: false (проверка включена)
+    /// </summary>
+    public bool DisableCertificateValidation { get; set; } = false;
 }
 
 /// <summary>
@@ -425,11 +515,37 @@ public class ProxyHTTPClientOptions
 /// </summary>
 internal class ProxyStatus
 {
+    private readonly object _lock = new object();
+    
     public WebProxy Proxy { get; set; }
-    public int FailureCount { get; set; }
-    public DateTime? LastFailure { get; set; }
-    public DateTime? LastSuccess { get; set; }
-    public Exception LastException { get; set; }
+    
+    private int _failureCount;
+    public int FailureCount 
+    { 
+        get { lock (_lock) return _failureCount; }
+        set { lock (_lock) _failureCount = value; }
+    }
+    
+    private DateTime? _lastFailure;
+    public DateTime? LastFailure 
+    { 
+        get { lock (_lock) return _lastFailure; }
+        set { lock (_lock) _lastFailure = value; }
+    }
+    
+    private DateTime? _lastSuccess;
+    public DateTime? LastSuccess 
+    { 
+        get { lock (_lock) return _lastSuccess; }
+        set { lock (_lock) _lastSuccess = value; }
+    }
+    
+    private Exception _lastException;
+    public Exception LastException 
+    { 
+        get { lock (_lock) return _lastException; }
+        set { lock (_lock) _lastException = value; }
+    }
 }
 
 /// <summary>

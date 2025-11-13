@@ -9,9 +9,10 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer;
 /// Represents a base API client for interacting with a local server that provides LLM (Large Language Models) functionalities.
 /// </summary>
 [Serializable]
-public class BaseLLMServerAPI
+public class BaseLLMServerAPI : IDisposable
 {
     private readonly HttpClient _client;
+    private bool _disposed = false;
 
     /// <summary>
     /// The base URL of the local server.
@@ -38,7 +39,7 @@ public class BaseLLMServerAPI
     {
         var uri = $"{Host}load_llm_model/";
         var modelData = new { model_name = modelName, model_type = modelType };
-        var response = await _client.PostAsJsonAsync(uri, modelData);
+        var response = await _client.PostAsJsonAsync(uri, modelData).ConfigureAwait(false);
         return response.StatusCode;
     }
 
@@ -54,32 +55,24 @@ public class BaseLLMServerAPI
     /// <returns>The generated text or null if the operation failed.</returns>
     public async Task<string> TextGeneration(string prompt, int maxLen = 50, double temperature = 0.6, int topK = 15, double topP = 0.8, int noRepeatNgramSize = 3)
     {
-        try
+        var uri = $"{Host}text_generation/";
+        var requestData = new
         {
-            var uri = $"{Host}text_generation/";
-            var requestData = new
-            {
-                prompt = prompt,
-                max_length = maxLen,
-                temperature = temperature,
-                top_k = topK,
-                top_p = topP,
-                no_repeat_ngram_size = noRepeatNgramSize
-            };
-            var response = await _client.PostAsJsonAsync(uri, requestData);
+            prompt = prompt,
+            max_length = maxLen,
+            temperature = temperature,
+            top_k = topK,
+            top_p = topP,
+            no_repeat_ngram_size = noRepeatNgramSize
+        };
+        var response = await _client.PostAsJsonAsync(uri, requestData).ConfigureAwait(false);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var content = await response.Content.ReadFromJsonAsync<TextGenerationJSON>();
-                return content?.Answer;
-            }
-            return null;
-        }
-        catch (Exception)
+        if (response.IsSuccessStatusCode)
         {
-            // ToDo: Log the exception or handle it as needed
-            return null;
+            var content = await response.Content.ReadFromJsonAsync<TextGenerationJSON>().ConfigureAwait(false);
+            return content?.Answer;
         }
+        return null;
     }
 
 
@@ -95,5 +88,30 @@ public class BaseLLMServerAPI
 
         return await TextGeneration(prompt, generationParametrs.MaxLen, generationParametrs.Temperature,
             generationParametrs.TopK, generationParametrs.TopP, generationParametrs.NoRepeatNgramSize);
+    }
+
+    /// <summary>
+    /// Освобождает ресурсы, используемые HttpClient.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Освобождает управляемые и неуправляемые ресурсы.
+    /// </summary>
+    /// <param name="disposing">Если true, освобождаются управляемые ресурсы.</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _client?.Dispose();
+            }
+            _disposed = true;
+        }
     }
 }
