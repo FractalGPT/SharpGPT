@@ -183,7 +183,7 @@ public class ChatLLMApi
                         context,
                         cancellationToken);
 
-                    // Задержка для сетевых ошибок
+                    // Задержка перед следующей попыткой
                     if (attempt < maxAttempts - 1)
                         await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
 
