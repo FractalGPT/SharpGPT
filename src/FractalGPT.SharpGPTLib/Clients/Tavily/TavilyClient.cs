@@ -73,16 +73,32 @@ public class TavilyClient
 
     public async Task<ExtractResult> ExtractAsync(IEnumerable<string> urls, bool includeImages = false, ExtractDepth extractDepth = ExtractDepth.Basic, FormatType format = FormatType.Markdown)
     {
-        using var response = await _httpClient.PostAsJsonAsync("/extract", new ExtractArgs
+        ExtractResult result = null;
+        const int maxAttempts = 3;
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            ApiKey = _apiKey,
-            Urls = urls,
-            IncludeImages = includeImages,
-            ExtractDepth = extractDepth.GetDescription(),
-            Format = format.GetDescription(),
-        });
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<ExtractResult>();
+            try
+            {
+                using var response = await _httpClient.PostAsJsonAsync("/extract", new ExtractArgs
+                {
+                    ApiKey = _apiKey,
+                    Urls = urls,
+                    IncludeImages = includeImages,
+                    ExtractDepth = extractDepth.GetDescription(),
+                    Format = format.GetDescription(),
+                });
+                response.EnsureSuccessStatusCode();
+                result = await response.Content.ReadFromJsonAsync<ExtractResult>();
+                if (!result?.FailedResults?.Any() ?? false) 
+                    return result;
+            }
+            catch (Exception ex) { }
+
+            if (attempt != maxAttempts - 1)
+            await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1))); // 2, 4
+        }
+
+
         return result;
     }
 
