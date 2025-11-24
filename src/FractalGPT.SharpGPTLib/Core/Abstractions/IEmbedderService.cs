@@ -1,4 +1,4 @@
-﻿using AI.DataStructs.Algebraic;
+using AI.DataStructs.Algebraic;
 using FractalGPT.SharpGPTLib.Services.Embeddings.Base;
 
 namespace FractalGPT.SharpGPTLib.Core.Abstractions;
