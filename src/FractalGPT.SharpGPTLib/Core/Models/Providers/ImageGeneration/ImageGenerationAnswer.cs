@@ -20,16 +20,23 @@ public class ImageGenerationAnswer
     /// </summary>
     public byte[] ImageData { get; set; }
 
+    /// <summary>
+    /// Стоимость генерации в долларах (если доступна от API)
+    /// </summary>
+    public decimal? Cost { get; set; }
+
     public ImageGenerationAnswer(string errorText)
     {
         StatusOK = false;
         Text = errorText;
+        Cost = null;
     }
 
-    public ImageGenerationAnswer(byte[] imageData, string text = null)
+    public ImageGenerationAnswer(byte[] imageData, string text = null, decimal? cost = null)
     {
         ImageData = imageData;
         Text = text;
         StatusOK = true;
+        Cost = cost;
     }
 }

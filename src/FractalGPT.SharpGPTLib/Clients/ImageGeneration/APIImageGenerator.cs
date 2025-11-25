@@ -1,5 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.Clients.Base;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
+using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
 using FractalGPT.SharpGPTLib.Core.Models.Providers.ImageGeneration;
 
 namespace FractalGPT.SharpGPTLib.Clients.ImageGeneration;
@@ -44,7 +45,10 @@ public class APIImageGenerator
                 return new ImageGenerationAnswer(errorContent);
             }
 
-            return new ImageGenerationAnswer(ParseDataUri(imageUrl), message?.Content.ToString());
+            // Извлекаем стоимость из Usage (если доступна)
+            var cost = CostExtractor.TryExtract(response?.Usage?.Cost);
+
+            return new ImageGenerationAnswer(ParseDataUri(imageUrl), message?.Content?.ToString(), cost);
         }
 
         catch (Exception ex)
