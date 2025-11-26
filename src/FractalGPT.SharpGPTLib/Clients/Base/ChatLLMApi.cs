@@ -192,14 +192,19 @@ public class ChatLLMApi
                 }
 
                 // Обработка успешного ответа
-                if (generateSettings.Stream) 
+                if (generateSettings.Stream)
                     return await ProcessStreamResponse(generateSettings, response);
-                else 
+                else
                     return await ProcessStandardResponse(response, cancellationToken);
+            }
+            catch (TimeoutException timeoutEx)
+            {
+                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext timeout exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                throw timeoutEx;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "ChatLLMApi SendWithContext exception");
+                Log.Error(ex, $"ChatLLMApi SendWithContext exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
 
                 lastException = await CreateProcessingErrorException(
                     attempt,

@@ -510,7 +510,7 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос в секундах
     /// </summary>
-    public int RequestTimeout { get; set; } = 180;
+    public int RequestTimeout { get; set; } = 240;
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
