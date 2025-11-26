@@ -206,6 +206,11 @@ public class ChatLLMApi
                 Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}");
                 throw taskCancelledEx;
             }
+            catch (OperationCanceledException taskCancelledEx)
+            {
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                throw taskCancelledEx;
+            }
             catch (Exception ex)
             {
                 Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
