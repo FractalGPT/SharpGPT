@@ -1,4 +1,7 @@
-﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+﻿using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
+using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Core.Abstractions;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
@@ -6,10 +9,6 @@ using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
 using FractalGPT.SharpGPTLib.Infrastructure.Http;
 using FractalGPT.SharpGPTLib.Services.Prompts;
 using Serilog;
-using System.Net;
-using System.Net.Http.Json;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace FractalGPT.SharpGPTLib.Clients.Base;
 
@@ -199,12 +198,17 @@ public class ChatLLMApi
             }
             catch (TimeoutException timeoutEx)
             {
-                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext timeout exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}");
                 throw timeoutEx;
+            }
+            catch (TaskCanceledException taskCancelledEx)
+            {
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                throw taskCancelledEx;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"ChatLLMApi SendWithContext exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
 
                 lastException = await CreateProcessingErrorException(
                     attempt,
