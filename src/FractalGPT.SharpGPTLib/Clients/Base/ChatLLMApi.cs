@@ -5,6 +5,7 @@ using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
 using FractalGPT.SharpGPTLib.Infrastructure.Http;
 using FractalGPT.SharpGPTLib.Services.Prompts;
+using Serilog;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -198,6 +199,8 @@ public class ChatLLMApi
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "ChatLLMApi SendWithContext exception");
+
                 lastException = await CreateProcessingErrorException(
                     attempt,
                     ex,
