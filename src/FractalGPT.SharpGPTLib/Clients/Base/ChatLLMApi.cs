@@ -8,6 +8,7 @@ using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
 using FractalGPT.SharpGPTLib.Infrastructure.Http;
 using FractalGPT.SharpGPTLib.Services.Prompts;
+using Newtonsoft.Json;
 using Serilog;
 
 namespace FractalGPT.SharpGPTLib.Clients.Base;
@@ -198,22 +199,26 @@ public class ChatLLMApi
             }
             catch (TimeoutException timeoutEx)
             {
-                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData);
+                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
                 throw timeoutEx;
             }
             catch (TaskCanceledException taskCancelledEx)
             {
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData);
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
                 throw taskCancelledEx;
             }
             catch (OperationCanceledException taskCancelledEx)
             {
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData);
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
                 throw taskCancelledEx;
             }
             catch (Exception ex)
             {
-                Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData);
+                Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
 
                 lastException = await CreateProcessingErrorException(
                     attempt,
@@ -285,7 +290,7 @@ public class ChatLLMApi
         SendDataLLM sendData,
         CancellationToken cancellationToken)
     {
-        string sendDataJson = JsonSerializer.Serialize(sendData);
+        string sendDataJson = JsonConvert.SerializeObject(sendData);
         sendDataJson = sendDataJson.Substring(0, Math.Min(sendDataJson.Length, 512));
 
         string lastMessage = context.Last().Content.ToString();
