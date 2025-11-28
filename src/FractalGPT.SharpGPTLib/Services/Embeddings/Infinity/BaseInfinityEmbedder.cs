@@ -1,5 +1,6 @@
 ﻿using AI.DataStructs.Algebraic;
 using FractalGPT.SharpGPTLib.Core.Abstractions;
+using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using FractalGPT.SharpGPTLib.Services.Embeddings.Infinity.Models;
 using System.Net.Http.Json;
 
@@ -114,7 +115,7 @@ public class BaseInfinityEmbedder : IEmbedderService
                     Input = texts,
                 });
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception(await response.Content.ReadAsStringAsync());
+                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>();

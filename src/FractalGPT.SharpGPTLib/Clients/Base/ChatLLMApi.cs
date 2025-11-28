@@ -6,6 +6,7 @@ using FractalGPT.SharpGPTLib.Core.Abstractions;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
+using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using FractalGPT.SharpGPTLib.Infrastructure.Http;
 using FractalGPT.SharpGPTLib.Services.Prompts;
 using Newtonsoft.Json;
@@ -199,26 +200,26 @@ public class ChatLLMApi
             }
             catch (TimeoutException timeoutEx)
             {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData);
-                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
                 throw timeoutEx;
             }
             catch (TaskCanceledException taskCancelledEx)
             {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData);
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
                 throw taskCancelledEx;
             }
             catch (OperationCanceledException taskCancelledEx)
             {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData);
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
                 throw taskCancelledEx;
             }
             catch (Exception ex)
             {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData);
-                Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw.Substring(0, Math.Min(sendDataRaw.Length, 1_000))}");
+                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+                Log.Error(ex, $"ChatLLMApi SendWithContext Exception, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
 
                 lastException = await CreateProcessingErrorException(
                     attempt,
@@ -264,11 +265,7 @@ public class ChatLLMApi
         string lastMessage = context.Last().Content.ToString();
         string truncatedMessage = lastMessage.Substring(0, Math.Min(lastMessage.Length, 512));
 
-        var content = await response.Content.ReadAsStringAsync();
-        if (!string.IsNullOrEmpty(content))
-        {
-            content = content.Substring(0, Math.Min(content.Length, 1024));
-        }
+        var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
 
         return new Exception(
             $"Attempt #{attempt + 1}/{5}\n" +
@@ -341,8 +338,8 @@ public class ChatLLMApi
             chatCompletionsResponse.Choices == null ||
             chatCompletionsResponse.Choices.Count == 0)
         {
-            var content = await response.Content.ReadAsStringAsync() ?? "";
-            throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content.Substring(0, Math.Min(2000, content.Length))}");
+            var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
+            throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content}");
         }
 
         return chatCompletionsResponse;

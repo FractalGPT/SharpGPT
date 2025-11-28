@@ -1,4 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.Core.Models.Providers.VLLM;
+using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using System.Net.Http.Json;
 
 namespace FractalGPT.SharpGPTLib.Services.Reranking.VLLM;
@@ -74,7 +75,7 @@ public class Qwen3VLLMReranker
                 });
 
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception(await response.Content.ReadAsStringAsync());
+                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<VLLMRerankResponse>();

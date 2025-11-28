@@ -1,4 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.Core.Models.Providers.Infinity;
+using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using System.Net.Http.Json;
 
 namespace FractalGPT.SharpGPTLib.Services.Reranking.Infinity;
@@ -59,7 +60,7 @@ public class InfinityReranker
                 });
 
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception(await response.Content.ReadAsStringAsync());
+                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<RerankResponse>();

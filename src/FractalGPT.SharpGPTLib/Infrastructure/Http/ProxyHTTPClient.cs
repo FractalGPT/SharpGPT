@@ -1,4 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Http.Headers;
@@ -243,7 +244,7 @@ public class ProxyHTTPClient : IWebAPIClient
 
         if (_options.EnableDebugLogging)
         {
-            LogDebug($"Отправляемый JSON: {jsonContent}");
+            LogDebug($"Отправляемый JSON: {jsonContent.TruncateForLogging()}");
             LogDebug($"URL: {apiUrl}");
             LogDebug($"Proxy: {proxy.Address}");
         }
@@ -254,7 +255,7 @@ public class ProxyHTTPClient : IWebAPIClient
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync();
+            var errorContent = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
 
             if (_options.EnableDebugLogging)
             {
