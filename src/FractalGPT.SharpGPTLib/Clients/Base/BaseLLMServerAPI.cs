@@ -26,7 +26,10 @@ public class BaseLLMServerAPI : IDisposable
     public BaseLLMServerAPI(string host = "http://127.0.0.1:8080/")
     {
         Host = host;
-        _client = new HttpClient();
+        _client = new HttpClient
+        {
+            Timeout = TimeSpan.FromMinutes(7)
+        };
     }
 
     /// <summary>

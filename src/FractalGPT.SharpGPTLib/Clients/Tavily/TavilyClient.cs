@@ -29,7 +29,7 @@ public class TavilyClient
         _httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(Host),
-            Timeout = TimeSpan.FromMinutes(5),
+            Timeout = TimeSpan.FromMinutes(7),
         };
     }
 

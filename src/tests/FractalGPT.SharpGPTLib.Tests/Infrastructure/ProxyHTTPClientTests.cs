@@ -261,7 +261,7 @@ public class ProxyHTTPClientTests
         // Assert
         options.AllowAutoRedirect.Should().BeTrue();
         options.UseCookies.Should().BeFalse();
-        options.RequestTimeout.Should().Be(60);
+        options.RequestTimeout.Should().Be(TimeSpan.FromMinutes(7));
         options.MaxConcurrentRequests.Should().Be(5);
         options.EnableDebugLogging.Should().BeFalse();
         options.DisableCertificateValidation.Should().BeFalse();

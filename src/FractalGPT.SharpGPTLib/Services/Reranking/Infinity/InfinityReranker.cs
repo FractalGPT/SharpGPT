@@ -33,7 +33,8 @@ public class InfinityReranker
 
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(_apiUrl)
+            BaseAddress = new Uri(_apiUrl),
+            Timeout = TimeSpan.FromMinutes(7)
         };
     }
 

@@ -47,6 +47,7 @@ public class BaseInfinityEmbedder : IEmbedderService
         _httpClient = new HttpClient()
         {
             BaseAddress = new Uri(host),
+            Timeout = TimeSpan.FromMinutes(7)
         };
     }
 

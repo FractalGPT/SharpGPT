@@ -218,7 +218,7 @@ public class ProxyHTTPClient : IWebAPIClient
 
         using var httpClient = new HttpClient(handler, disposeHandler: true)
         {
-            Timeout = TimeSpan.FromSeconds(_options.RequestTimeout)
+            Timeout = _options.RequestTimeout
         };
 
         if (Authentication != null)
@@ -509,9 +509,9 @@ public class ProxyHTTPClientOptions
     public string UserAgent { get; set; }
 
     /// <summary>
-    /// Таймаут на один запрос в секундах
+    /// Таймаут на один запрос
     /// </summary>
-    public int RequestTimeout { get; set; } = 240;
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(7);
 
     /// <summary>
     /// Глобальный таймаут для всех попыток

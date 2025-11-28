@@ -38,7 +38,8 @@ public class Qwen3VLLMReranker
 
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri(_apiUrl)
+            BaseAddress = new Uri(_apiUrl),
+            Timeout = TimeSpan.FromMinutes(7)
         };
     }
 

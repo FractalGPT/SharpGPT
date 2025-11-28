@@ -32,7 +32,7 @@ public class WithoutProxyClient : IWebAPIClient
         
         HttpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromMinutes(6)
+            Timeout = TimeSpan.FromMinutes(7)
         };
         
         ApiKey = apiKey;
@@ -48,7 +48,7 @@ public class WithoutProxyClient : IWebAPIClient
         
         HttpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromMinutes(10)
+            Timeout = TimeSpan.FromMinutes(7)
         };
     }
 
