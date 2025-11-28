@@ -341,7 +341,8 @@ public class ChatLLMApi
             chatCompletionsResponse.Choices == null ||
             chatCompletionsResponse.Choices.Count == 0)
         {
-            throw new InvalidOperationException("Некорректный ответ от LLM API.");
+            var content = await response.Content.ReadAsStringAsync() ?? "";
+            throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content.Substring(0, Math.Min(2000, content.Length))}");
         }
 
         return chatCompletionsResponse;
