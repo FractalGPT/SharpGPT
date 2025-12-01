@@ -11,6 +11,7 @@ namespace FractalGPT.SharpGPTLib.Clients.ImageGeneration;
 [Serializable]
 public class APIImageGenerator
 {
+    public const string ToxicMessage = "ext";
     private readonly ChatLLMApi _imageGenerativeModelApi;
 
     public APIImageGenerator(ChatLLMApi llmApi)
@@ -37,6 +38,9 @@ public class APIImageGenerator
 
             var firstChoice = response?.Choices?.FirstOrDefault();
             var message = firstChoice?.Message;
+            if (message.Content is string && (string)message.Content == ToxicMessage)
+                return new ImageGenerationAnswer("Задача нарушает политику безопасности") { StatusOK = false };
+
             var imageUrl = message?.Images?.FirstOrDefault()?.ImageUrl?.Url;
 
             if (string.IsNullOrWhiteSpace(imageUrl))
