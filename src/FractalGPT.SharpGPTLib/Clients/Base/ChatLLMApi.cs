@@ -331,18 +331,28 @@ public class ChatLLMApi
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
-        var chatCompletionsResponse = await response.Content
-            .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
-
-        if (chatCompletionsResponse == null ||
-            chatCompletionsResponse.Choices == null ||
-            chatCompletionsResponse.Choices.Count == 0)
+        try
         {
-            var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
-            throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content}");
-        }
+            var chatCompletionsResponse = await response.Content
+                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
 
-        return chatCompletionsResponse;
+            if (chatCompletionsResponse == null ||
+                chatCompletionsResponse.Choices == null ||
+                chatCompletionsResponse.Choices.Count == 0)
+            {
+                var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
+                throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content}");
+            }
+
+            return chatCompletionsResponse;
+        }
+        catch (Exception ex)
+        {
+            string content = "";
+            try { content = await response.Content.ReadAsStringAsync(); } catch { }
+            Log.Error(ex, $"ChatLLMApi ProcessStandardResponse, Content={content.TruncateForLogging()}");
+            throw;
+        }
     }
 
     /// <summary>

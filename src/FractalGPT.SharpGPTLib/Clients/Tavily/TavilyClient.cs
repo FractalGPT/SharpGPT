@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
 using FractalGPT.SharpGPTLib.Clients.Tavily.Models;
 using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 
@@ -71,12 +72,14 @@ public class TavilyClient
         return result;
     }
 
-    public async Task<ExtractResult> ExtractAsync(IEnumerable<string> urls, bool includeImages = false, ExtractDepth extractDepth = ExtractDepth.Basic, FormatType format = FormatType.Markdown)
+    public async Task<ExtractResult> ExtractAsync(IEnumerable<string> urls, bool includeImages = false, ExtractDepth extractDepth = ExtractDepth.Basic, FormatType format = FormatType.Markdown, CancellationToken cancellationToken = default)
     {
         ExtractResult result = null;
         const int maxAttempts = 3;
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+            
             try
             {
                 using var response = await _httpClient.PostAsJsonAsync("/extract", new ExtractArgs
@@ -86,16 +89,20 @@ public class TavilyClient
                     IncludeImages = includeImages,
                     ExtractDepth = extractDepth.GetDescription(),
                     Format = format.GetDescription(),
-                });
+                }, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                result = await response.Content.ReadFromJsonAsync<ExtractResult>();
+                result = await response.Content.ReadFromJsonAsync<ExtractResult>(cancellationToken: cancellationToken);
                 if (!result?.FailedResults?.Any() ?? false) 
                     return result;
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw; // Глобальная отмена - не делаем retry
             }
             catch (Exception ex) { }
 
             if (attempt != maxAttempts - 1)
-            await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1))); // 2, 4
+                await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1)), cancellationToken); // 2, 4
         }
 
 
