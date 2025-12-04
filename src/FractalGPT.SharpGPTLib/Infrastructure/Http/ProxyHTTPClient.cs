@@ -2,6 +2,7 @@
 using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -228,6 +229,7 @@ public class ProxyHTTPClient : IWebAPIClient
             ? HttpCompletionOption.ResponseHeadersRead 
             : HttpCompletionOption.ResponseContentRead;
 
+        // ConnectTimeout уже настроен в SocketsHttpHandler
         var response = await httpClient.SendAsync(request, completionOption, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
@@ -301,20 +303,29 @@ public class ProxyHTTPClient : IWebAPIClient
     /// </summary>
     private HttpClient CreateHttpClientForProxy(WebProxy proxy)
     {
-        var handler = new HttpClientHandler
+        // SocketsHttpHandler для точного контроля таймаутов (доступен в .NET 8+)
+        var handler = new SocketsHttpHandler
         {
             Proxy = proxy,
             UseProxy = true,
             AllowAutoRedirect = _options.AllowAutoRedirect,
             UseCookies = _options.UseCookies,
             CookieContainer = _options.Cookie,
-            MaxAutomaticRedirections = 3
+            MaxAutomaticRedirections = 3,
+            
+            // КРИТИЧНО: Таймаут на установку соединения (защита от зависших proxy/серверов)
+            ConnectTimeout = _options.ConnectTimeout,
+            
+            // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
+            // (не влияет на активные запросы, только на соединения в пуле)
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
         };
 
         // ВНИМАНИЕ: Отключение проверки сертификатов снижает безопасность!
         if (_options.DisableCertificateValidation)
         {
-            handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
+            handler.SslOptions.RemoteCertificateValidationCallback = (_, __, ___, ____) => true;
         }
 
         if (_options.DecompressionMethods.HasValue)
@@ -558,7 +569,13 @@ public class ProxyHTTPClientOptions
     public string UserAgent { get; set; }
 
     /// <summary>
-    /// Таймаут на один запрос
+    /// Таймаут на установку соединения (ConnectTimeout)
+    /// Защита от зависших proxy или недоступных серверов
+    /// </summary>
+    public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>
+    /// Таймаут на один запрос (весь запрос включая получение ответа)
     /// </summary>
     public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(7);
 

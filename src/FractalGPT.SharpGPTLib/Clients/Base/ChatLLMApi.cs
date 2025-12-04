@@ -242,19 +242,19 @@ public class ChatLLMApi
             {
                 var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
                 Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw timeoutEx;
+                throw;
             }
             catch (TaskCanceledException taskCancelledEx)
             {
                 var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
                 Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw taskCancelledEx;
+                throw;
             }
             catch (OperationCanceledException taskCancelledEx)
             {
                 var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
                 Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw taskCancelledEx;
+                throw;
             }
             catch (Exception ex)
             {

@@ -1,4 +1,5 @@
 ﻿using FractalGPT.SharpGPTLib.API.LLMAPI;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -27,13 +28,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// <param name="apiKey">API key for authentication.</param>
     public WithoutProxyClient(string apiKey)
     {
-        // Включаем поддержку современных протоколов TLS для .NET Framework
-        ConfigureSecurityProtocol();
-        
-        HttpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromMinutes(7)
-        };
+        HttpClient = CreateHttpClient();
         
         ApiKey = apiKey;
         if (!string.IsNullOrEmpty(apiKey))
@@ -43,31 +38,29 @@ public class WithoutProxyClient : IWebAPIClient
 
     public WithoutProxyClient()
     {
-        // Включаем поддержку современных протоколов TLS для .NET Framework
-        ConfigureSecurityProtocol();
-        
-        HttpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromMinutes(7)
-        };
+        HttpClient = CreateHttpClient();
     }
 
     /// <summary>
-    /// Настраивает протоколы безопасности для совместимости с .NET Framework
+    /// Создает HttpClient с настроенными таймаутами через SocketsHttpHandler
     /// </summary>
-    private static void ConfigureSecurityProtocol()
+    private static HttpClient CreateHttpClient()
     {
-        try
+        var handler = new SocketsHttpHandler
         {
-            System.Net.ServicePointManager.SecurityProtocol =
-                System.Net.SecurityProtocolType.Tls12 |
-                (System.Net.SecurityProtocolType)0x00000C00 | // Tls13
-                System.Net.SecurityProtocolType.Tls11;
-        }
-        catch
+            // КРИТИЧНО: Таймаут на установку соединения (защита от зависших серверов)
+            ConnectTimeout = TimeSpan.FromSeconds(30),
+            
+            // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
+            // (не влияет на активные запросы, только на соединения в пуле)
+            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
+        };
+
+        return new HttpClient(handler)
         {
-            // В .NET Core/5+ это может не требоваться, игнорируем
-        }
+            Timeout = TimeSpan.FromMinutes(7)
+        };
     }
 
     /// <summary>
@@ -112,10 +105,12 @@ public class WithoutProxyClient : IWebAPIClient
             httpRequestMessage.Headers.TryAddWithoutValidation("X-Version", "1");
 
             var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
+            var completionOption = isStreamingRequest 
+                ? HttpCompletionOption.ResponseHeadersRead 
+                : HttpCompletionOption.ResponseContentRead;
 
-            var response = isStreamingRequest ?
-                await HttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead, cancellationToken.Value) :
-                await HttpClient.SendAsync(httpRequestMessage, cancellationToken.Value).ConfigureAwait(false);
+            // ConnectTimeout уже настроен в SocketsHttpHandler
+            var response = await HttpClient.SendAsync(httpRequestMessage, completionOption, cancellationToken.Value).ConfigureAwait(false);
 
             return response;
         }
