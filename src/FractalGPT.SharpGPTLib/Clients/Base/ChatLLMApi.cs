@@ -583,7 +583,9 @@ public class ChatLLMApi
             }
 
             // Проверяем что генерация завершилась корректно (native_finish_reason == "STOP")
-            if (!string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(nativeFinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
                     $"Генерация не завершилась корректно. " +
