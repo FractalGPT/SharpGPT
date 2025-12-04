@@ -36,6 +36,11 @@ public class ChatLLMApi
     /// </summary>
     public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
 
+    /// <summary>
+    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 30 секунд)
+    /// </summary>
+    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(30);
+
     public event Action<string> ProxyInfo;
 
 
@@ -411,16 +416,16 @@ public class ChatLLMApi
             Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Stream получен, начинаем читать строки...");
             
             int linesRead = 0;
-            while (!reader.EndOfStream)
+            string line;
+            // НЕ используем reader.EndOfStream - это синхронное свойство которое может заблокироваться!
+            // Вместо этого читаем до null (конец stream)
+            while ((line = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
             {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException(cancellationToken);
-
-                var line = await reader.ReadLineAsync();
+                cancellationToken.ThrowIfCancellationRequested();
                 linesRead++;
                 
                 // Пропускаем пустые строки (с защитной задержкой от busy-loop)
-                if (string.IsNullOrEmpty(line))
+                if (line.Length == 0)
                 {
                     await Task.Delay(10, cancellationToken);
                     continue;
@@ -434,10 +439,10 @@ public class ChatLLMApi
                 if (line == "data: [DONE]")
                 {
                     // Дочитываем оставшиеся данные (могут быть usage, метаданные)
-                    while (!reader.EndOfStream)
+                    string remainingLine;
+                    while ((remainingLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
                     {
-                        var remainingLine = await reader.ReadLineAsync();
-                        if (!string.IsNullOrEmpty(remainingLine))
+                        if (remainingLine.Length > 0)
                         {
                             Log.Debug($"ChatLLMApi: После [DONE] получена строка: {remainingLine}");
                         }
@@ -577,7 +582,7 @@ public class ChatLLMApi
             
             // Дочитываем любые оставшиеся данные после выхода из цикла
             string finalLine;
-            while ((finalLine = await reader.ReadLineAsync()) != null)
+            while ((finalLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
             {
                 if (!string.IsNullOrEmpty(finalLine))
                 {
@@ -609,7 +614,7 @@ public class ChatLLMApi
                 !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase))
             {
-                var lastLine = await reader.ReadLineAsync();
+                var lastLine = await ReadLineWithTimeoutAsync(reader, cancellationToken);
 
                 throw new InvalidOperationException(
                     $$"""
@@ -725,6 +730,27 @@ public class ChatLLMApi
         }
         
         return usage;
+    }
+
+    /// <summary>
+    /// Читает строку из StreamReader с таймаутом.
+    /// Защита от зависания если сервер перестал отвечать.
+    /// </summary>
+    private static async Task<string> ReadLineWithTimeoutAsync(
+        StreamReader reader, 
+        CancellationToken cancellationToken)
+    {
+        using var timeoutCts = new CancellationTokenSource(ReadLineTimeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        
+        try
+        {
+            return await reader.ReadLineAsync(linkedCts.Token);
+        }
+        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"ReadLineAsync таймаут ({ReadLineTimeout.TotalSeconds} сек). Сервер не отвечает.");
+        }
     }
 
     /// <summary>

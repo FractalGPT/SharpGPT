@@ -56,13 +56,34 @@ public class StreamWithTimeoutMonitor : Stream
 
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
+        return await ReadAsyncInternal(
+            () => _innerStream.ReadAsync(buffer, offset, count, cancellationToken), 
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// КРИТИЧНО: .NET 8+ StreamReader использует этот метод!
+    /// Без этого override таймаут НЕ работал бы в .NET 8+
+    /// </summary>
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        return await ReadAsyncInternal(
+            async () => await _innerStream.ReadAsync(buffer, cancellationToken), 
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Общая логика проверки таймаута для всех вариантов ReadAsync
+    /// </summary>
+    private async Task<int> ReadAsyncInternal(Func<Task<int>> readFunc, CancellationToken cancellationToken)
+    {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken);
         
         // Проверяем таймаут перед началом чтения
         CheckTimeout();
         
         // Создаем задачу чтения
-        var readTask = _innerStream.ReadAsync(buffer, offset, count, linkedCts.Token);
+        var readTask = readFunc();
         
         // Вычисляем интервал проверки: минимум 100мс, максимум 1 секунда
         // Для коротких таймаутов проверяем чаще

@@ -229,8 +229,20 @@ public class ProxyHTTPClient : IWebAPIClient
             ? HttpCompletionOption.ResponseHeadersRead 
             : HttpCompletionOption.ResponseContentRead;
 
-        // ConnectTimeout уже настроен в SocketsHttpHandler
-        var response = await httpClient.SendAsync(request, completionOption, cancellationToken);
+        // КРИТИЧНО: Таймаут на получение response headers (40 сек)
+        // Защита от молчащего сервера который принял запрос но не отвечает
+        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, responseTimeoutCts.Token);
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await httpClient.SendAsync(request, completionOption, linkedCts.Token);
+        }
+        catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            throw new TimeoutException($"Таймаут ожидания ответа от сервера (40 сек). URL: {apiUrl}");
+        }
 
         if (!response.IsSuccessStatusCode)
         {
@@ -313,13 +325,26 @@ public class ProxyHTTPClient : IWebAPIClient
             CookieContainer = _options.Cookie,
             MaxAutomaticRedirections = 3,
             
-            // КРИТИЧНО: Таймаут на установку соединения (защита от зависших proxy/серверов)
+            // КРИТИЧНО: Таймаут на установку TCP соединения
             ConnectTimeout = _options.ConnectTimeout,
             
+            // Таймаут ожидания 100-Continue от сервера
+            Expect100ContinueTimeout = TimeSpan.FromSeconds(5),
+            
+            // Таймаут на keep-alive пинг (проверка что соединение живое)
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(15),
+            KeepAlivePingDelay = TimeSpan.FromSeconds(30),
+            KeepAlivePingPolicy = HttpKeepAlivePingPolicy.WithActiveRequests,
+            
             // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
-            // (не влияет на активные запросы, только на соединения в пуле)
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
+            
+            // Ограничение соединений на хост
+            MaxConnectionsPerServer = 20,
+            
+            // Таймаут на получение response после отправки запроса
+            ResponseDrainTimeout = TimeSpan.FromSeconds(30),
         };
 
         // ВНИМАНИЕ: Отключение проверки сертификатов снижает безопасность!

@@ -48,13 +48,28 @@ public class WithoutProxyClient : IWebAPIClient
     {
         var handler = new SocketsHttpHandler
         {
-            // КРИТИЧНО: Таймаут на установку соединения (защита от зависших серверов)
+            // КРИТИЧНО: Таймаут на установку TCP соединения
             ConnectTimeout = TimeSpan.FromSeconds(30),
+            
+            // Таймаут ожидания 100-Continue от сервера (для POST с Expect: 100-continue)
+            Expect100ContinueTimeout = TimeSpan.FromSeconds(5),
+            
+            // Таймаут на keep-alive пинг (проверка что соединение живое)
+            KeepAlivePingTimeout = TimeSpan.FromSeconds(15),
+            KeepAlivePingDelay = TimeSpan.FromSeconds(30),
+            KeepAlivePingPolicy = HttpKeepAlivePingPolicy.WithActiveRequests,
             
             // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
             // (не влияет на активные запросы, только на соединения в пуле)
             PooledConnectionLifetime = TimeSpan.FromMinutes(10),
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
+            
+            // Ограничение соединений на хост
+            MaxConnectionsPerServer = 20,
+            
+            // Таймаут на получение response после отправки запроса
+            // (дополнительная защита на уровне handler)
+            ResponseDrainTimeout = TimeSpan.FromSeconds(30),
         };
 
         return new HttpClient(handler)
@@ -72,6 +87,12 @@ public class WithoutProxyClient : IWebAPIClient
         if (Authentication != null)
             HttpClient.DefaultRequestHeaders.Authorization = Authentication;
     }
+
+    /// <summary>
+    /// Таймаут на получение response headers (защита от молчащего сервера)
+    /// После этого таймаута streaming уже должен начаться
+    /// </summary>
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(40);
 
     /// <summary>
     /// Asynchronously sends a POST request with JSON data.
@@ -109,14 +130,31 @@ public class WithoutProxyClient : IWebAPIClient
                 ? HttpCompletionOption.ResponseHeadersRead 
                 : HttpCompletionOption.ResponseContentRead;
 
-            // ConnectTimeout уже настроен в SocketsHttpHandler
-            var response = await HttpClient.SendAsync(httpRequestMessage, completionOption, cancellationToken.Value).ConfigureAwait(false);
+            // КРИТИЧНО: Таймаут на получение response headers (60 сек)
+            // Защита от молчащего сервера который принял запрос но не отвечает
+            using var responseTimeoutCts = new CancellationTokenSource(ResponseHeadersTimeout);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, responseTimeoutCts.Token);
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await HttpClient.SendAsync(httpRequestMessage, completionOption, linkedCts.Token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.Value.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Таймаут ожидания ответа от сервера ({ResponseHeadersTimeout.TotalSeconds} сек). URL: {apiUrl}");
+            }
 
             return response;
         }
         catch (OperationCanceledException)
         {
             // Пробрасываем исключения отмены без обёртывания
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Пробрасываем таймауты без обёртывания
             throw;
         }
         catch (Exception ex)
