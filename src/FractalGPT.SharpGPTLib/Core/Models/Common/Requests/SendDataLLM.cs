@@ -1,6 +1,7 @@
 ﻿using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
 using FractalGPT.SharpGPTLib.Utilities.Extensions;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -52,7 +53,10 @@ public partial class SendDataLLM
         var options = new JsonSerializerOptions
         {
             WriteIndented = writeIndented,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            // НЕ используем PropertyNamingPolicy, потому что у нас есть [JsonPropertyName] атрибуты
+            // на каждом свойстве для точного контроля (model, messages, temperature, top_p и т.д.)
         };
 
         return JsonSerializer.Serialize(this, options);

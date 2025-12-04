@@ -22,6 +22,18 @@ public class ProxyHTTPClient : IWebAPIClient
     // ThreadLocal Random для потокобезопасного случайного выбора прокси
     private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => 
         new Random(Guid.NewGuid().GetHashCode()));
+    
+    // Кеш HttpClient'ов для каждого прокси (ключ - адрес прокси)
+    // ВАЖНО: HttpClient должен жить пока используется response stream!
+    private readonly ConcurrentDictionary<string, HttpClient> _httpClientCache = new();
+    
+    // Статические настройки JSON для переиспользования
+    private static readonly JsonSerializerOptions _jsonOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
 
     /// <summary>
     /// Срабатывает когда прокси упал
@@ -40,6 +52,9 @@ public class ProxyHTTPClient : IWebAPIClient
     /// </summary>
     public ProxyHTTPClient(IEnumerable<WebProxy> proxies, ProxyHTTPClientOptions options = null)
     {
+        // Настраиваем TLS один раз при создании
+        ConfigureSecurityProtocol();
+        
         if (proxies == null)
             throw new ArgumentNullException(nameof(proxies));
 
@@ -134,7 +149,7 @@ public class ProxyHTTPClient : IWebAPIClient
                     "Нет доступных прокси. Все прокси в черном списке или отсутствуют.");
             }
 
-            Exception lastException = new();
+            Exception lastException = null;
 
             foreach (var proxyStatus in availableProxies)
             {
@@ -147,6 +162,7 @@ public class ProxyHTTPClient : IWebAPIClient
                         cts.Token);
 
                     MarkProxySuccess(proxyStatus);
+                    
                     return response;
                 }
                 catch (OperationCanceledException)
@@ -161,9 +177,9 @@ public class ProxyHTTPClient : IWebAPIClient
                 }
             }
 
-            throw lastException;
-
-            // throw new InvalidOperationException("Не удалось подключиться через ни один из доступных прокси.");
+            // Если lastException == null, значит цикл не выполнился (не должно случиться)
+            throw lastException ?? new InvalidOperationException(
+                "Не удалось выполнить запрос через доступные прокси.");
         }
         finally
         {
@@ -180,67 +196,12 @@ public class ProxyHTTPClient : IWebAPIClient
         WebProxy proxy,
         CancellationToken cancellationToken)
     {
-        // Включаем поддержку современных протоколов TLS для совместимости
-        // с .NET Framework 4.8.1 (в .NET 5+ это не требуется, но не мешает)
-        try
-        {
-            ServicePointManager.SecurityProtocol = 
-                SecurityProtocolType.Tls12 | 
-                (SecurityProtocolType)0x00000C00 | // Tls13
-                SecurityProtocolType.Tls11;
-        }
-        catch
-        {
-            // В .NET 9 может не поддерживаться, игнорируем
-        }
-        
-        var handler = new HttpClientHandler
-        {
-            Proxy = proxy,
-            UseProxy = true,
-            AllowAutoRedirect = _options.AllowAutoRedirect,
-            UseCookies = _options.UseCookies,
-            CookieContainer = _options.Cookie,
-            MaxAutomaticRedirections = 3
-        };
+        // Получаем или создаем HttpClient для этого прокси
+        var proxyKey = proxy.Address?.ToString() ?? "default";
+        var httpClient = _httpClientCache.GetOrAdd(proxyKey, _ => CreateHttpClientForProxy(proxy));
 
-        // ВНИМАНИЕ: Отключение проверки сертификатов снижает безопасность!
-        // Используйте только для тестирования или когда абсолютно необходимо.
-        if (_options.DisableCertificateValidation)
-        {
-            handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
-        }
-
-        if (_options.DecompressionMethods.HasValue)
-        {
-            handler.AutomaticDecompression = _options.DecompressionMethods.Value;
-        }
-
-        using var httpClient = new HttpClient(handler, disposeHandler: true)
-        {
-            Timeout = _options.RequestTimeout
-        };
-
-        if (Authentication != null)
-        {
-            httpClient.DefaultRequestHeaders.Authorization = Authentication;
-        }
-
-        // Используем User Agent из опций или дефолтный
-        var userAgent = _options.UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
-        httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
-        httpClient.DefaultRequestHeaders.Accept.Add(
-            new MediaTypeWithQualityHeaderValue("application/json"));
-
-        // Явная сериализация с настройками
-        var jsonOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false
-        };
-
-        var jsonContent = JsonSerializer.Serialize(sendData, jsonOptions);
+        // Сериализуем данные
+        var jsonContent = JsonSerializer.Serialize(sendData, _jsonOptions);
 
         if (_options.EnableDebugLogging)
         {
@@ -249,9 +210,25 @@ public class ProxyHTTPClient : IWebAPIClient
             LogDebug($"Proxy: {proxy.Address}");
         }
 
-        var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+        // Создаем request и устанавливаем заголовки на НЕГО (потокобезопасно!)
+        using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
+        {
+            Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json")
+        };
+        
+        // Authorization устанавливаем на request, НЕ на DefaultRequestHeaders!
+        if (Authentication != null)
+        {
+            request.Headers.Authorization = Authentication;
+        }
 
-        var response = await httpClient.PostAsync(apiUrl, content, cancellationToken);
+        // Проверяем нужен ли streaming
+        var isStreamingRequest = sendData.Stream == true;
+        var completionOption = isStreamingRequest 
+            ? HttpCompletionOption.ResponseHeadersRead 
+            : HttpCompletionOption.ResponseContentRead;
+
+        var response = await httpClient.SendAsync(request, completionOption, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -266,7 +243,6 @@ public class ProxyHTTPClient : IWebAPIClient
             throw new HttpRequestException($"Ошибка {response.StatusCode}: {errorContent}");
         }
 
-        response.EnsureSuccessStatusCode();
         return response;
     }
 
@@ -317,6 +293,65 @@ public class ProxyHTTPClient : IWebAPIClient
         proxyStatus.FailureCount++;
         proxyStatus.LastFailure = DateTime.UtcNow;
         proxyStatus.LastException = exception;
+    }
+
+    /// <summary>
+    /// Создает HttpClient для конкретного прокси.
+    /// HttpClient кешируется и переиспользуется для всех запросов через этот прокси.
+    /// </summary>
+    private HttpClient CreateHttpClientForProxy(WebProxy proxy)
+    {
+        var handler = new HttpClientHandler
+        {
+            Proxy = proxy,
+            UseProxy = true,
+            AllowAutoRedirect = _options.AllowAutoRedirect,
+            UseCookies = _options.UseCookies,
+            CookieContainer = _options.Cookie,
+            MaxAutomaticRedirections = 3
+        };
+
+        // ВНИМАНИЕ: Отключение проверки сертификатов снижает безопасность!
+        if (_options.DisableCertificateValidation)
+        {
+            handler.ServerCertificateCustomValidationCallback = (_, __, ___, ____) => true;
+        }
+
+        if (_options.DecompressionMethods.HasValue)
+        {
+            handler.AutomaticDecompression = _options.DecompressionMethods.Value;
+        }
+
+        var httpClient = new HttpClient(handler, disposeHandler: true)
+        {
+            Timeout = _options.RequestTimeout
+        };
+
+        // Используем User Agent из опций или дефолтный
+        var userAgent = _options.UserAgent ?? "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+        httpClient.DefaultRequestHeaders.Add("User-Agent", userAgent);
+        httpClient.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("application/json"));
+
+        return httpClient;
+    }
+
+    /// <summary>
+    /// Настраивает протоколы безопасности для совместимости с .NET Framework
+    /// </summary>
+    private static void ConfigureSecurityProtocol()
+    {
+        try
+        {
+            ServicePointManager.SecurityProtocol =
+                SecurityProtocolType.Tls12 |
+                (SecurityProtocolType)0x00000C00 | // Tls13
+                SecurityProtocolType.Tls11;
+        }
+        catch
+        {
+            // В .NET Core/5+ это может не требоваться, игнорируем
+        }
     }
 
     /// <summary>
@@ -474,6 +509,20 @@ public class ProxyHTTPClient : IWebAPIClient
     public void Dispose()
     {
         _semaphore?.Dispose();
+        
+        // Dispose все закешированные HttpClient'ы
+        foreach (var kvp in _httpClientCache)
+        {
+            try
+            {
+                kvp.Value?.Dispose();
+            }
+            catch
+            {
+                // Игнорируем ошибки при dispose
+            }
+        }
+        _httpClientCache.Clear();
     }
 }
 

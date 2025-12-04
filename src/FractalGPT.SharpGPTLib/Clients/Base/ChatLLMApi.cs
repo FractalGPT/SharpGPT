@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Core.Abstractions;
@@ -30,6 +31,11 @@ public class ChatLLMApi
 
     public StreamOptions StreamOptions { get; set; }
 
+    /// <summary>
+    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 30 секунд)
+    /// </summary>
+    public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
+
     public event Action<string> ProxyInfo;
 
 
@@ -53,7 +59,10 @@ public class ChatLLMApi
             _webApi = new ProxyHTTPClient(proxies, apiKey);
             (_webApi as ProxyHTTPClient).OnProxyError += LLMApi_OnProxyError;
         }
-        else { _webApi = new WithoutProxyClient(apiKey); }
+        else 
+        { 
+            _webApi = new WithoutProxyClient(apiKey);
+        }
 
         string defaultPrompt = prompt ?? PromptsChatGPT.ChatGPTDefaltPromptRU;
     }
@@ -149,8 +158,11 @@ public class ChatLLMApi
     /// <summary>
     /// Отправка сообщения без учета контекста
     /// (потокобезопасная версия)
+    /// ВНУТРИ ВСЕГДА ИСПОЛЬЗУЕТ STREAMING для раннего обнаружения зависших запросов!
     /// </summary>
-    /// <param name="text"></param>
+    /// <param name="context">Контекст сообщений</param>
+    /// <param name="generateSettings">Настройки генерации</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Возвращает ChatCompletionsResponse с дополнительной информацией </returns>
     public async Task<ChatCompletionsResponse> SendWithContextAsync(
     IEnumerable<LLMMessage> context,
@@ -161,6 +173,30 @@ public class ChatLLMApi
 
         if (context == null)
             throw new ArgumentException("Контекст не может быть null.", nameof(context));
+
+        // ВАЖНО: Принудительно включаем streaming для раннего обнаружения зависших запросов!
+        // Даже если пользователь не указал streamId, мы создаем временный для внутреннего использования
+        if (string.IsNullOrEmpty(generateSettings.StreamId))
+        {
+            // Создаем временный streamId для включения streaming
+            generateSettings = new GenerateSettings(
+                temperature: generateSettings.Temperature ?? 0.1,
+                repetitionPenalty: generateSettings.RepetitionPenalty,
+                topP: generateSettings.TopP,
+                topK: generateSettings.TopK,
+                minTokens: generateSettings.MinTokens,
+                maxTokens: generateSettings.MaxTokens,
+                streamId: Guid.NewGuid().ToString(), // ← Включаем streaming!
+                reasoningEffort: generateSettings.ReasoningEffort,
+                streamMethod: "StreamMessage"
+            )
+            {
+                // Копируем дополнительные свойства через инициализатор
+                ReasoningSettings = generateSettings.ReasoningSettings,
+                LogProbs = generateSettings.LogProbs,
+                TopLogprobs = generateSettings.TopLogprobs,
+            };
+        }
 
         var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.StreamOptions = StreamOptions;
@@ -193,10 +229,14 @@ public class ChatLLMApi
                 }
 
                 // Обработка успешного ответа
-                if (generateSettings.Stream)
-                    return await ProcessStreamResponse(generateSettings, response);
-                else
-                    return await ProcessStandardResponse(response, cancellationToken);
+                // if (generateSettings.Stream)
+                //    return await ProcessStreamResponse(generateSettings, response);
+                // else
+                //    return await ProcessStandardResponse(response, cancellationToken);
+
+                // ВСЕГДА обрабатываем как streaming (т.к. мы принудительно его включили)
+                // Но используем внутренний метод, не требующий IStreamHandler
+                return await ProcessStreamResponseInternal(response, cancellationToken);
             }
             catch (TimeoutException timeoutEx)
             {
@@ -322,6 +362,254 @@ public class ChatLLMApi
         }
 
         throw new InvalidOperationException("Потоковый ответ пуст.");
+    }
+
+    /// <summary>
+    /// Обрабатывает потоковый ответ ВНУТРЕННЕ (без IStreamHandler).
+    /// Используется для автоматического streaming в SendWithContextAsync.
+    /// Читает SSE stream, накапливает токены и возвращает полный ответ.
+    /// </summary>
+    private async Task<ChatCompletionsResponse> ProcessStreamResponseInternal(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Начинаем читать stream, StatusCode={response.StatusCode}");
+
+        Stream stream = null;
+        try
+        {
+            using var baseStream = await response.Content.ReadAsStreamAsync();
+            
+            // Оборачиваем в idle timeout monitor если включено
+            if (IdleTimeoutSettings != null && IdleTimeoutSettings.Enabled)
+            {
+                Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Включаем мониторинг idle timeout ({IdleTimeoutSettings.IdleTimeout.TotalSeconds} сек)");
+                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, cancellationToken);
+            }
+            else
+            {
+                Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Idle timeout ОТКЛЮЧЕН или не настроен");
+                stream = baseStream;
+            }
+
+            using var reader = new StreamReader(stream);
+            var fullContent = new StringBuilder();
+            
+            // Поддержка Vision моделей - собираем изображения
+            var collectedImages = new List<ImageInfo>();
+            string nativeFinishReason = null;
+            string finishReason = null;
+            
+            // Защита от зацикленного ответа (один и тот же токен повторяется слишком много раз)
+            const int maxConsecutiveRepeats = 200;
+            string lastToken = null;
+            int consecutiveCount = 0;
+            
+            Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Stream получен, начинаем читать строки...");
+            
+            int linesRead = 0;
+            while (!reader.EndOfStream)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException(cancellationToken);
+
+                var line = await reader.ReadLineAsync();
+                linesRead++;
+                
+                // Пропускаем пустые строки
+                if (string.IsNullOrEmpty(line))
+                    continue;
+                
+                // Пропускаем SSE комментарии (начинаются с :)
+                if (line.StartsWith(":"))
+                    continue;
+                    
+                // Маркер завершения - дочитываем оставшиеся данные
+                if (line == "data: [DONE]")
+                {
+                    // Дочитываем оставшиеся данные (могут быть usage, метаданные)
+                    while (!reader.EndOfStream)
+                    {
+                        var remainingLine = await reader.ReadLineAsync();
+                        if (!string.IsNullOrEmpty(remainingLine))
+                        {
+                            Log.Debug($"ChatLLMApi: После [DONE] получена строка: {remainingLine}");
+                        }
+                    }
+                    break;
+                }
+
+                // Обрабатываем SSE строки с данными
+                if (!line.StartsWith("data: "))
+                    continue;
+
+                string jsonData = line.Substring(6); // Убираем "data: "
+                
+                try
+                {
+                    // Используем JsonDocument для низкоуровневого парсинга
+                    using var parsedJson = JsonDocument.Parse(jsonData);
+                    var root = parsedJson.RootElement;
+
+                    // Проверка на null/undefined
+                    if (root.ValueKind == JsonValueKind.Null || root.ValueKind == JsonValueKind.Undefined)
+                        continue;
+
+                    // Получаем choices
+                    if (!root.TryGetProperty("choices", out var choices) || choices.GetArrayLength() == 0)
+                        continue;
+
+                    var firstChoice = choices[0];
+                    
+                    // Получаем finish_reason и native_finish_reason (могут быть в любом чанке, но обычно в последнем)
+                    if (firstChoice.TryGetProperty("finish_reason", out var finishReasonElement) && 
+                        finishReasonElement.ValueKind == JsonValueKind.String)
+                    {
+                        finishReason = finishReasonElement.GetString();
+                    }
+                    
+                    if (firstChoice.TryGetProperty("native_finish_reason", out var nativeFinishElement) && 
+                        nativeFinishElement.ValueKind == JsonValueKind.String)
+                    {
+                        nativeFinishReason = nativeFinishElement.GetString();
+                    }
+                    
+                    // Получаем delta
+                    if (!firstChoice.TryGetProperty("delta", out var delta))
+                        continue;
+                    
+                    // Парсим текстовый контент (delta.content)
+                    if (delta.TryGetProperty("content", out var contentElement))
+                    {
+                        string content = contentElement.GetString() ?? string.Empty;
+                        if (!string.IsNullOrEmpty(content))
+                        {
+                            // Проверяем на зацикленный ответ (один и тот же токен 200+ раз подряд)
+                            if (content == lastToken)
+                            {
+                                consecutiveCount++;
+                                if (consecutiveCount >= maxConsecutiveRepeats)
+                                {
+                                    throw new InvalidOperationException(
+                                        $"Обнаружен зацикленный ответ: токен \"{lastToken}\" повторяется {consecutiveCount} раз подряд. " +
+                                        "Возможно модель зависла или генерирует некорректный вывод.");
+                                }
+                            }
+                            else
+                            {
+                                lastToken = content;
+                                consecutiveCount = 1;
+                            }
+                            
+                            fullContent.Append(content);
+                        }
+                    }
+                    
+                    // Парсим изображения (delta.images) - для Vision моделей
+                    // ВАЖНО: Изображения сохраняем ТОЛЬКО если в этом же чанке native_finish_reason == "STOP"
+                    if (delta.TryGetProperty("images", out var imagesElement) && 
+                        imagesElement.ValueKind == JsonValueKind.Array)
+                    {
+                        // Проверяем что это финальный чанк с native_finish_reason == "STOP"
+                        bool isStopChunk = string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
+                                          string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
+                        
+                        if (!isStopChunk)
+                        {
+                            Log.Debug($"ChatLLMApi: Получены изображения, но native_finish_reason != STOP " +
+                                       $"(finish_reason={finishReason}, native_finish_reason={nativeFinishReason}). Пропускаем.");
+                            continue;
+                        }
+                        
+                        foreach (var imageElement in imagesElement.EnumerateArray())
+                        {
+                            var imageInfo = new ImageInfo();
+                            
+                            if (imageElement.TryGetProperty("type", out var typeEl))
+                                imageInfo.Type = typeEl.GetString();
+                            
+                            if (imageElement.TryGetProperty("index", out var indexEl))
+                                imageInfo.Index = indexEl.GetInt32();
+                            
+                            if (imageElement.TryGetProperty("image_url", out var imageUrlEl))
+                            {
+                                imageInfo.ImageUrl = new ImageUrl();
+                                if (imageUrlEl.TryGetProperty("url", out var urlEl))
+                                    imageInfo.ImageUrl.Url = urlEl.GetString();
+                            }
+                            
+                            if (imageInfo.ImageUrl?.Url != null)
+                            {
+                                collectedImages.Add(imageInfo);
+                                Log.Debug($"ChatLLMApi: Получено изображение, index={imageInfo.Index}, type={imageInfo.Type}");
+                            }
+                        }
+                    }
+                }
+                catch (System.Text.Json.JsonException ex)
+                {
+                    // Пропускаем невалидные JSON чанки
+                    Log.Warning(ex, $"ChatLLMApi ProcessStreamResponseInternal: невалидный JSON chunk");
+                    continue;
+                }
+            }
+            
+            Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Закончили читать stream, всего строк: {linesRead}, " +
+                      $"длина контента: {fullContent.Length}, изображений: {collectedImages.Count}, " +
+                      $"finish_reason: {finishReason}, native_finish_reason: {nativeFinishReason}");
+            
+            // Дочитываем любые оставшиеся данные после выхода из цикла
+            string finalLine;
+            while ((finalLine = await reader.ReadLineAsync()) != null)
+            {
+                if (!string.IsNullOrEmpty(finalLine))
+                {
+                    Log.Debug($"ChatLLMApi: После завершения цикла получена строка: {finalLine}");
+                }
+            }
+
+            // Проверяем что есть хоть какой-то результат (текст ИЛИ изображения)
+            // Примечание: изображения сохраняются только при native_finish_reason == "STOP" (фильтрация выше)
+            bool hasText = fullContent.Length > 0;
+            bool hasImages = collectedImages.Count > 0;
+            
+            if (!hasText && !hasImages)
+            {
+                throw new InvalidOperationException("Потоковый ответ пуст - не получено ни текста, ни изображений.");
+            }
+
+            // Формируем ответ
+            var resultMessage = new LLMMessage("assistant", hasText ? fullContent.ToString() : string.Empty);
+            
+            // Добавляем изображения если есть
+            if (hasImages)
+            {
+                resultMessage.Images = collectedImages;
+            }
+            
+            return new ChatCompletionsResponse
+            {
+                Choices =
+                [
+                    new Choice
+                    {
+                        Message = resultMessage,
+                        FinishReason = finishReason ?? "stop",
+                        NativeFinishReason = nativeFinishReason
+                    }
+                ],
+                Model = ModelName
+            };
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, $"ChatLLMApi ProcessStreamResponseInternal Exception");
+            throw;
+        }
+        finally
+        {
+            stream?.Dispose();
+        }
     }
 
     /// <summary>
