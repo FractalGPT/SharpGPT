@@ -582,6 +582,15 @@ public class ChatLLMApi
                 }
             }
 
+            // Проверяем что генерация завершилась корректно (native_finish_reason == "STOP")
+            if (!string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Генерация не завершилась корректно. " +
+                    $"native_finish_reason='{nativeFinishReason}', finish_reason='{finishReason}'. " +
+                    $"Ожидалось native_finish_reason='STOP'.");
+            }
+            
             // Проверяем что есть хоть какой-то результат (текст ИЛИ изображения)
             // Примечание: изображения сохраняются только при native_finish_reason == "STOP" (фильтрация выше)
             bool hasText = fullContent.Length > 0;
