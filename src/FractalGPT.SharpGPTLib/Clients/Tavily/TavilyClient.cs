@@ -95,7 +95,7 @@ public class TavilyClient
                 if (!result?.FailedResults?.Any() ?? false) 
                     return result;
             }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            catch (Exception) when (cancellationToken.IsCancellationRequested)
             {
                 throw; // Глобальная отмена - не делаем retry
             }

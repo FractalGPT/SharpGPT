@@ -54,8 +54,9 @@ public class ClassifierWithLLM
     /// <param name="topk">Количество топ-вариантов logprobs (default=10).</param>
     /// <param name="genTemperature">Температура генерации LLM (default=0.2 для детерминизма).</param>
     /// <param name="softmaxTemperature">Температура для softmax (default=5.0 для стандартного поведения).</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Список классов с вероятностями, отсортированный по убыванию.</returns>
-    public async Task<List<ClassifyData>> TextClassifyAsync(string inputText, int topk = 10, double genTemperature = 0.2, double softmaxTemperature = 5.0)
+    public async Task<List<ClassifyData>> TextClassifyAsync(string inputText, int topk = 10, double genTemperature = 0.2, double softmaxTemperature = 5.0, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(inputText)) throw new ArgumentException("inputText cannot be null or empty.");
 
@@ -74,7 +75,7 @@ public class ClassifierWithLLM
 
         try
         {
-            var llmAnswer = await ChatLLMApi.SendWithoutContextWithStartAsync(inputWithPrompt, AnswerStart, generateSettings);
+            var llmAnswer = await ChatLLMApi.SendWithoutContextWithStartAsync(inputWithPrompt, AnswerStart, generateSettings, cancellationToken);
             var llmAnswerText = llmAnswer.Choices[0];//.Logprobs.Content[ClTokenPosition].TopLogprobs; // Logprobs на позиции
             
             List<TopLogprob> logProbs = new List<TopLogprob>();
