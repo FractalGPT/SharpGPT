@@ -602,10 +602,12 @@ public class ChatLLMApi
                     """);
             }
 
-            // Проверяем что генерация завершилась корректно (native_finish_reason == "STOP")
+            // Проверяем что генерация завершилась корректно
+            // Разрешены: native_finish_reason = "STOP"/"MAX_TOKENS"/"length" ИЛИ finish_reason = "stop"
             if (!string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(nativeFinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase))
+                !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase))
             {
                 var lastLine = await reader.ReadLineAsync();
 
@@ -613,7 +615,7 @@ public class ChatLLMApi
                     $$"""
                     Генерация не завершилась корректно.
                     native_finish_reason='{{nativeFinishReason}}', finish_reason='{{finishReason}}'.
-                    Ожидалось native_finish_reason='STOP' или 'MAX_TOKENS' или 'length'.
+                    Ожидалось native_finish_reason='STOP' или 'MAX_TOKENS' или 'length', либо finish_reason='stop'.
                     Last Line: {{lastLine}}
                     """);
             }
