@@ -400,6 +400,9 @@ public class ChatLLMApi
             string nativeFinishReason = null;
             string finishReason = null;
             
+            // Сохраняем usage из чанка (обычно последний чанк с usage != null)
+            Usage collectedUsage = null;
+            
             // Защита от зацикленного ответа (один и тот же токен повторяется слишком много раз)
             const int maxConsecutiveRepeats = 200;
             string lastToken = null;
@@ -472,6 +475,17 @@ public class ChatLLMApi
                         nativeFinishElement.ValueKind == JsonValueKind.String)
                     {
                         nativeFinishReason = nativeFinishElement.GetString();
+                    }
+                    
+                    // Парсим usage если есть (обычно в последнем чанке)
+                    if (root.TryGetProperty("usage", out var usageElement) && 
+                        usageElement.ValueKind == JsonValueKind.Object)
+                    {
+                        collectedUsage = ParseUsageFromJson(usageElement);
+                        Log.Debug($"ChatLLMApi: Получен usage - prompt_tokens={collectedUsage.PromptTokens}, " +
+                                  $"completion_tokens={collectedUsage.CompletionTokens}, " +
+                                  $"total_tokens={collectedUsage.TotalTokens}, " +
+                                  $"cost={collectedUsage.Cost}");
                     }
                     
                     // Получаем delta
@@ -598,7 +612,8 @@ public class ChatLLMApi
                         NativeFinishReason = nativeFinishReason
                     }
                 ],
-                Model = ModelName
+                Model = ModelName,
+                Usage = collectedUsage,
             };
         }
         catch (Exception ex)
@@ -641,6 +656,37 @@ public class ChatLLMApi
             Log.Error(ex, $"ChatLLMApi ProcessStandardResponse, Content={content.TruncateForLogging()}");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Парсит объект usage из JSON элемента
+    /// </summary>
+    private static Usage ParseUsageFromJson(JsonElement usageElement)
+    {
+        var usage = new Usage();
+        
+        if (usageElement.TryGetProperty("prompt_tokens", out var promptTokens))
+            usage.PromptTokens = promptTokens.GetInt32();
+        
+        if (usageElement.TryGetProperty("completion_tokens", out var completionTokens))
+            usage.CompletionTokens = completionTokens.GetInt32();
+        
+        if (usageElement.TryGetProperty("total_tokens", out var totalTokens))
+            usage.TotalTokens = totalTokens.GetInt32();
+        
+        // Парсим cost с использованием готовой утилиты
+        if (usageElement.TryGetProperty("cost", out var costElement) && costElement.ValueKind != JsonValueKind.Null)
+            usage.Cost = costElement.Clone();
+        
+        // Парсим reasoning_tokens из completion_tokens_details
+        if (usageElement.TryGetProperty("completion_tokens_details", out var completionDetails) && 
+            completionDetails.ValueKind == JsonValueKind.Object)
+        {
+            if (completionDetails.TryGetProperty("reasoning_tokens", out var reasoningTokens))
+                usage.ReasoningTokens = reasoningTokens.GetInt32();
+        }
+        
+        return usage;
     }
 
     /// <summary>
