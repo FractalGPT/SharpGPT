@@ -202,7 +202,7 @@ public class ChatLLMApi
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
-        const int maxAttempts = 3;
+        const int maxAttempts = 2;
         const int initialDelaySeconds = 1;
         Exception lastException = new Exception("Базовая ошибка");
 
@@ -583,6 +583,23 @@ public class ChatLLMApi
                 {
                     Log.Debug($"ChatLLMApi: После завершения цикла получена строка: {finalLine}");
                 }
+            }
+
+            if (!string.IsNullOrEmpty(nativeFinishReason) &&
+                (string.Equals(nativeFinishReason, "IMAGE_PROHIBITED_CONTENT", StringComparison.OrdinalIgnoreCase) ||
+                nativeFinishReason.Contains("PROHIBITED_CONTENT")))
+            {
+                return new ChatCompletionsResponse(
+                    $$"""
+                    К сожалению, не могу выполнить этот запрос, так как он нарушает политику использования.
+                    
+                    Пожалуйста, попробуйте:
+                    • Переформулировать запрос
+                    • Изменить изображение
+                    • Убедиться, что контент соответствует правилам безопасности
+                    
+                    Причина: {{nativeFinishReason}}
+                    """);
             }
 
             // Проверяем что генерация завершилась корректно (native_finish_reason == "STOP")
