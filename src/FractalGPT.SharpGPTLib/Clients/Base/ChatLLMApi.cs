@@ -419,9 +419,12 @@ public class ChatLLMApi
                 var line = await reader.ReadLineAsync();
                 linesRead++;
                 
-                // Пропускаем пустые строки
+                // Пропускаем пустые строки (с защитной задержкой от busy-loop)
                 if (string.IsNullOrEmpty(line))
+                {
+                    await Task.Delay(10, cancellationToken);
                     continue;
+                }
                 
                 // Пропускаем SSE комментарии (начинаются с :)
                 if (line.StartsWith(":"))
@@ -587,10 +590,15 @@ public class ChatLLMApi
                 !string.Equals(nativeFinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase) &&
                 !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase))
             {
+                var lastLine = await reader.ReadLineAsync();
+
                 throw new InvalidOperationException(
-                    $"Генерация не завершилась корректно. " +
-                    $"native_finish_reason='{nativeFinishReason}', finish_reason='{finishReason}'. " +
-                    $"Ожидалось native_finish_reason='STOP'.");
+                    $$"""
+                    Генерация не завершилась корректно.
+                    native_finish_reason='{{nativeFinishReason}}', finish_reason='{{finishReason}}'.
+                    Ожидалось native_finish_reason='STOP' или 'MAX_TOKENS' или 'length'.
+                    Last Line: {{lastLine}}
+                    """);
             }
             
             // Проверяем что есть хоть какой-то результат (текст ИЛИ изображения)
