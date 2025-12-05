@@ -45,40 +45,66 @@ public class TavilyClient
         if (excludeDomains.Count() > 150)
             throw new ArgumentException("Maximum 150 domains for excludeDomains");
 
-        // Локальный таймаут 60 секунд для ReadFromJsonAsync
-        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-
-        using var response = await _httpClient.PostAsJsonAsync("/search", new SearchArgs
+        const int maxAttempts = 2;
+        Exception lastException = null;
+        
+        for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
-            ApiKey = _apiKey,
-            IncludeAnswer = includeAnswer,
-            IncludeImages = includeImages,
-            IncludeImageDescriptions = includeImageDescriptions,
-            Query = query,
-            MaxResults = maxResults,
-            SearchDepth = searchDepth.GetDescription(),
-            IncludeRawContent = includeRawContent,
-            Topic = topic.GetDescription(),
-            TimeRange = timeRange.GetDescription(),
-            Country = country.GetDescription(),
-            IncludeDomains = includeDomains.Select(domain => domain.AbsoluteUri),
-            ExcludeDomains = excludeDomains.Select(domain => domain.AbsoluteUri),
-        }, cancellationToken);
-        response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<SearchResult>(cancellationToken: linkedCts.Token);
+            cancellationToken.ThrowIfCancellationRequested();
+            
+            try
+            {
+                // Локальный таймаут 60 секунд для ReadFromJsonAsync
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
-        result.Results = result.Results
-            .Where(result => !ContainsForbiddenContent(url: result.Url, rawContent: result.RawContent, excludeDomains: excludeDomains))
-            .ToArray();
+                using var response = await _httpClient.PostAsJsonAsync("/search", new SearchArgs
+                {
+                    ApiKey = _apiKey,
+                    IncludeAnswer = includeAnswer,
+                    IncludeImages = includeImages,
+                    IncludeImageDescriptions = includeImageDescriptions,
+                    Query = query,
+                    MaxResults = maxResults,
+                    SearchDepth = searchDepth.GetDescription(),
+                    IncludeRawContent = includeRawContent,
+                    Topic = topic.GetDescription(),
+                    TimeRange = timeRange.GetDescription(),
+                    Country = country.GetDescription(),
+                    IncludeDomains = includeDomains.Select(domain => domain.AbsoluteUri),
+                    ExcludeDomains = excludeDomains.Select(domain => domain.AbsoluteUri),
+                }, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                var result = await response.Content.ReadFromJsonAsync<SearchResult>(cancellationToken: linkedCts.Token);
 
-        return result;
+                result.Results = result.Results
+                    .Where(result => !ContainsForbiddenContent(url: result.Url, rawContent: result.RawContent, excludeDomains: excludeDomains))
+                    .ToArray();
+
+                return result;
+            }
+            catch (Exception) when (cancellationToken.IsCancellationRequested)
+            {
+                throw; // Глобальная отмена - не делаем retry
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                if (attempt < maxAttempts - 1) // Только для первой попытки
+                {
+                    try { await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
+            }
+        }
+
+        throw lastException ?? new Exception("Tavily search failed after 2 attempts");
     }
 
     public async Task<ExtractResult> ExtractAsync(IEnumerable<string> urls, bool includeImages = false, ExtractDepth extractDepth = ExtractDepth.Basic, FormatType format = FormatType.Markdown, CancellationToken cancellationToken = default)
     {
         ExtractResult result = null;
-        const int maxAttempts = 3;
+        const int maxAttempts = 4;
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -109,7 +135,7 @@ public class TavilyClient
             catch (Exception ex) { }
 
             if (attempt != maxAttempts - 1)
-                await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1)), cancellationToken); // 2, 4
+                await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1)), cancellationToken); // 2, 4, 6
         }
 
 
