@@ -32,6 +32,11 @@ public class ChatLLMApi
     public StreamOptions StreamOptions { get; set; }
 
     /// <summary>
+    /// Предпочтительный провайдер (используется в OpenRouter)
+    /// </summary>
+    public virtual ProviderPreference PreferredProvider { get; set; }
+
+    /// <summary>
     /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 30 секунд)
     /// </summary>
     public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
@@ -207,6 +212,10 @@ public class ChatLLMApi
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
 
+        // Установка провайдера если задан (для OpenRouter)
+        if (PreferredProvider != null)
+            sendData.Provider = PreferredProvider;
+        
         const int maxAttempts = 2;
         const int initialDelaySeconds = 1;
         Exception lastException = new Exception("Базовая ошибка");
@@ -399,6 +408,7 @@ public class ChatLLMApi
 
             using var reader = new StreamReader(stream);
             var fullContent = new StringBuilder();
+            var fullReasoning = new StringBuilder();
             
             // Поддержка Vision моделей - собираем изображения
             var collectedImages = new List<ImageInfo>();
@@ -412,6 +422,10 @@ public class ChatLLMApi
             const int maxConsecutiveRepeats = 200;
             string lastToken = null;
             int consecutiveCount = 0;
+            
+            // Счетчики для отладки стриминговых данных
+            int chunksWithContent = 0;
+            int chunksWithReasoning = 0;
             
             Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Stream получен, начинаем читать строки...");
             
@@ -427,7 +441,7 @@ public class ChatLLMApi
                 // Пропускаем пустые строки (с защитной задержкой от busy-loop)
                 if (line.Length == 0)
                 {
-                    await Task.Delay(10, cancellationToken);
+                    await Task.Delay(1, cancellationToken);
                     continue;
                 }
                 
@@ -500,6 +514,18 @@ public class ChatLLMApi
                     if (!firstChoice.TryGetProperty("delta", out var delta))
                         continue;
                     
+                    // Парсим reasoning (delta.reasoning) - размышления модели
+                    // ВАЖНО: reasoning может приходить БЕЗ content, и это нормально!
+                    if (delta.TryGetProperty("reasoning", out var reasoningElement))
+                    {
+                        string reasoning = reasoningElement.GetString() ?? string.Empty;
+                        if (!string.IsNullOrEmpty(reasoning))
+                        {
+                            fullReasoning.Append(reasoning);
+                            chunksWithReasoning++;
+                        }
+                    }
+                    
                     // Парсим текстовый контент (delta.content)
                     if (delta.TryGetProperty("content", out var contentElement))
                     {
@@ -524,6 +550,7 @@ public class ChatLLMApi
                             }
                             
                             fullContent.Append(content);
+                            chunksWithContent++;
                         }
                     }
                     
@@ -577,7 +604,9 @@ public class ChatLLMApi
             }
             
             Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Закончили читать stream, всего строк: {linesRead}, " +
-                      $"длина контента: {fullContent.Length}, изображений: {collectedImages.Count}, " +
+                      $"длина контента: {fullContent.Length}, длина reasoning: {fullReasoning.Length}, " +
+                      $"изображений: {collectedImages.Count}, " +
+                      $"чанков с content: {chunksWithContent}, чанков с reasoning: {chunksWithReasoning}, " +
                       $"finish_reason: {finishReason}, native_finish_reason: {nativeFinishReason}");
             
             // Дочитываем любые оставшиеся данные после выхода из цикла
@@ -608,35 +637,88 @@ public class ChatLLMApi
             }
 
             // Проверяем что генерация завершилась корректно
-            // Разрешены: native_finish_reason = "STOP"/"MAX_TOKENS"/"length" ИЛИ finish_reason = "stop"
-            if (!string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(nativeFinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase))
+            // ВАЖНО: Если получены данные (текст/reasoning/изображения), то finish_reason не обязателен
+            // Некоторые провайдеры могут не возвращать finish_reason в промежуточных или финальных чанках
+            bool hasAnyData = fullContent.Length > 0 || fullReasoning.Length > 0 || collectedImages.Count > 0;
+            bool hasFinishReason = !string.IsNullOrEmpty(nativeFinishReason) || !string.IsNullOrEmpty(finishReason);
+            
+            if (hasFinishReason)
             {
-                var lastLine = await ReadLineWithTimeoutAsync(reader, cancellationToken);
-
+                // Если finish_reason присутствует, проверяем что он корректный
+                // Разрешены: native_finish_reason = "STOP"/"MAX_TOKENS"/"length" ИЛИ finish_reason = "stop"
+                bool isValidFinishReason = 
+                    string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(nativeFinishReason, "MAX_TOKENS", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(nativeFinishReason, "length", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
+                
+                if (!isValidFinishReason)
+                {
+                    var lastLine = await ReadLineWithTimeoutAsync(reader, cancellationToken);
+                    
+                    throw new InvalidOperationException(
+                        $$"""
+                        Генерация не завершилась корректно.
+                        native_finish_reason='{{nativeFinishReason}}', finish_reason='{{finishReason}}'.
+                        Ожидалось native_finish_reason='STOP' или 'MAX_TOKENS' или 'length', либо finish_reason='stop'.
+                        Last Line: {{lastLine}}
+                        """);
+                }
+            }
+            else if (!hasAnyData)
+            {
+                // Если нет ни данных, ни finish_reason - это ошибка (возможно прервано соединение)
                 throw new InvalidOperationException(
-                    $$"""
-                    Генерация не завершилась корректно.
-                    native_finish_reason='{{nativeFinishReason}}', finish_reason='{{finishReason}}'.
-                    Ожидалось native_finish_reason='STOP' или 'MAX_TOKENS' или 'length', либо finish_reason='stop'.
-                    Last Line: {{lastLine}}
-                    """);
+                    "Генерация завершилась без данных и без finish_reason. Возможно, соединение прервано или поток пуст.");
+            }
+            else
+            {
+                // Есть данные, но нет finish_reason - логируем предупреждение, но продолжаем
+                Log.Warning($"ChatLLMApi ProcessStreamResponseInternal: Получены данные (content={fullContent.Length}, " +
+                            $"reasoning={fullReasoning.Length}, images={collectedImages.Count}), но finish_reason отсутствует. " +
+                            $"Это может быть нормально для некоторых провайдеров.");
             }
             
-            // Проверяем что есть хоть какой-то результат (текст ИЛИ изображения)
+            // Проверяем что есть хоть какой-то результат (текст ИЛИ reasoning ИЛИ изображения)
             // Примечание: изображения сохраняются только при native_finish_reason == "STOP" (фильтрация выше)
+            // ВАЖНО: reasoning может быть БЕЗ content - это нормально, модель размышляет перед ответом
             bool hasText = fullContent.Length > 0;
+            bool hasReasoning = fullReasoning.Length > 0;
             bool hasImages = collectedImages.Count > 0;
             
-            if (!hasText && !hasImages)
+            if (!hasText && !hasReasoning && !hasImages)
             {
-                throw new InvalidOperationException("Потоковый ответ пуст - не получено ни текста, ни изображений.");
+                throw new InvalidOperationException("Потоковый ответ пуст - не получено ни текста, ни reasoning, ни изображений.");
             }
 
             // Формируем ответ
-            var resultMessage = new LLMMessage("assistant", hasText ? fullContent.ToString() : string.Empty);
+            // ВАЖНО: Если нет текста и нет изображений, но есть reasoning - используем reasoning как content
+            string finalContent;
+            string finalReasoning = null;
+            
+            if (!hasText && !hasImages && hasReasoning)
+            {
+                // Reasoning становится основным контентом, если нет текста и изображений
+                finalContent = fullReasoning.ToString();
+                Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Нет content и изображений, используем reasoning ({fullReasoning.Length} символов) как content");
+            }
+            else
+            {
+                // Стандартный случай: content - это текст, reasoning - отдельно
+                finalContent = hasText ? fullContent.ToString() : string.Empty;
+                
+                // Сохраняем reasoning отдельно только если есть content или изображения
+                if (hasReasoning)
+                    finalReasoning = fullReasoning.ToString();
+            }
+            
+            var resultMessage = new LLMMessage("assistant", finalContent);
+            
+            // Добавляем reasoning если есть (и он не был использован как content)
+            if (!string.IsNullOrEmpty(finalReasoning))
+            {
+                resultMessage.Reasoning = finalReasoning;
+            }
             
             // Добавляем изображения если есть
             if (hasImages)
@@ -837,6 +919,10 @@ public class ChatLLMApi
         var sendData = new SendDataLLM(ModelName, generateSettings);
         sendData.StreamOptions = StreamOptions;
         sendData.SetMessages(context);
+
+        // Установка провайдера если задан (для OpenRouter)
+        if (PreferredProvider != null)
+            sendData.Provider = PreferredProvider;
 
         return sendData;
     }

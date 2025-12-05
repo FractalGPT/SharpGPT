@@ -114,4 +114,15 @@ public partial class SendDataLLM
     public string ReasoningEffort { get; set; }
 
     #endregion
+
+    #region Параметры маршрутизации (OpenRouter)
+
+    /// <summary>
+    /// Предпочтительный провайдер для OpenRouter
+    /// Например: "Baseten", "GMICloud", "SiliconFlow" и т.д.
+    /// </summary>
+    [JsonPropertyName("provider")]
+    public ProviderPreference Provider { get; set; }
+
+    #endregion
 }
