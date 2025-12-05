@@ -55,8 +55,9 @@ public class BaseLLMServerAPI : IDisposable
     /// <param name="topK">The number of top-k tokens considered at each step.</param>
     /// <param name="topP">The cumulative probability for top-p sampling.</param>
     /// <param name="noRepeatNgramSize">The size of n-grams that must not repeat.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>The generated text or null if the operation failed.</returns>
-    public async Task<string> TextGeneration(string prompt, int maxLen = 50, double temperature = 0.6, int topK = 15, double topP = 0.8, int noRepeatNgramSize = 3)
+    public async Task<string> TextGeneration(string prompt, int maxLen = 50, double temperature = 0.6, int topK = 15, double topP = 0.8, int noRepeatNgramSize = 3, CancellationToken cancellationToken = default)
     {
         var uri = $"{Host}text_generation/";
         var requestData = new
@@ -68,11 +69,16 @@ public class BaseLLMServerAPI : IDisposable
             top_p = topP,
             no_repeat_ngram_size = noRepeatNgramSize
         };
-        var response = await _client.PostAsJsonAsync(uri, requestData).ConfigureAwait(false);
+        
+        // Локальный таймаут 60 секунд для ReadFromJsonAsync
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        
+        var response = await _client.PostAsJsonAsync(uri, requestData, cancellationToken).ConfigureAwait(false);
 
         if (response.IsSuccessStatusCode)
         {
-            var content = await response.Content.ReadFromJsonAsync<TextGenerationJSON>().ConfigureAwait(false);
+            var content = await response.Content.ReadFromJsonAsync<TextGenerationJSON>(cancellationToken: linkedCts.Token).ConfigureAwait(false);
             return content?.Answer;
         }
         return null;
@@ -84,13 +90,14 @@ public class BaseLLMServerAPI : IDisposable
     /// </summary>
     /// <param name="prompt">The input prompt for text generation.</param>
     /// <param name="generationParametrs">Optional parameters to customize the generation process.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>The generated text or null if the operation failed.</returns>
-    public async Task<string> TextGeneration(string prompt, GenerationParametrs generationParametrs)
+    public async Task<string> TextGeneration(string prompt, GenerationParametrs generationParametrs, CancellationToken cancellationToken = default)
     {
         if (generationParametrs == null) generationParametrs = new GenerationParametrs();
 
         return await TextGeneration(prompt, generationParametrs.MaxLen, generationParametrs.Temperature,
-            generationParametrs.TopK, generationParametrs.TopP, generationParametrs.NoRepeatNgramSize);
+            generationParametrs.TopK, generationParametrs.TopP, generationParametrs.NoRepeatNgramSize, cancellationToken);
     }
 
     /// <summary>

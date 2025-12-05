@@ -11,6 +11,7 @@ public interface IBiEncoder
     /// Преобразование текстов в векторы
     /// </summary>
     /// <param name="sentences">Тексты</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<Vector[]> EncodeAsync(IEnumerable<string> sentences);
+    Task<Vector[]> EncodeAsync(IEnumerable<string> sentences, CancellationToken cancellationToken = default);
 }

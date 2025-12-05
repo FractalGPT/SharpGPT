@@ -90,9 +90,14 @@ public class ChatLLMApi
         SendDataLLM sendData = new SendDataLLM(ModelName);
         sendData.SetMessages(messages);
 
+        // HTTP запрос использует глобальный cancellationToken (tokenize - быстрая операция)
         using var response = await _webApi.PostAsJsonAsync(TokenizeApiUrl, sendData, cancellationToken);
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(cancellationToken);
+        
+        // Только чтение JSON ограничиваем 60 секундами
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        var result = await response.Content.ReadFromJsonAsync<TokenizeResult>(linkedCts.Token);
 
         return result?.Count ?? 0;
     }
@@ -319,7 +324,7 @@ public class ChatLLMApi
         string lastMessage = context.Last().Content.ToString();
         string truncatedMessage = lastMessage.Substring(0, Math.Min(lastMessage.Length, 512));
 
-        var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
+        var content = (await response.Content.ReadAsStringAsync(cancellationToken) ?? "").TruncateForLogging();
 
         return new Exception(
             $"Attempt #{attempt + 1}/{5}\n" +
@@ -761,23 +766,37 @@ public class ChatLLMApi
     {
         try
         {
+            // Локальный таймаут 60 секунд для ReadFromJsonAsync - операция должна быть быстрой
+            using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+            
             var chatCompletionsResponse = await response.Content
-                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: cancellationToken);
+                .ReadFromJsonAsync<ChatCompletionsResponse>(cancellationToken: linkedCts.Token);
 
             if (chatCompletionsResponse == null ||
                 chatCompletionsResponse.Choices == null ||
                 chatCompletionsResponse.Choices.Count == 0)
             {
-                var content = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
+                var content = (await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging();
                 throw new InvalidOperationException($"Некорректный ответ от LLM API.\nContent={content}");
             }
 
             return chatCompletionsResponse;
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Глобальная отмена - пробрасываем
+            throw;
+        }
         catch (Exception ex)
         {
             string content = "";
-            try { content = await response.Content.ReadAsStringAsync(); } catch { }
+            try 
+            { 
+                using var errorCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                content = await response.Content.ReadAsStringAsync(errorCts.Token); 
+            } 
+            catch { }
             Log.Error(ex, $"ChatLLMApi ProcessStandardResponse, Content={content.TruncateForLogging()}");
             throw;
         }

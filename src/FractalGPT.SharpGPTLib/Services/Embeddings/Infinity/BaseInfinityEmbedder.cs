@@ -47,19 +47,19 @@ public class BaseInfinityEmbedder : IEmbedderService
         _httpClient = new HttpClient()
         {
             BaseAddress = new Uri(host),
-            Timeout = TimeSpan.FromMinutes(7)
+            Timeout = TimeSpan.FromMinutes(5)
         };
     }
 
-    public Task<Vector[]> EncodeAsync(IEnumerable<string> texts) =>
-        EncodeBaseAsync(texts);
+    public Task<Vector[]> EncodeAsync(IEnumerable<string> texts, CancellationToken cancellationToken = default) =>
+        EncodeBaseAsync(texts, cancellationToken);
 
 
-    public Task<Vector> EncodeAsync(string text) =>
-        EncodeBaseAsync(text);
+    public Task<Vector> EncodeAsync(string text, CancellationToken cancellationToken = default) =>
+        EncodeBaseAsync(text, cancellationToken);
 
-    public Task<Vector> EncodeQuestionAsync(string text) =>
-        EncodeQuestionBaseAsync(text);
+    public Task<Vector> EncodeQuestionAsync(string text, CancellationToken cancellationToken = default) =>
+        EncodeQuestionBaseAsync(text, cancellationToken);
 
     /// <summary>
     /// Нормализация косинуса через гиперболический тангенс
@@ -67,7 +67,7 @@ public class BaseInfinityEmbedder : IEmbedderService
     public virtual double TanhCosineNormalize(double cosine) =>
         Math.Tanh(TanhNormParamK * (cosine - MeanCos) / StdCos + TanhNormParamB);
 
-    public async Task<Vector[]> EncodeAsyncWithBlockSize(IEnumerable<string> processedTexts, IEnumerable<int> blockSizes, IEnumerable<int> excludeBlockSizes = null)
+    public async Task<Vector[]> EncodeAsyncWithBlockSize(IEnumerable<string> processedTexts, IEnumerable<int> blockSizes, IEnumerable<int> excludeBlockSizes = null, CancellationToken cancellationToken = default)
     {
         var snippetsTexts = processedTexts.ToArray();
         var blockSizesArray = blockSizes.ToArray();
@@ -95,7 +95,7 @@ public class BaseInfinityEmbedder : IEmbedderService
 
         if (texts.Count > 0)
         {
-            var vectors = await EncodeBaseAsync(texts);
+            var vectors = await EncodeBaseAsync(texts, cancellationToken);
             for (int i = 0; i < vectors.Length; i++)
                 embeddings[indexes[i]] = vectors[i];
         }
@@ -103,9 +103,12 @@ public class BaseInfinityEmbedder : IEmbedderService
         return embeddings;
     }
 
-    private async Task<Vector[]> EncodeBaseAsync(IEnumerable<string> texts)
+    private async Task<Vector[]> EncodeBaseAsync(IEnumerable<string> texts, CancellationToken cancellationToken = default)
     {
         Exception lastException = new Exception();
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        
         for (int attempt = 0; attempt < 2; attempt++)
         {
             try
@@ -114,27 +117,34 @@ public class BaseInfinityEmbedder : IEmbedderService
                 {
                     Model = ModelName,
                     Input = texts,
-                });
+                }, linkedCts.Token);
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
+                    throw new Exception((await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
-                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>();
+                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>(cancellationToken: linkedCts.Token);
                 return content?.Data?.Select(t => t.Embedding).ToArray();
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                await Task.Delay(1000);
+                if (attempt < 1) // Только для первой попытки
+                {
+                    try { await Task.Delay(1000, cancellationToken); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
             }
         }
 
         throw lastException;
     }
 
-    private async Task<Vector> EncodeBaseAsync(string text)
+    private async Task<Vector> EncodeBaseAsync(string text, CancellationToken cancellationToken = default)
     {
         Exception lastException = new Exception();
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        
         for (int attempt = 0; attempt < 2; attempt++)
         {
             try
@@ -143,24 +153,31 @@ public class BaseInfinityEmbedder : IEmbedderService
                 {
                     Model = ModelName,
                     Input = [text],
-                });
+                }, linkedCts.Token);
                 response.EnsureSuccessStatusCode();
-                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>();
+                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>(cancellationToken: linkedCts.Token);
                 return content?.Data?.First().Embedding;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                await Task.Delay(1000);
+                if (attempt < 1) // Только для первой попытки
+                {
+                    try { await Task.Delay(1000, cancellationToken); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
             }
         }
 
         throw lastException;
     }
 
-    private async Task<Vector> EncodeQuestionBaseAsync(string query)
+    private async Task<Vector> EncodeQuestionBaseAsync(string query, CancellationToken cancellationToken = default)
     {
         Exception lastException = new Exception();
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        
         for (int attempt = 0; attempt < 2; attempt++)
         {
             try
@@ -169,15 +186,19 @@ public class BaseInfinityEmbedder : IEmbedderService
                 {
                     Model = ModelName,
                     Input = [GetDetailedInstruct(query)],
-                });
+                }, linkedCts.Token);
                 response.EnsureSuccessStatusCode();
-                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>();
+                var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>(cancellationToken: linkedCts.Token);
                 return content?.Data?.First().Embedding;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                await Task.Delay(1000);
+                if (attempt < 1) // Только для первой попытки
+                {
+                    try { await Task.Delay(1000, cancellationToken); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
             }
         }
 

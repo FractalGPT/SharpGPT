@@ -34,7 +34,7 @@ public class InfinityReranker
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(_apiUrl),
-            Timeout = TimeSpan.FromMinutes(7)
+            Timeout = TimeSpan.FromMinutes(5)
         };
     }
 
@@ -43,10 +43,13 @@ public class InfinityReranker
     /// </summary>
     /// <param name="query">Запрос, относительно которого ранжируются документы</param>
     /// <param name="documents">Список документов для ранжирования</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Ответ от сервера с результатами ранжирования</returns>
-    public async Task<RerankResponse> RerankAsync(string query, IEnumerable<string> documents)
+    public async Task<RerankResponse> RerankAsync(string query, IEnumerable<string> documents, CancellationToken cancellationToken = default)
     {
         Exception lastException = new Exception();
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
         for (int attempt = 0; attempt < 2; attempt++)
         {
@@ -58,20 +61,24 @@ public class InfinityReranker
                     Model = RerankerModelName,
                     Query = query,
                     Documents = documents
-                });
+                }, linkedCts.Token);
 
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
+                    throw new Exception((await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<RerankResponse>();
+                var result = await response.Content.ReadFromJsonAsync<RerankResponse>(cancellationToken: linkedCts.Token);
                 result.Results = result.Results.OrderBy(t => t.Index).ToList();
                 return result;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                await Task.Delay(1000);
+                if (attempt < 1) 
+                {
+                    try { await Task.Delay(1000, linkedCts.Token); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
             }
         }
 

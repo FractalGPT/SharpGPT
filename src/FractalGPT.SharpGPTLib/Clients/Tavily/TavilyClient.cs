@@ -30,13 +30,13 @@ public class TavilyClient
         _httpClient = new HttpClient(handler)
         {
             BaseAddress = new Uri(Host),
-            Timeout = TimeSpan.FromMinutes(7),
+            Timeout = TimeSpan.FromSeconds(60),
         };
     }
 
     public async Task<SearchResult> SearchAsync(string query, int maxResults = 5, bool includeRawContent = true, bool includeAnswer = false, bool includeImages = false,
         bool includeImageDescriptions = false, SearchDepth searchDepth = SearchDepth.Basic, TopicType topic = TopicType.General, TimeRange timeRange = TimeRange.All,
-        CountryType country = CountryType.All, IEnumerable<Uri> includeDomains = null, IEnumerable<Uri> excludeDomains = null)
+        CountryType country = CountryType.All, IEnumerable<Uri> includeDomains = null, IEnumerable<Uri> excludeDomains = null, CancellationToken cancellationToken = default)
     {
         includeDomains ??= [];
         excludeDomains ??= [];
@@ -45,6 +45,9 @@ public class TavilyClient
         if (excludeDomains.Count() > 150)
             throw new ArgumentException("Maximum 150 domains for excludeDomains");
 
+        // Локальный таймаут 60 секунд для ReadFromJsonAsync
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
         using var response = await _httpClient.PostAsJsonAsync("/search", new SearchArgs
         {
@@ -61,9 +64,9 @@ public class TavilyClient
             Country = country.GetDescription(),
             IncludeDomains = includeDomains.Select(domain => domain.AbsoluteUri),
             ExcludeDomains = excludeDomains.Select(domain => domain.AbsoluteUri),
-        });
+        }, cancellationToken);
         response.EnsureSuccessStatusCode();
-        var result = await response.Content.ReadFromJsonAsync<SearchResult>();
+        var result = await response.Content.ReadFromJsonAsync<SearchResult>(cancellationToken: linkedCts.Token);
 
         result.Results = result.Results
             .Where(result => !ContainsForbiddenContent(url: result.Url, rawContent: result.RawContent, excludeDomains: excludeDomains))
@@ -82,6 +85,10 @@ public class TavilyClient
             
             try
             {
+                // Локальный таймаут 60 секунд для ReadFromJsonAsync
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+                using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+                
                 using var response = await _httpClient.PostAsJsonAsync("/extract", new ExtractArgs
                 {
                     ApiKey = _apiKey,
@@ -91,7 +98,7 @@ public class TavilyClient
                     Format = format.GetDescription(),
                 }, cancellationToken);
                 response.EnsureSuccessStatusCode();
-                result = await response.Content.ReadFromJsonAsync<ExtractResult>(cancellationToken: cancellationToken);
+                result = await response.Content.ReadFromJsonAsync<ExtractResult>(cancellationToken: linkedCts.Token);
                 if (!result?.FailedResults?.Any() ?? false) 
                     return result;
             }

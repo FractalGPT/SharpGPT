@@ -39,7 +39,7 @@ public class Qwen3VLLMReranker
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(_apiUrl),
-            Timeout = TimeSpan.FromMinutes(7)
+            Timeout = TimeSpan.FromMinutes(5)
         };
     }
 
@@ -48,8 +48,10 @@ public class Qwen3VLLMReranker
     /// </summary>
     /// <param name="query">Запрос, относительно которого ранжируются документы</param>
     /// <param name="documents">Список документов для ранжирования</param>
+    /// <param name="instruct">Инструкция</param>
+    /// <param name="cancellationToken">Токен отмены</param>
     /// <returns>Ответ от сервера с результатами ранжирования</returns>
-    public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents, string instruct = null)
+    public async Task<VLLMRerankResponse> RerankAsync(string query, IEnumerable<string> documents, string instruct = null, CancellationToken cancellationToken = default)
     {
         var queryPrompt = QueryTemplate
             .Replace("{Prefix}", Prefix)
@@ -62,6 +64,8 @@ public class Qwen3VLLMReranker
             .ToArray();
 
         Exception lastException = new();
+        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
         for (int attempt = 0; attempt < 2; attempt++)
         {
@@ -73,20 +77,24 @@ public class Qwen3VLLMReranker
                     Model = RerankerModelName,
                     Query = queryPrompt,
                     Documents = documentPrompts
-                });
+                }, linkedCts.Token);
 
                 if (!response.IsSuccessStatusCode)
-                    throw new Exception((await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging());
+                    throw new Exception((await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging());
 
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<VLLMRerankResponse>();
+                var result = await response.Content.ReadFromJsonAsync<VLLMRerankResponse>(cancellationToken: linkedCts.Token);
                 result.Results = [.. result.Results.OrderBy(t => t.Index)];
                 return result;
             }
             catch (Exception ex)
             {
                 lastException = ex;
-                await Task.Delay(1000);
+                if (attempt < 1) // Только для первой попытки
+                {
+                    try { await Task.Delay(1000, linkedCts.Token); }
+                    catch (OperationCanceledException) { throw lastException; }
+                }
             }
         }
 

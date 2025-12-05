@@ -231,7 +231,7 @@ public class ProxyHTTPClient : IWebAPIClient
 
         // КРИТИЧНО: Таймаут на получение response headers (40 сек)
         // Защита от молчащего сервера который принял запрос но не отвечает
-        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(45));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, responseTimeoutCts.Token);
 
         HttpResponseMessage response;
@@ -246,7 +246,7 @@ public class ProxyHTTPClient : IWebAPIClient
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = (await response.Content.ReadAsStringAsync() ?? "").TruncateForLogging();
+            var errorContent = (await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging();
 
             if (_options.EnableDebugLogging)
             {
@@ -602,12 +602,13 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос (весь запрос включая получение ответа)
     /// </summary>
-    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(7);
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(10);
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
+    /// С учетом retry через разные прокси
     /// </summary>
-    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(20);
+    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(18);
 
     /// <summary>
     /// Максимум одновременных запросов

@@ -74,7 +74,7 @@ public class WithoutProxyClient : IWebAPIClient
 
         return new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromMinutes(7)
+            Timeout = TimeSpan.FromMinutes(10)
         };
     }
 
@@ -92,26 +92,33 @@ public class WithoutProxyClient : IWebAPIClient
     /// Таймаут на получение response headers (защита от молчащего сервера)
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(40);
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(45);
 
     /// <summary>
     /// Asynchronously sends a POST request with JSON data.
     /// </summary>
     /// <param name="apiUrl">API URL to send the request to.</param>
     /// <param name="sendData">Data to send in the request.</param>
+    /// <param name="cancellationToken">Cancellation token for the request.</param>
     /// <returns>The HttpResponseMessage from the request.</returns>
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
-        cancellationToken ??= new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token;
-
-        if (string.IsNullOrWhiteSpace(apiUrl))
-            throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
-        if (sendData == null)
-            throw new ArgumentNullException(nameof(sendData));
+        // Если токен не передан, создаём с таймаутом 10 минут (для долгих LLM запросов, o1, reasoning)
+        CancellationTokenSource defaultCts = null;
+        if (cancellationToken == null)
+        {
+            defaultCts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            cancellationToken = defaultCts.Token;
+        }
 
         try
         {
+            if (string.IsNullOrWhiteSpace(apiUrl))
+                throw new ArgumentException("apiUrl не может быть пустым.", nameof(apiUrl));
+            if (sendData == null)
+                throw new ArgumentNullException(nameof(sendData));
+
             var jsonContent = sendData.GetJson(); // Сериализация
 
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, new Uri(apiUrl))
@@ -130,7 +137,7 @@ public class WithoutProxyClient : IWebAPIClient
                 ? HttpCompletionOption.ResponseHeadersRead 
                 : HttpCompletionOption.ResponseContentRead;
 
-            // КРИТИЧНО: Таймаут на получение response headers (60 сек)
+            // КРИТИЧНО: Таймаут на получение response headers (45 сек)
             // Защита от молчащего сервера который принял запрос но не отвечает
             using var responseTimeoutCts = new CancellationTokenSource(ResponseHeadersTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, responseTimeoutCts.Token);
@@ -160,6 +167,11 @@ public class WithoutProxyClient : IWebAPIClient
         catch (Exception ex)
         {
             throw new HttpRequestException("An error occurred while sending the request", ex);
+        }
+        finally
+        {
+            // КРИТИЧНО: Освобождаем CancellationTokenSource если создали его
+            defaultCts?.Dispose();
         }
     }
 
