@@ -12,7 +12,7 @@ namespace FractalGPT.SharpGPTLib.API.LocalServer;
 public class BaseLLMServerAPI : IDisposable
 {
     private readonly HttpClient _client;
-    private bool _disposed = false;
+    private int _disposed; // 0 = not disposed, 1 = disposed
 
     /// <summary>
     /// The base URL of the local server.
@@ -106,7 +106,6 @@ public class BaseLLMServerAPI : IDisposable
     public void Dispose()
     {
         Dispose(true);
-        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -115,13 +114,11 @@ public class BaseLLMServerAPI : IDisposable
     /// <param name="disposing">Если true, освобождаются управляемые ресурсы.</param>
     protected virtual void Dispose(bool disposing)
     {
-        if (!_disposed)
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0) return;
+        
+        if (disposing)
         {
-            if (disposing)
-            {
-                _client?.Dispose();
-            }
-            _disposed = true;
+            _client?.Dispose();
         }
     }
 }

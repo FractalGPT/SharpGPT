@@ -6,9 +6,10 @@ using System.Net.Http.Json;
 
 namespace FractalGPT.SharpGPTLib.Services.Embeddings.Infinity;
 
-public class BaseInfinityEmbedder : IEmbedderService
+public class BaseInfinityEmbedder : IEmbedderService, IDisposable
 {
     private readonly HttpClient _httpClient;
+    private int _disposed; // 0 = not disposed, 1 = disposed
 
     /// <summary>
     /// Параметры тангенса "k", f(x) = tanh(k*x+b) 
@@ -156,7 +157,7 @@ public class BaseInfinityEmbedder : IEmbedderService
                 }, linkedCts.Token);
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>(cancellationToken: linkedCts.Token);
-                return content?.Data?.First().Embedding;
+                return content?.Data?.FirstOrDefault()?.Embedding;
             }
             catch (Exception ex)
             {
@@ -189,7 +190,7 @@ public class BaseInfinityEmbedder : IEmbedderService
                 }, linkedCts.Token);
                 response.EnsureSuccessStatusCode();
                 var content = await response.Content.ReadFromJsonAsync<InfinityEmbeddingsResult>(cancellationToken: linkedCts.Token);
-                return content?.Data?.First().Embedding;
+                return content?.Data?.FirstOrDefault()?.Embedding;
             }
             catch (Exception ex)
             {
@@ -203,5 +204,20 @@ public class BaseInfinityEmbedder : IEmbedderService
         }
 
         throw lastException;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0) return;
+        
+        if (disposing)
+        {
+            _httpClient?.Dispose();
+        }
     }
 }

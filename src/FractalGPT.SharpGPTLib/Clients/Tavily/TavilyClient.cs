@@ -7,13 +7,14 @@ using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
 
 namespace FractalGPT.SharpGPTLib.Clients.Tavily;
 
-public class TavilyClient
+public class TavilyClient : IDisposable
 {
     public const string Host = "https://api.tavily.com";
 
     private readonly HttpClient _httpClient;
-
+    private readonly HttpClientHandler _httpHandler;
     private readonly string _apiKey;
+    private int _disposed; // 0 = not disposed, 1 = disposed (для Interlocked)
 
     public TavilyClient(string apiKey, WebProxy proxy = null)
     {
@@ -21,13 +22,13 @@ public class TavilyClient
         if (string.IsNullOrEmpty(apiKey))
             throw new ArgumentException($"{nameof(apiKey)} is missing");
 
-        var handler = new HttpClientHandler();
+        _httpHandler = new HttpClientHandler();
         if (proxy != null)
         {
-            handler.UseProxy = true;
-            handler.Proxy = proxy;
+            _httpHandler.UseProxy = true;
+            _httpHandler.Proxy = proxy;
         }
-        _httpClient = new HttpClient(handler)
+        _httpClient = new HttpClient(_httpHandler)
         {
             BaseAddress = new Uri(Host),
             Timeout = TimeSpan.FromSeconds(60),
@@ -165,5 +166,22 @@ public class TavilyClient
             return true;
 
         return false;
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+            return;
+        
+        if (disposing)
+        {
+            _httpClient?.Dispose();
+            _httpHandler?.Dispose();
+        }
     }
 }
