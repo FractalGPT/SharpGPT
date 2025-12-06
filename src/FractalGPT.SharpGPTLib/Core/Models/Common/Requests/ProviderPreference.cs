@@ -198,5 +198,36 @@ public static class OpenRouterProviders
             AmazonBedrock       // 103.1 tps
         };
     }
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.5 Pro (отсортировано по throughput - пропускной способности)
+    /// </summary>
+    public static class Gemini25Pro
+    {
+        /// <summary>
+        /// Google Vertex (Global) (US) - Максимальный throughput: 100.6 tps, 2.24s latency, 98.8% uptime
+        /// </summary>
+        public const string GoogleVertexGlobal = "Google Vertex (Global)";
+
+        /// <summary>
+        /// Google Vertex (US) - Второй по throughput: 84.77 tps, 2.94s latency, 99.2% uptime
+        /// </summary>
+        public const string GoogleVertex = "Google Vertex (US)";
+
+        /// <summary>
+        /// Google AI Studio (US) - Третий по throughput: 81.45 tps, 2.95s latency, 96.6% uptime
+        /// </summary>
+        public const string GoogleAIStudio = "Google AI Studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder => new()
+        {
+            GoogleVertexGlobal,  // 100.6 tps - МАКСИМАЛЬНЫЙ!
+            GoogleVertex,        // 84.77 tps
+            GoogleAIStudio       // 81.45 tps
+        };
+    }
 }
 
