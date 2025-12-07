@@ -37,14 +37,14 @@ public class ChatLLMApi
     public virtual ProviderPreference PreferredProvider { get; set; }
 
     /// <summary>
-    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 30 секунд)
+    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 40 секунд)
     /// </summary>
     public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
 
     /// <summary>
-    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 30 секунд)
+    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 40 секунд)
     /// </summary>
-    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(40);
 
     public event Action<string> ProxyInfo;
 
