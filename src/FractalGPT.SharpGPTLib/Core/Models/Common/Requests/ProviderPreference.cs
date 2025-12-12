@@ -77,213 +77,305 @@ public static class OpenRouterProviders
     /// <summary>
     /// Провайдеры для DeepSeek V3.2 (отсортированы по производительности)
     /// </summary>
-    public static class DeepSeekV32
-    {
-        /// <summary>
-        /// Baseten (US, fp4) - Лучшая производительность: 0.34s latency, 210.2tps throughput, 97.9% uptime
-        /// </summary>
-        public const string Baseten = "Baseten";
+    //public static class DeepSeekV32
+    //{
+    //    /// <summary>
+    //    /// 4,33tps throughput
+    //    /// </summary>
+    //    public const string Avian = "avian/fp8";
 
-        /// <summary>
-        /// GMICloud (US, fp8) - 1.27s latency, 24.31tps throughput, 94.9% uptime
-        /// </summary>
-        public const string GMICloud = "GMICloud";
+    //    /// <summary>
+    //    /// 15,54tps throughput
+    //    /// </summary>
+    //    public const string Parasail = "parasail/fp8";
 
-        /// <summary>
-        /// SiliconFlow (SG, fp8) - 7.73s latency, 64.83tps throughput, 92.2% uptime
-        /// </summary>
-        public const string SiliconFlow = "SiliconFlow";
+    //    /// <summary>
+    //    /// 10,66tps throughput 
+    //    /// </summary>
+    //    public const string DeepInfra = "deepinfra/fp4";
 
-        /// <summary>
-        /// Avian.io (US, fp8) - 1.83s latency, 10.32tps throughput, 98.3% uptime
-        /// </summary>
-        public const string Avian = "Avian.io";
+    //    /// <summary>
+    //    /// 33,23tps throughput
+    //    /// </summary>
+    //    public const string NovitaAI = "novita/fp8";
 
-        /// <summary>
-        /// AtlasCloud (US, fp8) - 1.66s latency, 40.69tps throughput, 85.0% uptime
-        /// </summary>
-        public const string AtlasCloud = "AtlasCloud";
 
-        /// <summary>
-        /// NovitaAI (US, fp8) - 1.68s latency, 22.66tps throughput, 98.6% uptime
-        /// </summary>
-        public const string NovitaAI = "NovitaAI";
+    //    /// <summary>
+    //    /// Baseten (US, fp4) - Лучшая производительность: 0.34s latency, 210.2tps throughput, 97.9% uptime
+    //    /// </summary>
+    //    public const string Baseten = "baseten/fp4";
 
-        /// <summary>
-        /// DeepInfra (US, fp4) - latency неизвестна, throughput неизвестен, 76.7% uptime
-        /// </summary>
-        public const string DeepInfra = "DeepInfra";
+    //    /// <summary>
+    //    /// GMICloud (US, fp8) - 1.27s latency, 24.31tps throughput, 94.9% uptime
+    //    /// </summary>
+    //    public const string GMICloud = "gmicloud/fp8";
 
-        /// <summary>
-        /// Рекомендуемый список провайдеров (отсортировано по throughput - пропускной способности)
-        /// Baseten указан дважды для 2 попыток перед fallback
-        /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            Baseten,        // 210.2 tps - ЛУЧШИЙ!
-            SiliconFlow,    // 64.83 tps
-            AtlasCloud,     // 40.69 tps
-            GMICloud,       // 24.31 tps
-            NovitaAI,       // 22.66 tps
-            Avian,          // 10.32 tps
-            DeepInfra       // throughput неизвестен, 76.7% uptime (худший)
-        };
-    }
+    //    /// <summary>
+    //    /// SiliconFlow (SG, fp8) - 7.73s latency, 64.83tps throughput, 92.2% uptime
+    //    /// </summary>
+    //    public const string SiliconFlow = "siliconflow/fp8";
+
+    //    /// <summary>
+    //    /// AtlasCloud (US, fp8) - 1.66s latency, 40.69tps throughput, 85.0% uptime
+    //    /// </summary>
+    //    public const string AtlasCloud = "atlas-cloud/fp8";
+
+    //    /// <summary>
+    //    /// Рекомендуемый список провайдеров (отсортировано по throughput - пропускной способности)
+    //    /// Baseten указан дважды для 2 попыток перед fallback
+    //    /// </summary>
+    //    public static List<string> RecommendedOrder => new()
+    //    {
+    //        Baseten,        // 210.2 tps - ЛУЧШИЙ!
+    //        SiliconFlow,    // 64.83 tps
+    //        AtlasCloud,     // 40.69 tps
+    //        GMICloud,       // 24.31 tps
+    //        NovitaAI,       // 22.66 tps
+    //        Avian,          // 10.32 tps
+    //        DeepInfra       // throughput неизвестен, 76.7% uptime (худший)
+    //    };
+    //}
 
     /// <summary>
     /// Провайдеры для Claude Sonnet 4.5 (отсортировано по throughput - пропускной способности)
+    /// 12.12.2025
     /// </summary>
     public static class ClaudeSonnet45
     {
         /// <summary>
-        /// Amazon Bedrock (US) - Максимальный throughput: 61.90 tps, 2.83s latency, 99.6% uptime
+        /// Throughput: 68,03tps
         /// </summary>
-        public const string AmazonBedrock = "Amazon Bedrock";
+        public const string AmazonBedrock = "amazon-bedrock";
 
         /// <summary>
-        /// Anthropic (US) - Оригинальный провайдер: 60.77 tps, 3.17s latency, 100% uptime
+        /// Throughput: 60,96tps
         /// </summary>
-        public const string Anthropic = "Anthropic";
+        public const string Anthropic = "anthropic";
 
         /// <summary>
-        /// Google Vertex Global (US) - Хороший баланс: 53.95 tps, 1.46s latency, 100% uptime
+        /// Throughput: 55,68tps
         /// </summary>
-        public const string GoogleVertexGlobal = "Google Vertex (Global)";
+        public const string GoogleVertexGlobal = "google-vertex/global";
 
         /// <summary>
-        /// Google Vertex (US) - Быстрый старт: 48.97 tps, 1.34s latency, 100% uptime
+        /// Throughput: 50,46tps
         /// </summary>
-        public const string GoogleVertex = "Google Vertex";
+        public const string GoogleVertex = "google-vertex";
 
         /// <summary>
         /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
-        /// Amazon Bedrock указан дважды для 2 попыток перед fallback
         /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            AmazonBedrock,          // 61.90 tps - МАКСИМАЛЬНЫЙ!
-            Anthropic,              // 60.77 tps, оригинальный провайдер
-            GoogleVertexGlobal,     // 53.95 tps
-            GoogleVertex            // 48.97 tps, но быстрый старт
-        };
+        public static List<string> RecommendedOrder =>
+        [
+            AmazonBedrock,
+            Anthropic,
+            GoogleVertexGlobal,
+            GoogleVertex
+        ];
     }
 
     /// <summary>
     /// Провайдеры для Claude Haiku 4.5 (отсортировано по throughput - пропускной способности)
+    /// 12.12.2025
     /// </summary>
     public static class ClaudeHaiku45
     {
         /// <summary>
-        /// Google Vertex (US) - Максимальный throughput: 131.9 tps, 0.53s latency, 100% uptime
+        /// Throughput: 130,2tps
         /// </summary>
-        public const string GoogleVertex = "Google Vertex";
+        public const string GoogleVertex = "google-vertex";
 
         /// <summary>
-        /// Anthropic (US) - Оригинальный провайдер: 110.3 tps, 1.49s latency, 98.8% uptime
+        /// Throughput: 113,2tps
         /// </summary>
-        public const string Anthropic = "Anthropic";
+        public const string Anthropic = "anthropic";
 
         /// <summary>
-        /// Amazon Bedrock (US) - Стабильный: 103.1 tps, 1.09s latency, 99.8% uptime
+        /// Throughput: 113,4tps
         /// </summary>
-        public const string AmazonBedrock = "Amazon Bedrock";
+        public const string AmazonBedrock = "amazon-bedrock";
 
         /// <summary>
         /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
         /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            GoogleVertex,       // 131.9 tps - МАКСИМАЛЬНЫЙ!
-            Anthropic,          // 110.3 tps, оригинальный провайдер
-            AmazonBedrock       // 103.1 tps
-        };
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleVertex,
+            Anthropic,
+            AmazonBedrock
+        ];
     }
 
+
+
     /// <summary>
-    /// Провайдеры для Gemini 2.5 Flash Lite (отсортировано по throughput - скорости генерации)
+    /// Провайдеры для Gemini 3 Pro (отсортировано по throughput - пропускной способности)
+    /// 12.12.2025
     /// </summary>
-    public static class Gemini25FlashLite
+    public static class Gemini3Pro
     {
         /// <summary>
-        /// Google AI Studio (US) - Максимальный throughput: 76.48 tps, 0.50s latency, 98.5% uptime
+        /// Throughput: 71,49tps
         /// </summary>
-        public const string GoogleAIStudio = "Google AI Studio";
+        public const string GoogleAIStudio = "google-ai-studio";
 
         /// <summary>
-        /// Google Vertex (US) - Второй по throughput: 57.69 tps, 0.42s latency, 99.9% uptime
+        /// Throughput: 51,95tps
         /// </summary>
-        public const string GoogleVertex = "Google Vertex";
+        public const string GoogleVertex = "google-vertex";
 
         /// <summary>
         /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
         /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            GoogleAIStudio,  // 76.48 tps - МАКСИМАЛЬНЫЙ!
-            GoogleVertex     // 57.69 tps, но высочайший uptime 99.9%
-        };
-    }
-
-    /// <summary>
-    /// Провайдеры для Gemini 2.5 Flash (отсортировано по throughput - скорости генерации)
-    /// </summary>
-    public static class Gemini25Flash
-    {
-        /// <summary>
-        /// Google Vertex (Global) (US) - Максимальный throughput: 80.37 tps, 0.56s latency, 99.5% uptime
-        /// </summary>
-        public const string GoogleVertexGlobal = "Google Vertex (Global)";
-
-        /// <summary>
-        /// Google Vertex (US) - Второй по throughput: 79.91 tps, 0.83s latency, 99.2% uptime
-        /// </summary>
-        public const string GoogleVertex = "Google Vertex";
-
-        /// <summary>
-        /// Google AI Studio (US) - Третий по throughput: 64.12 tps, 0.84s latency, 99.8% uptime
-        /// </summary>
-        public const string GoogleAIStudio = "Google AI Studio";
-
-        /// <summary>
-        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
-        /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            GoogleVertexGlobal,  // 80.37 tps - МАКСИМАЛЬНЫЙ!
-            GoogleVertex,        // 79.91 tps
-            GoogleAIStudio       // 64.12 tps, высокий uptime 99.8%
-        };
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
     }
 
     /// <summary>
     /// Провайдеры для Gemini 2.5 Pro (отсортировано по throughput - пропускной способности)
+    /// 12.12.2025
     /// </summary>
     public static class Gemini25Pro
     {
         /// <summary>
-        /// Google Vertex (Global) (US) - Максимальный throughput: 100.6 tps, 2.24s latency, 98.8% uptime
+        /// Throughput: 91,69tps
         /// </summary>
-        public const string GoogleVertexGlobal = "Google Vertex (Global)";
+        public const string GoogleVertexGlobal = "google-vertex/global";
 
         /// <summary>
-        /// Google Vertex (US) - Второй по throughput: 84.77 tps, 2.94s latency, 99.2% uptime
+        /// Throughput: 73,04tps
         /// </summary>
-        public const string GoogleVertex = "Google Vertex (US)";
+        public const string GoogleAIStudio = "google-ai-studio";
 
         /// <summary>
-        /// Google AI Studio (US) - Третий по throughput: 81.45 tps, 2.95s latency, 96.6% uptime
+        /// Throughput: 66,71tps
         /// </summary>
-        public const string GoogleAIStudio = "Google AI Studio";
+        public const string GoogleVertexUS = "google-vertex/us";
 
         /// <summary>
         /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
         /// </summary>
-        public static List<string> RecommendedOrder => new()
-        {
-            GoogleVertexGlobal,  // 100.6 tps - МАКСИМАЛЬНЫЙ!
-            GoogleVertex,        // 84.77 tps
-            GoogleAIStudio       // 81.45 tps
-        };
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleVertexGlobal,
+            GoogleAIStudio,
+            GoogleVertexUS
+        ];
+    }
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.5 Flash (отсортировано по throughput - скорости генерации)
+    /// 12.12.2025
+    /// </summary>
+    public static class Gemini25Flash
+    {
+        /// <summary>
+        /// Throughput: 79,43tps
+        /// </summary>
+        public const string GoogleVertexGlobal = "google-vertex/global";
+
+        /// <summary>
+        /// Throughput: 78,75tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Throughput: 64,72tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleVertexGlobal,
+            GoogleVertex,
+            GoogleAIStudio
+        ];
+    }
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.5 Flash Lite (отсортировано по throughput - скорости генерации)
+    /// 12.12.2025
+    /// </summary>
+    public static class Gemini25FlashLite
+    {
+        /// <summary>
+        /// Throughput: 67,31tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Throughput: 80,52tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex,
+        ];
+    }
+
+
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.0 Flash (отсортировано по throughput - скорости генерации)
+    /// 12.12.2025
+    /// </summary>
+    public static class Gemini20Flash
+    {
+        /// <summary>
+        /// Throughput: 124,0tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Throughput: 151,7tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
+    }
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.0 Flash Lite (отсортировано по throughput - скорости генерации)
+    /// 12.12.2025
+    /// </summary>
+    public static class Gemini20FlashLite
+    {
+        /// <summary>
+        /// Throughput: 177,9tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Throughput: 274,2tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
     }
 }
 

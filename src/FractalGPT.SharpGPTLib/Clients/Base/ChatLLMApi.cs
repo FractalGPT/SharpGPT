@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -431,6 +431,8 @@ public class ChatLLMApi
             // Счетчики для отладки стриминговых данных
             int chunksWithContent = 0;
             int chunksWithReasoning = 0;
+
+            string provider = null;
             
             Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Stream получен, начинаем читать строки...");
             
@@ -502,6 +504,12 @@ public class ChatLLMApi
                         nativeFinishElement.ValueKind == JsonValueKind.String)
                     {
                         nativeFinishReason = nativeFinishElement.GetString();
+                    }
+
+                    if (root.TryGetProperty("provider", out var providerElement) &&
+                        providerElement.ValueKind == JsonValueKind.String)
+                    {
+                        provider = providerElement.GetString();
                     }
                     
                     // Парсим usage если есть (обычно в последнем чанке)
@@ -743,6 +751,7 @@ public class ChatLLMApi
                     }
                 ],
                 Model = ModelName,
+                Provider = provider,
                 Usage = collectedUsage,
             };
         }
