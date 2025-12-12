@@ -200,6 +200,62 @@ public static class OpenRouterProviders
     }
 
     /// <summary>
+    /// Провайдеры для Gemini 2.5 Flash Lite (отсортировано по throughput - скорости генерации)
+    /// </summary>
+    public static class Gemini25FlashLite
+    {
+        /// <summary>
+        /// Google AI Studio (US) - Максимальный throughput: 76.48 tps, 0.50s latency, 98.5% uptime
+        /// </summary>
+        public const string GoogleAIStudio = "Google AI Studio";
+
+        /// <summary>
+        /// Google Vertex (US) - Второй по throughput: 57.69 tps, 0.42s latency, 99.9% uptime
+        /// </summary>
+        public const string GoogleVertex = "Google Vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder => new()
+        {
+            GoogleAIStudio,  // 76.48 tps - МАКСИМАЛЬНЫЙ!
+            GoogleVertex     // 57.69 tps, но высочайший uptime 99.9%
+        };
+    }
+
+    /// <summary>
+    /// Провайдеры для Gemini 2.5 Flash (отсортировано по throughput - скорости генерации)
+    /// </summary>
+    public static class Gemini25Flash
+    {
+        /// <summary>
+        /// Google Vertex (Global) (US) - Максимальный throughput: 80.37 tps, 0.56s latency, 99.5% uptime
+        /// </summary>
+        public const string GoogleVertexGlobal = "Google Vertex (Global)";
+
+        /// <summary>
+        /// Google Vertex (US) - Второй по throughput: 79.91 tps, 0.83s latency, 99.2% uptime
+        /// </summary>
+        public const string GoogleVertex = "Google Vertex";
+
+        /// <summary>
+        /// Google AI Studio (US) - Третий по throughput: 64.12 tps, 0.84s latency, 99.8% uptime
+        /// </summary>
+        public const string GoogleAIStudio = "Google AI Studio";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder => new()
+        {
+            GoogleVertexGlobal,  // 80.37 tps - МАКСИМАЛЬНЫЙ!
+            GoogleVertex,        // 79.91 tps
+            GoogleAIStudio       // 64.12 tps, высокий uptime 99.8%
+        };
+    }
+
+    /// <summary>
     /// Провайдеры для Gemini 2.5 Pro (отсортировано по throughput - пропускной способности)
     /// </summary>
     public static class Gemini25Pro
