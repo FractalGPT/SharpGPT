@@ -377,5 +377,49 @@ public static class OpenRouterProviders
             GoogleVertex
         ];
     }
+
+    /// <summary>
+    /// Провайдеры для Qwen3 32B (отсортировано по throughput - пропускной способности)
+    /// 13.12.2025
+    /// </summary>
+    public static class Qwen3_32B
+    {
+        /// <summary>
+        /// Throughput: 683,7tps
+        /// </summary>
+        public const string Cerebras = "cerebras";
+
+        /// <summary>
+        /// Throughput: 520,9tps
+        /// </summary>
+        public const string Groq = "groq";
+
+        /// <summary>
+        /// Throughput: 223,2tps
+        /// </summary>
+        public const string SambaNova = "sambanova";
+
+        /// <summary>
+        /// Throughput: 173,9tps
+        /// </summary>
+        public const string NebiusAIStudioFast = "nebius/fast";
+
+        /// <summary>
+        /// Throughput: 140,6tps
+        /// </summary>
+        public const string Friendli = "friendli";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (топ-5 по throughput - пропускной способности)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            Cerebras,
+            Groq,
+            SambaNova,
+            NebiusAIStudioFast,
+            Friendli
+        ];
+    }
 }
 
