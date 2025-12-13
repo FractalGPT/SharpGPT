@@ -424,7 +424,7 @@ public class ChatLLMApi
             Usage collectedUsage = null;
             
             // Защита от зацикленного ответа (один и тот же токен повторяется слишком много раз)
-            const int maxConsecutiveRepeats = 200;
+            const int maxConsecutiveRepeats = 300;
             string lastToken = null;
             int consecutiveCount = 0;
             
