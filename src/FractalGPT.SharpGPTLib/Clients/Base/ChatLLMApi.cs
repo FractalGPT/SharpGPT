@@ -394,16 +394,24 @@ public class ChatLLMApi
     {
         Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Начинаем читать stream, StatusCode={response.StatusCode}");
 
+        // Общий таймаут на весь метод - 8 минут
+        using var methodTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(8));
+        using var methodLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, methodTimeoutCts.Token);
+        
         Stream stream = null;
         try
         {
-            using var baseStream = await response.Content.ReadAsStreamAsync();
+            // Таймаут 1 минута на получение stream
+            using var streamTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            using var streamLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(methodLinkedCts.Token, streamTimeoutCts.Token);
+            
+            using var baseStream = await response.Content.ReadAsStreamAsync(streamLinkedCts.Token);
             
             // Оборачиваем в idle timeout monitor если включено
             if (IdleTimeoutSettings != null && IdleTimeoutSettings.Enabled)
             {
                 Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Включаем мониторинг idle timeout ({IdleTimeoutSettings.IdleTimeout.TotalSeconds} сек)");
-                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, cancellationToken);
+                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, methodLinkedCts.Token);
             }
             else
             {
@@ -440,15 +448,15 @@ public class ChatLLMApi
             string line;
             // НЕ используем reader.EndOfStream - это синхронное свойство которое может заблокироваться!
             // Вместо этого читаем до null (конец stream)
-            while ((line = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+            while ((line = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                methodLinkedCts.Token.ThrowIfCancellationRequested();
                 linesRead++;
                 
                 // Пропускаем пустые строки (с защитной задержкой от busy-loop)
                 if (line.Length == 0)
                 {
-                    await Task.Delay(1, cancellationToken);
+                    await Task.Delay(1, methodLinkedCts.Token);
                     continue;
                 }
                 
@@ -461,7 +469,7 @@ public class ChatLLMApi
                 {
                     // Дочитываем оставшиеся данные (могут быть usage, метаданные)
                     string remainingLine;
-                    while ((remainingLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+                    while ((remainingLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
                     {
                         if (remainingLine.Length > 0)
                         {
@@ -624,7 +632,7 @@ public class ChatLLMApi
             
             // Дочитываем любые оставшиеся данные после выхода из цикла
             string finalLine;
-            while ((finalLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+            while ((finalLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
             {
                 if (!string.IsNullOrEmpty(finalLine))
                 {
@@ -667,7 +675,7 @@ public class ChatLLMApi
                 
                 if (!isValidFinishReason)
                 {
-                    var lastLine = await ReadLineWithTimeoutAsync(reader, cancellationToken);
+                    var lastLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token);
                     
                     throw new InvalidOperationException(
                         $$"""
