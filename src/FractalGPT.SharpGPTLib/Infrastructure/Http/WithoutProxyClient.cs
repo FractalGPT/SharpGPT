@@ -145,7 +145,7 @@ public class WithoutProxyClient : IWebAPIClient
             HttpResponseMessage response;
             try
             {
-                response = await HttpClient.SendAsync(httpRequestMessage, completionOption, linkedCts.Token).ConfigureAwait(false);
+                response = await HttpClient.SendAsync(httpRequestMessage, completionOption, linkedCts.Token);
             }
             catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.Value.IsCancellationRequested)
             {
