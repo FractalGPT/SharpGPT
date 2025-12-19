@@ -229,9 +229,9 @@ public class ProxyHTTPClient : IWebAPIClient
             ? HttpCompletionOption.ResponseHeadersRead 
             : HttpCompletionOption.ResponseContentRead;
 
-        // КРИТИЧНО: Таймаут на получение response headers (40 сек)
+        // КРИТИЧНО: Таймаут на получение response headers
         // Защита от молчащего сервера который принял запрос но не отвечает
-        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(45));
+        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(55));
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, responseTimeoutCts.Token);
 
         HttpResponseMessage response;
@@ -241,7 +241,7 @@ public class ProxyHTTPClient : IWebAPIClient
         }
         catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            throw new TimeoutException($"Таймаут ожидания ответа от сервера (40 сек). URL: {apiUrl}");
+            throw new TimeoutException($"Таймаут ожидания ответа от сервера. URL: {apiUrl}");
         }
 
         if (!response.IsSuccessStatusCode)

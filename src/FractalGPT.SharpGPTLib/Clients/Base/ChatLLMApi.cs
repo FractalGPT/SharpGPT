@@ -257,24 +257,24 @@ public class ChatLLMApi
                 // Но используем внутренний метод, не требующий IStreamHandler
                 return await ProcessStreamResponseInternal(response, cancellationToken);
             }
-            catch (TimeoutException timeoutEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
-            catch (TaskCanceledException taskCancelledEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
-            catch (OperationCanceledException taskCancelledEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
+            //catch (TimeoutException timeoutEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
+            //catch (TaskCanceledException taskCancelledEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
+            //catch (OperationCanceledException taskCancelledEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
             catch (Exception ex)
             {
                 var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();

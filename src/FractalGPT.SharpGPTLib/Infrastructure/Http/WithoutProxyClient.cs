@@ -92,7 +92,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// Таймаут на получение response headers (защита от молчащего сервера)
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(45);
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(55);
 
     /// <summary>
     /// Asynchronously sends a POST request with JSON data.
@@ -137,7 +137,7 @@ public class WithoutProxyClient : IWebAPIClient
                 ? HttpCompletionOption.ResponseHeadersRead 
                 : HttpCompletionOption.ResponseContentRead;
 
-            // КРИТИЧНО: Таймаут на получение response headers (45 сек)
+            // КРИТИЧНО: Таймаут на получение response headers
             // Защита от молчащего сервера который принял запрос но не отвечает
             using var responseTimeoutCts = new CancellationTokenSource(ResponseHeadersTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, responseTimeoutCts.Token);
