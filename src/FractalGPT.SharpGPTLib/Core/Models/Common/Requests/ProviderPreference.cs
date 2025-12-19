@@ -193,6 +193,28 @@ public static class OpenRouterProviders
         ];
     }
 
+    public static class Gemini3Flash
+    {
+        /// <summary>
+        /// Throughput: 65,46tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Throughput: 60,67tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
+    }
+
     /// <summary>
     /// Провайдеры для Gemini 2.5 Pro (отсортировано по throughput - пропускной способности)
     /// 12.12.2025
