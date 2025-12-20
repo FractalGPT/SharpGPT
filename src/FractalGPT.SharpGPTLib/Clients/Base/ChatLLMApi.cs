@@ -287,6 +287,15 @@ public class ChatLLMApi
                     sendData,
                     cancellationToken);
 
+                // Проверяем на ошибку превышения лимита контекста - это не ретрится
+                var exceptionMessage = lastException.ToString();
+                if (exceptionMessage.Contains("maximum context length", StringComparison.OrdinalIgnoreCase) ||
+                    exceptionMessage.Contains("Please reduce the length", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Warning("Context length limit exceeded - no retries will be attempted");
+                    throw lastException;
+                }
+
                 // Задержка для обработки исключений
                 if (attempt < maxAttempts - 1)
                     await DelayWithExponentialBackoff(attempt, initialDelaySeconds, cancellationToken);
