@@ -74,7 +74,7 @@ public class WithoutProxyClient : IWebAPIClient
 
         return new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromMinutes(10)
+            Timeout = TimeSpan.FromMinutes(18)
         };
     }
 
@@ -92,7 +92,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// Таймаут на получение response headers (защита от молчащего сервера)
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(55);
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// Asynchronously sends a POST request with JSON data.
@@ -104,12 +104,21 @@ public class WithoutProxyClient : IWebAPIClient
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
-        // Если токен не передан, создаём с таймаутом 10 минут (для долгих LLM запросов, o1, reasoning)
-        CancellationTokenSource defaultCts = null;
-        if (cancellationToken == null)
+        // КРИТИЧНО: Всегда применяем таймаут 18 минут (для долгих LLM запросов, o1, reasoning)
+        // Объединяем с пользовательским токеном через linked token
+        var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
+        CancellationTokenSource timeoutLinkedCts = null;
+        
+        if (cancellationToken.HasValue)
         {
-            defaultCts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            cancellationToken = defaultCts.Token;
+            // Если пользователь передал токен - объединяем его с таймаутом
+            timeoutLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, timeoutCts.Token);
+            cancellationToken = timeoutLinkedCts.Token;
+        }
+        else
+        {
+            // Если токен не передан - используем только таймаут
+            cancellationToken = timeoutCts.Token;
         }
 
         try
@@ -170,8 +179,9 @@ public class WithoutProxyClient : IWebAPIClient
         }
         finally
         {
-            // КРИТИЧНО: Освобождаем CancellationTokenSource если создали его
-            defaultCts?.Dispose();
+            // КРИТИЧНО: Освобождаем CancellationTokenSource'ы которые создали
+            timeoutLinkedCts?.Dispose();
+            timeoutCts?.Dispose();
         }
     }
 

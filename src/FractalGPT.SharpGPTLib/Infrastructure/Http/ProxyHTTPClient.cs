@@ -20,6 +20,12 @@ public class ProxyHTTPClient : IWebAPIClient
     private readonly TimeSpan _proxyBlacklistDuration = TimeSpan.FromHours(24);
     private readonly int _maxProxyFailures = 8;
     
+    /// <summary>
+    /// Таймаут на получение response headers (защита от молчащего сервера)
+    /// После этого таймаута streaming уже должен начаться
+    /// </summary>
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
+    
     // ThreadLocal Random для потокобезопасного случайного выбора прокси
     private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => 
         new Random(Guid.NewGuid().GetHashCode()));
@@ -27,14 +33,6 @@ public class ProxyHTTPClient : IWebAPIClient
     // Кеш HttpClient'ов для каждого прокси (ключ - адрес прокси)
     // ВАЖНО: HttpClient должен жить пока используется response stream!
     private readonly ConcurrentDictionary<string, HttpClient> _httpClientCache = new();
-    
-    // Статические настройки JSON для переиспользования
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
 
     /// <summary>
     /// Срабатывает когда прокси упал
@@ -120,12 +118,27 @@ public class ProxyHTTPClient : IWebAPIClient
         if (sendData == null)
             throw new ArgumentNullException(nameof(sendData));
 
-        var effectiveToken = cancellationToken ?? CancellationToken.None;
+        // КРИТИЧНО: Всегда применяем таймаут 18 минут (для долгих LLM запросов, o1, reasoning)
+        // Объединяем с пользовательским токеном через linked token
+        var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
+        CancellationTokenSource timeoutLinkedCts = null;
+        
+        if (cancellationToken.HasValue)
+        {
+            // Если пользователь передал токен - объединяем его с таймаутом
+            timeoutLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, timeoutCts.Token);
+            cancellationToken = timeoutLinkedCts.Token;
+        }
+        else
+        {
+            // Если токен не передан - используем только таймаут
+            cancellationToken = timeoutCts.Token;
+        }
 
-        await _semaphore.WaitAsync(effectiveToken);
+        await _semaphore.WaitAsync(cancellationToken.Value);
         try
         {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(effectiveToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value);
             cts.CancelAfter(_options.GlobalTimeout);
 
             // Берем только живые прокси и перемешиваем их случайно
@@ -182,9 +195,22 @@ public class ProxyHTTPClient : IWebAPIClient
             throw lastException ?? new InvalidOperationException(
                 "Не удалось выполнить запрос через доступные прокси.");
         }
+        catch (OperationCanceledException)
+        {
+            // Пробрасываем исключения отмены без обёртывания
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Пробрасываем таймауты без обёртывания
+            throw;
+        }
         finally
         {
             _semaphore.Release();
+            // КРИТИЧНО: Освобождаем CancellationTokenSource'ы которые создали
+            timeoutLinkedCts?.Dispose();
+            timeoutCts?.Dispose();
         }
     }
 
@@ -197,67 +223,88 @@ public class ProxyHTTPClient : IWebAPIClient
         WebProxy proxy,
         CancellationToken cancellationToken)
     {
-        // Получаем или создаем HttpClient для этого прокси
-        var proxyKey = proxy.Address?.ToString() ?? "default";
-        var httpClient = _httpClientCache.GetOrAdd(proxyKey, _ => CreateHttpClientForProxy(proxy));
-
-        // Сериализуем данные
-        var jsonContent = JsonSerializer.Serialize(sendData, _jsonOptions);
-
-        if (_options.EnableDebugLogging)
-        {
-            LogDebug($"Отправляемый JSON: {jsonContent.TruncateForLogging()}");
-            LogDebug($"URL: {apiUrl}");
-            LogDebug($"Proxy: {proxy.Address}");
-        }
-
-        // Создаем request и устанавливаем заголовки на НЕГО (потокобезопасно!)
-        using var request = new HttpRequestMessage(HttpMethod.Post, apiUrl)
-        {
-            Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json")
-        };
-        
-        // Authorization устанавливаем на request, НЕ на DefaultRequestHeaders!
-        if (Authentication != null)
-        {
-            request.Headers.Authorization = Authentication;
-        }
-
-        // Проверяем нужен ли streaming
-        var isStreamingRequest = sendData.Stream == true;
-        var completionOption = isStreamingRequest 
-            ? HttpCompletionOption.ResponseHeadersRead 
-            : HttpCompletionOption.ResponseContentRead;
-
-        // КРИТИЧНО: Таймаут на получение response headers
-        // Защита от молчащего сервера который принял запрос но не отвечает
-        using var responseTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(55));
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, responseTimeoutCts.Token);
-
-        HttpResponseMessage response;
         try
         {
-            response = await httpClient.SendAsync(request, completionOption, linkedCts.Token);
-        }
-        catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-        {
-            throw new TimeoutException($"Таймаут ожидания ответа от сервера. URL: {apiUrl}");
-        }
+            // Получаем или создаем HttpClient для этого прокси
+            var proxyKey = proxy.Address?.ToString() ?? "default";
+            var httpClient = _httpClientCache.GetOrAdd(proxyKey, _ => CreateHttpClientForProxy(proxy));
 
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = (await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging();
+            // Сериализуем данные
+            var jsonContent = sendData.GetJson(); // Сериализация
 
             if (_options.EnableDebugLogging)
             {
-                LogDebug($"Статус ошибки: {response.StatusCode}");
-                LogDebug($"Ответ сервера: {errorContent}");
+                LogDebug($"Отправляемый JSON: {jsonContent.TruncateForLogging()}");
+                LogDebug($"URL: {apiUrl}");
+                LogDebug($"Proxy: {proxy.Address}");
             }
 
-            throw new HttpRequestException($"Ошибка {response.StatusCode}: {errorContent}");
-        }
+            // Создаем request и устанавливаем заголовки на НЕГО (потокобезопасно!)
+            using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(apiUrl))
+            {
+                Content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json")
+            };
+            
+            // Authorization устанавливаем на request, НЕ на DefaultRequestHeaders!
+            if (Authentication != null)
+            {
+                request.Headers.Authorization = Authentication;
+            }
 
-        return response;
+            // Добавляем дополнительные заголовки
+            request.Headers.TryAddWithoutValidation("Accept", "application/json");
+            request.Headers.TryAddWithoutValidation("X-Version", "1");
+
+            // Проверяем нужен ли streaming
+            var isStreamingRequest = (sendData.GetType().GetProperty("Stream")?.GetValue(sendData)) is true;
+            var completionOption = isStreamingRequest 
+                ? HttpCompletionOption.ResponseHeadersRead 
+                : HttpCompletionOption.ResponseContentRead;
+
+            // КРИТИЧНО: Таймаут на получение response headers
+            // Защита от молчащего сервера который принял запрос но не отвечает
+            using var responseTimeoutCts = new CancellationTokenSource(ResponseHeadersTimeout);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, responseTimeoutCts.Token);
+
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.SendAsync(request, completionOption, linkedCts.Token);
+            }
+            catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException($"Таймаут ожидания ответа от сервера ({ResponseHeadersTimeout.TotalSeconds} сек). URL: {apiUrl}");
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = (await response.Content.ReadAsStringAsync(linkedCts.Token) ?? "").TruncateForLogging();
+
+                if (_options.EnableDebugLogging)
+                {
+                    LogDebug($"Статус ошибки: {response.StatusCode}");
+                    LogDebug($"Ответ сервера: {errorContent}");
+                }
+
+                throw new HttpRequestException($"Ошибка {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
+        }
+        catch (OperationCanceledException)
+        {
+            // Пробрасываем исключения отмены без обёртывания
+            throw;
+        }
+        catch (TimeoutException)
+        {
+            // Пробрасываем таймауты без обёртывания
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new HttpRequestException("An error occurred while sending the request", ex);
+        }
     }
 
     /// <summary>
@@ -265,6 +312,8 @@ public class ProxyHTTPClient : IWebAPIClient
     /// </summary>
     private bool IsBlacklisted(ProxyStatus proxyStatus)
     {
+        return false; // ВРЕМЕННО: Блокировка прокси отключена
+        
         if (proxyStatus.FailureCount < _maxProxyFailures)
             return false;
 
@@ -310,7 +359,7 @@ public class ProxyHTTPClient : IWebAPIClient
     }
 
     /// <summary>
-    /// Создает HttpClient для конкретного прокси.
+    /// Создает HttpClient для конкретного прокси с настроенными таймаутами через SocketsHttpHandler.
     /// HttpClient кешируется и переиспользуется для всех запросов через этот прокси.
     /// </summary>
     private HttpClient CreateHttpClientForProxy(WebProxy proxy)
@@ -328,7 +377,7 @@ public class ProxyHTTPClient : IWebAPIClient
             // КРИТИЧНО: Таймаут на установку TCP соединения
             ConnectTimeout = _options.ConnectTimeout,
             
-            // Таймаут ожидания 100-Continue от сервера
+            // Таймаут ожидания 100-Continue от сервера (для POST с Expect: 100-continue)
             Expect100ContinueTimeout = TimeSpan.FromSeconds(5),
             
             // Таймаут на keep-alive пинг (проверка что соединение живое)
@@ -336,14 +385,16 @@ public class ProxyHTTPClient : IWebAPIClient
             KeepAlivePingDelay = TimeSpan.FromSeconds(30),
             KeepAlivePingPolicy = HttpKeepAlivePingPolicy.WithActiveRequests,
             
-            // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
-            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            // Пул соединений: соединение живёт макс 18 мин, простаивает макс 30 сек
+            // (не влияет на активные запросы, только на соединения в пуле)
+            PooledConnectionLifetime = TimeSpan.FromMinutes(18),
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
             
             // Ограничение соединений на хост
             MaxConnectionsPerServer = 20,
             
             // Таймаут на получение response после отправки запроса
+            // (дополнительная защита на уровне handler)
             ResponseDrainTimeout = TimeSpan.FromSeconds(30),
         };
 
@@ -602,13 +653,13 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос (весь запрос включая получение ответа)
     /// </summary>
-    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(10);
+    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(18);
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
     /// С учетом retry через разные прокси
     /// </summary>
-    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(18);
+    public TimeSpan GlobalTimeout { get; set; } = TimeSpan.FromMinutes(35);
 
     /// <summary>
     /// Максимум одновременных запросов
