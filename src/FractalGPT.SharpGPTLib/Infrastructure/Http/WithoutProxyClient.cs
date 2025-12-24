@@ -11,6 +11,17 @@ namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 public class WithoutProxyClient : IWebAPIClient
 {
     /// <summary>
+    /// Таймаут на получение response headers (защита от молчащего сервера)
+    /// После этого таймаута streaming уже должен начаться
+    /// </summary>
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// Дефолтный таймаут для LLM запросов (для долгих запросов: o1, reasoning)
+    /// </summary>
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromMinutes(18);
+
+    /// <summary>
     /// Property to hold authentication information.
     /// </summary>
     public AuthenticationHeaderValue Authentication { get; set; }
@@ -59,9 +70,9 @@ public class WithoutProxyClient : IWebAPIClient
             KeepAlivePingDelay = TimeSpan.FromSeconds(30),
             KeepAlivePingPolicy = HttpKeepAlivePingPolicy.WithActiveRequests,
             
-            // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
+            // Пул соединений: соединение живёт макс 18 мин, простаивает макс 30 сек
             // (не влияет на активные запросы, только на соединения в пуле)
-            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            PooledConnectionLifetime = DefaultRequestTimeout,
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
             
             // Ограничение соединений на хост
@@ -74,7 +85,7 @@ public class WithoutProxyClient : IWebAPIClient
 
         return new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromMinutes(18)
+            Timeout = DefaultRequestTimeout
         };
     }
 
@@ -89,12 +100,6 @@ public class WithoutProxyClient : IWebAPIClient
     }
 
     /// <summary>
-    /// Таймаут на получение response headers (защита от молчащего сервера)
-    /// После этого таймаута streaming уже должен начаться
-    /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
-
-    /// <summary>
     /// Asynchronously sends a POST request with JSON data.
     /// </summary>
     /// <param name="apiUrl">API URL to send the request to.</param>
@@ -104,9 +109,9 @@ public class WithoutProxyClient : IWebAPIClient
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
-        // КРИТИЧНО: Всегда применяем таймаут 18 минут (для долгих LLM запросов, o1, reasoning)
+        // КРИТИЧНО: Всегда применяем таймаут для LLM запросов (o1, reasoning)
         // Объединяем с пользовательским токеном через linked token
-        var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
+        var timeoutCts = new CancellationTokenSource(DefaultRequestTimeout);
         CancellationTokenSource timeoutLinkedCts = null;
         
         if (cancellationToken.HasValue)

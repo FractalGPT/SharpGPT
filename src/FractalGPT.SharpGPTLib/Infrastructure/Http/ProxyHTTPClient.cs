@@ -25,6 +25,11 @@ public class ProxyHTTPClient : IWebAPIClient
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
     private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
+
+    /// <summary>
+    /// Дефолтный таймаут для LLM запросов (для долгих запросов: o1, reasoning)
+    /// </summary>
+    internal static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromMinutes(18);
     
     // ThreadLocal Random для потокобезопасного случайного выбора прокси
     private static readonly ThreadLocal<Random> _random = new ThreadLocal<Random>(() => 
@@ -118,9 +123,9 @@ public class ProxyHTTPClient : IWebAPIClient
         if (sendData == null)
             throw new ArgumentNullException(nameof(sendData));
 
-        // КРИТИЧНО: Всегда применяем таймаут 18 минут (для долгих LLM запросов, o1, reasoning)
+        // КРИТИЧНО: Всегда применяем таймаут для LLM запросов (o1, reasoning)
         // Объединяем с пользовательским токеном через linked token
-        var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
+        var timeoutCts = new CancellationTokenSource(DefaultRequestTimeout);
         CancellationTokenSource timeoutLinkedCts = null;
         
         if (cancellationToken.HasValue)
@@ -387,7 +392,7 @@ public class ProxyHTTPClient : IWebAPIClient
             
             // Пул соединений: соединение живёт макс 18 мин, простаивает макс 30 сек
             // (не влияет на активные запросы, только на соединения в пуле)
-            PooledConnectionLifetime = TimeSpan.FromMinutes(18),
+            PooledConnectionLifetime = DefaultRequestTimeout,
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
             
             // Ограничение соединений на хост
@@ -653,7 +658,7 @@ public class ProxyHTTPClientOptions
     /// <summary>
     /// Таймаут на один запрос (весь запрос включая получение ответа)
     /// </summary>
-    public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromMinutes(18);
+    public TimeSpan RequestTimeout { get; set; } = ProxyHTTPClient.DefaultRequestTimeout;
 
     /// <summary>
     /// Глобальный таймаут для всех попыток
