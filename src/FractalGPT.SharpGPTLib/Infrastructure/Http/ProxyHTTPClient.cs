@@ -653,7 +653,7 @@ public class ProxyHTTPClientOptions
     /// Таймаут на установку соединения (ConnectTimeout)
     /// Защита от зависших proxy или недоступных серверов
     /// </summary>
-    public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(40);
 
     /// <summary>
     /// Таймаут на один запрос (весь запрос включая получение ответа)
