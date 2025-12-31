@@ -196,12 +196,12 @@ public static class OpenRouterProviders
     public static class Gemini3Flash
     {
         /// <summary>
-        /// Throughput: 65,46tps
+        /// Throughput: 74,26tps
         /// </summary>
         public const string GoogleAIStudio = "google-ai-studio";
 
         /// <summary>
-        /// Throughput: 60,67tps
+        /// Throughput: 99,37tps
         /// </summary>
         public const string GoogleVertex = "google-vertex";
 
@@ -210,8 +210,8 @@ public static class OpenRouterProviders
         /// </summary>
         public static List<string> RecommendedOrder =>
         [
+            GoogleVertex,
             GoogleAIStudio,
-            GoogleVertex
         ];
     }
 
@@ -400,6 +400,40 @@ public static class OpenRouterProviders
             SambaNova,
             NebiusAIStudioFast,
             Friendli
+        ];
+    }
+
+    public static class OpenAIGptOss120b
+    {
+        /// <summary>
+        /// Throughput: 702tps
+        /// </summary>
+        public const string Cerebras = "cerebras";
+
+        /// <summary>
+        /// Throughput: 386tps
+        /// </summary>
+        public const string Groq = "groq";
+
+        /// <summary>
+        /// Throughput: 227tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Throughput: 212
+        /// </summary>
+        public const string SambaNova = "sambanova";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (топ-5 по throughput - пропускной способности)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            Cerebras,
+            Groq,
+            GoogleVertex,
+            SambaNova
         ];
     }
 }
