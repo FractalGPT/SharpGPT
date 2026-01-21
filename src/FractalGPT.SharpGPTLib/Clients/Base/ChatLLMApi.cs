@@ -585,20 +585,23 @@ public class ChatLLMApi
                     }
                     
                     // Парсим изображения (delta.images) - для Vision моделей
-                    // ВАЖНО: Изображения сохраняем ТОЛЬКО если в этом же чанке native_finish_reason == "STOP"
+                    // Изображения могут приходить в любом чанке, сохраняем последние полученные
                     if (delta.TryGetProperty("images", out var imagesElement) && 
                         imagesElement.ValueKind == JsonValueKind.Array)
                     {
                         // Проверяем что это финальный чанк с native_finish_reason == "STOP"
-                        bool isStopChunk = string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
-                                          string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
-                        
-                        if (!isStopChunk)
-                        {
-                            Log.Debug($"ChatLLMApi: Получены изображения, но native_finish_reason != STOP " +
-                                       $"(finish_reason={finishReason}, native_finish_reason={nativeFinishReason}). Пропускаем.");
-                            continue;
-                        }
+                        //bool isStopChunk = string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
+                        //                  string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
+
+                        //if (!isStopChunk)
+                        //{
+                        //    Log.Debug($"ChatLLMApi: Получены изображения, но native_finish_reason != STOP " +
+                        //               $"(finish_reason={finishReason}, native_finish_reason={nativeFinishReason}). Пропускаем.");
+                        //    continue;
+                        //}
+
+                        // Очищаем список и сохраняем новые изображения (берем самые свежие)
+                        collectedImages.Clear();
                         
                         foreach (var imageElement in imagesElement.EnumerateArray())
                         {
@@ -620,7 +623,7 @@ public class ChatLLMApi
                             if (imageInfo.ImageUrl?.Url != null)
                             {
                                 collectedImages.Add(imageInfo);
-                                Log.Debug($"ChatLLMApi: Получено изображение, index={imageInfo.Index}, type={imageInfo.Type}");
+                                Log.Debug($"ChatLLMApi: Обновлено изображение, index={imageInfo.Index}, type={imageInfo.Type}");
                             }
                         }
                     }
