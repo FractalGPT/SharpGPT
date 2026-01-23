@@ -24,7 +24,7 @@ public class ProxyHTTPClient : IWebAPIClient
     /// Таймаут на получение response headers (защита от молчащего сервера)
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(70);
 
     /// <summary>
     /// Дефолтный таймаут для LLM запросов (для долгих запросов: o1, reasoning)
@@ -653,7 +653,7 @@ public class ProxyHTTPClientOptions
     /// Таймаут на установку соединения (ConnectTimeout)
     /// Защита от зависших proxy или недоступных серверов
     /// </summary>
-    public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(40);
+    public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// Таймаут на один запрос (весь запрос включая получение ответа)

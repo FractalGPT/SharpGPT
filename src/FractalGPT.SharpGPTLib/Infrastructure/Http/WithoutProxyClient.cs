@@ -14,7 +14,7 @@ public class WithoutProxyClient : IWebAPIClient
     /// Таймаут на получение response headers (защита от молчащего сервера)
     /// После этого таймаута streaming уже должен начаться
     /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(70);
 
     /// <summary>
     /// Дефолтный таймаут для LLM запросов (для долгих запросов: o1, reasoning)
@@ -60,7 +60,7 @@ public class WithoutProxyClient : IWebAPIClient
         var handler = new SocketsHttpHandler
         {
             // КРИТИЧНО: Таймаут на установку TCP соединения
-            ConnectTimeout = TimeSpan.FromSeconds(30),
+            ConnectTimeout = TimeSpan.FromSeconds(60),
             
             // Таймаут ожидания 100-Continue от сервера (для POST с Expect: 100-continue)
             Expect100ContinueTimeout = TimeSpan.FromSeconds(5),

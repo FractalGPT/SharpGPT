@@ -37,14 +37,14 @@ public class ChatLLMApi
     public virtual ProviderPreference PreferredProvider { get; set; }
 
     /// <summary>
-    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 40 секунд)
+    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 70 секунд)
     /// </summary>
     public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
 
     /// <summary>
-    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 40 секунд)
+    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 60 секунд)
     /// </summary>
-    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(40);
+    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(60);
 
     public event Action<string> ProxyInfo;
 
@@ -403,15 +403,15 @@ public class ChatLLMApi
     {
         Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Начинаем читать stream, StatusCode={response.StatusCode}");
 
-        // Общий таймаут на весь метод - 8 минут
-        using var methodTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(8));
+        // Общий таймаут на весь метод - 18 минут
+        using var methodTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
         using var methodLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, methodTimeoutCts.Token);
         
         Stream stream = null;
         try
         {
-            // Таймаут 1 минута на получение stream
-            using var streamTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            // Таймаут 80 секунд на получение stream
+            using var streamTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(80));
             using var streamLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(methodLinkedCts.Token, streamTimeoutCts.Token);
             
             using var baseStream = await response.Content.ReadAsStreamAsync(streamLinkedCts.Token);
