@@ -37,14 +37,14 @@ public class ChatLLMApi
     public virtual ProviderPreference PreferredProvider { get; set; }
 
     /// <summary>
-    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 40 секунд)
+    /// Настройки для мониторинга таймаута простоя между чанками данных (по умолчанию 70 секунд)
     /// </summary>
     public IdleTimeoutSettings IdleTimeoutSettings { get; set; } = IdleTimeoutSettings.Default;
 
     /// <summary>
-    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 40 секунд)
+    /// Таймаут на одну операцию ReadLineAsync (по умолчанию 60 секунд)
     /// </summary>
-    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(40);
+    private static readonly TimeSpan ReadLineTimeout = TimeSpan.FromSeconds(60);
 
     public event Action<string> ProxyInfo;
 
@@ -257,24 +257,24 @@ public class ChatLLMApi
                 // Но используем внутренний метод, не требующий IStreamHandler
                 return await ProcessStreamResponseInternal(response, cancellationToken);
             }
-            catch (TimeoutException timeoutEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
-            catch (TaskCanceledException taskCancelledEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
-            catch (OperationCanceledException taskCancelledEx)
-            {
-                var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
-                Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
-                throw;
-            }
+            //catch (TimeoutException timeoutEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(timeoutEx, $"ChatLLMApi SendWithContext TimeoutException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
+            //catch (TaskCanceledException taskCancelledEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext TaskCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
+            //catch (OperationCanceledException taskCancelledEx)
+            //{
+            //    var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
+            //    Log.Error(taskCancelledEx, $"ChatLLMApi SendWithContext OperationCanceledException, ApiUrl={ApiUrl}, ModelName={ModelName}, SendData={sendDataRaw}");
+            //    throw;
+            //}
             catch (Exception ex)
             {
                 var sendDataRaw = JsonConvert.SerializeObject(sendData).TruncateForLogging();
@@ -286,6 +286,15 @@ public class ChatLLMApi
                     context,
                     sendData,
                     cancellationToken);
+
+                // Проверяем на ошибку превышения лимита контекста - это не ретрится
+                var exceptionMessage = lastException.ToString();
+                if (exceptionMessage.Contains("maximum context length", StringComparison.OrdinalIgnoreCase) ||
+                    exceptionMessage.Contains("Please reduce the length", StringComparison.OrdinalIgnoreCase))
+                {
+                    Log.Warning("Context length limit exceeded - no retries will be attempted");
+                    throw lastException;
+                }
 
                 // Задержка для обработки исключений
                 if (attempt < maxAttempts - 1)
@@ -394,16 +403,24 @@ public class ChatLLMApi
     {
         Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Начинаем читать stream, StatusCode={response.StatusCode}");
 
+        // Общий таймаут на весь метод - 18 минут
+        using var methodTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
+        using var methodLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, methodTimeoutCts.Token);
+        
         Stream stream = null;
         try
         {
-            using var baseStream = await response.Content.ReadAsStreamAsync();
+            // Таймаут 80 секунд на получение stream
+            using var streamTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(80));
+            using var streamLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(methodLinkedCts.Token, streamTimeoutCts.Token);
+            
+            using var baseStream = await response.Content.ReadAsStreamAsync(streamLinkedCts.Token);
             
             // Оборачиваем в idle timeout monitor если включено
             if (IdleTimeoutSettings != null && IdleTimeoutSettings.Enabled)
             {
                 Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Включаем мониторинг idle timeout ({IdleTimeoutSettings.IdleTimeout.TotalSeconds} сек)");
-                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, cancellationToken);
+                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, methodLinkedCts.Token);
             }
             else
             {
@@ -440,15 +457,15 @@ public class ChatLLMApi
             string line;
             // НЕ используем reader.EndOfStream - это синхронное свойство которое может заблокироваться!
             // Вместо этого читаем до null (конец stream)
-            while ((line = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+            while ((line = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                methodLinkedCts.Token.ThrowIfCancellationRequested();
                 linesRead++;
                 
                 // Пропускаем пустые строки (с защитной задержкой от busy-loop)
                 if (line.Length == 0)
                 {
-                    await Task.Delay(1, cancellationToken);
+                    await Task.Delay(1, methodLinkedCts.Token);
                     continue;
                 }
                 
@@ -461,7 +478,7 @@ public class ChatLLMApi
                 {
                     // Дочитываем оставшиеся данные (могут быть usage, метаданные)
                     string remainingLine;
-                    while ((remainingLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+                    while ((remainingLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
                     {
                         if (remainingLine.Length > 0)
                         {
@@ -568,20 +585,23 @@ public class ChatLLMApi
                     }
                     
                     // Парсим изображения (delta.images) - для Vision моделей
-                    // ВАЖНО: Изображения сохраняем ТОЛЬКО если в этом же чанке native_finish_reason == "STOP"
+                    // Изображения могут приходить в любом чанке, сохраняем последние полученные
                     if (delta.TryGetProperty("images", out var imagesElement) && 
                         imagesElement.ValueKind == JsonValueKind.Array)
                     {
                         // Проверяем что это финальный чанк с native_finish_reason == "STOP"
-                        bool isStopChunk = string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
-                                          string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
-                        
-                        if (!isStopChunk)
-                        {
-                            Log.Debug($"ChatLLMApi: Получены изображения, но native_finish_reason != STOP " +
-                                       $"(finish_reason={finishReason}, native_finish_reason={nativeFinishReason}). Пропускаем.");
-                            continue;
-                        }
+                        //bool isStopChunk = string.Equals(nativeFinishReason, "STOP", StringComparison.OrdinalIgnoreCase) ||
+                        //                  string.Equals(finishReason, "stop", StringComparison.OrdinalIgnoreCase);
+
+                        //if (!isStopChunk)
+                        //{
+                        //    Log.Debug($"ChatLLMApi: Получены изображения, но native_finish_reason != STOP " +
+                        //               $"(finish_reason={finishReason}, native_finish_reason={nativeFinishReason}). Пропускаем.");
+                        //    continue;
+                        //}
+
+                        // Очищаем список и сохраняем новые изображения (берем самые свежие)
+                        collectedImages.Clear();
                         
                         foreach (var imageElement in imagesElement.EnumerateArray())
                         {
@@ -603,7 +623,7 @@ public class ChatLLMApi
                             if (imageInfo.ImageUrl?.Url != null)
                             {
                                 collectedImages.Add(imageInfo);
-                                Log.Debug($"ChatLLMApi: Получено изображение, index={imageInfo.Index}, type={imageInfo.Type}");
+                                Log.Debug($"ChatLLMApi: Обновлено изображение, index={imageInfo.Index}, type={imageInfo.Type}");
                             }
                         }
                     }
@@ -624,7 +644,7 @@ public class ChatLLMApi
             
             // Дочитываем любые оставшиеся данные после выхода из цикла
             string finalLine;
-            while ((finalLine = await ReadLineWithTimeoutAsync(reader, cancellationToken)) != null)
+            while ((finalLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token)) != null)
             {
                 if (!string.IsNullOrEmpty(finalLine))
                 {
@@ -667,7 +687,7 @@ public class ChatLLMApi
                 
                 if (!isValidFinishReason)
                 {
-                    var lastLine = await ReadLineWithTimeoutAsync(reader, cancellationToken);
+                    var lastLine = await ReadLineWithTimeoutAsync(reader, methodLinkedCts.Token);
                     
                     throw new InvalidOperationException(
                         $$"""

@@ -2,6 +2,7 @@
 using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Responses;
 using FractalGPT.SharpGPTLib.Core.Models.Providers.ImageGeneration;
+using System.Threading;
 
 namespace FractalGPT.SharpGPTLib.Clients.ImageGeneration;
 
@@ -21,20 +22,20 @@ public class APIImageGenerator
     }
 
 
-    public async Task<ImageGenerationAnswer> GenerateAsync(string prompt) =>
-        await GenerateAsync(new LLMMessage(LLMMessage.UserRole, prompt));
+    public async Task<ImageGenerationAnswer> GenerateAsync(string prompt, CancellationToken cancellationToken = default) =>
+        await GenerateAsync(new LLMMessage(LLMMessage.UserRole, prompt), cancellationToken);
 
-    public async Task<ImageGenerationAnswer> GenerateAsync(LLMMessage prompt)
+    public async Task<ImageGenerationAnswer> GenerateAsync(LLMMessage prompt, CancellationToken cancellationToken = default)
     {
         List<LLMMessage> context = new List<LLMMessage>() { prompt };
-        return await GenerateAsync(context);
+        return await GenerateAsync(context, cancellationToken);
     }
 
-    public async Task<ImageGenerationAnswer> GenerateAsync(IEnumerable<LLMMessage> context)
+    public async Task<ImageGenerationAnswer> GenerateAsync(IEnumerable<LLMMessage> context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var response = await _imageGenerativeModelApi.SendWithContextAsync(context);
+            var response = await _imageGenerativeModelApi.SendWithContextAsync(context, cancellationToken: cancellationToken);
 
             var firstChoice = response?.Choices?.FirstOrDefault();
             var message = firstChoice?.Message;

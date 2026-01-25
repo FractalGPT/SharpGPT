@@ -12,9 +12,9 @@ namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 public class IdleTimeoutSettings
 {
     /// <summary>
-    /// Максимальное время простоя между получением данных (по умолчанию 40 секунд)
+    /// Максимальное время простоя между получением данных (по умолчанию 70 секунд)
     /// </summary>
-    public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(40);
+    public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(70);
 
     /// <summary>
     /// Включен ли мониторинг таймаута простоя (по умолчанию true)
@@ -22,7 +22,7 @@ public class IdleTimeoutSettings
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Настройки по умолчанию (30 секунд)
+    /// Настройки по умолчанию (70 секунд)
     /// </summary>
     public static IdleTimeoutSettings Default => new IdleTimeoutSettings();
 

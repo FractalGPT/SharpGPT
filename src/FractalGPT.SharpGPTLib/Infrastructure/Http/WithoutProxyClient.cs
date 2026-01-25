@@ -11,6 +11,17 @@ namespace FractalGPT.SharpGPTLib.Infrastructure.Http;
 public class WithoutProxyClient : IWebAPIClient
 {
     /// <summary>
+    /// Таймаут на получение response headers (защита от молчащего сервера)
+    /// После этого таймаута streaming уже должен начаться
+    /// </summary>
+    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(70);
+
+    /// <summary>
+    /// Дефолтный таймаут для LLM запросов (для долгих запросов: o1, reasoning)
+    /// </summary>
+    private static readonly TimeSpan DefaultRequestTimeout = TimeSpan.FromMinutes(18);
+
+    /// <summary>
     /// Property to hold authentication information.
     /// </summary>
     public AuthenticationHeaderValue Authentication { get; set; }
@@ -49,7 +60,7 @@ public class WithoutProxyClient : IWebAPIClient
         var handler = new SocketsHttpHandler
         {
             // КРИТИЧНО: Таймаут на установку TCP соединения
-            ConnectTimeout = TimeSpan.FromSeconds(30),
+            ConnectTimeout = TimeSpan.FromSeconds(60),
             
             // Таймаут ожидания 100-Continue от сервера (для POST с Expect: 100-continue)
             Expect100ContinueTimeout = TimeSpan.FromSeconds(5),
@@ -59,9 +70,9 @@ public class WithoutProxyClient : IWebAPIClient
             KeepAlivePingDelay = TimeSpan.FromSeconds(30),
             KeepAlivePingPolicy = HttpKeepAlivePingPolicy.WithActiveRequests,
             
-            // Пул соединений: соединение живёт макс 10 мин, простаивает макс 30 сек
+            // Пул соединений: соединение живёт макс 18 мин, простаивает макс 30 сек
             // (не влияет на активные запросы, только на соединения в пуле)
-            PooledConnectionLifetime = TimeSpan.FromMinutes(10),
+            PooledConnectionLifetime = DefaultRequestTimeout,
             PooledConnectionIdleTimeout = TimeSpan.FromSeconds(30),
             
             // Ограничение соединений на хост
@@ -74,7 +85,7 @@ public class WithoutProxyClient : IWebAPIClient
 
         return new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromMinutes(10)
+            Timeout = DefaultRequestTimeout
         };
     }
 
@@ -89,12 +100,6 @@ public class WithoutProxyClient : IWebAPIClient
     }
 
     /// <summary>
-    /// Таймаут на получение response headers (защита от молчащего сервера)
-    /// После этого таймаута streaming уже должен начаться
-    /// </summary>
-    private static readonly TimeSpan ResponseHeadersTimeout = TimeSpan.FromSeconds(45);
-
-    /// <summary>
     /// Asynchronously sends a POST request with JSON data.
     /// </summary>
     /// <param name="apiUrl">API URL to send the request to.</param>
@@ -104,12 +109,21 @@ public class WithoutProxyClient : IWebAPIClient
     /// <exception cref="HttpRequestException">Thrown when there is an error during the request.</exception>
     public async Task<HttpResponseMessage> PostAsJsonAsync(string apiUrl, SendDataLLM sendData, CancellationToken? cancellationToken = default)
     {
-        // Если токен не передан, создаём с таймаутом 10 минут (для долгих LLM запросов, o1, reasoning)
-        CancellationTokenSource defaultCts = null;
-        if (cancellationToken == null)
+        // КРИТИЧНО: Всегда применяем таймаут для LLM запросов (o1, reasoning)
+        // Объединяем с пользовательским токеном через linked token
+        var timeoutCts = new CancellationTokenSource(DefaultRequestTimeout);
+        CancellationTokenSource timeoutLinkedCts = null;
+        
+        if (cancellationToken.HasValue)
         {
-            defaultCts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            cancellationToken = defaultCts.Token;
+            // Если пользователь передал токен - объединяем его с таймаутом
+            timeoutLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, timeoutCts.Token);
+            cancellationToken = timeoutLinkedCts.Token;
+        }
+        else
+        {
+            // Если токен не передан - используем только таймаут
+            cancellationToken = timeoutCts.Token;
         }
 
         try
@@ -137,7 +151,7 @@ public class WithoutProxyClient : IWebAPIClient
                 ? HttpCompletionOption.ResponseHeadersRead 
                 : HttpCompletionOption.ResponseContentRead;
 
-            // КРИТИЧНО: Таймаут на получение response headers (45 сек)
+            // КРИТИЧНО: Таймаут на получение response headers
             // Защита от молчащего сервера который принял запрос но не отвечает
             using var responseTimeoutCts = new CancellationTokenSource(ResponseHeadersTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken.Value, responseTimeoutCts.Token);
@@ -145,7 +159,7 @@ public class WithoutProxyClient : IWebAPIClient
             HttpResponseMessage response;
             try
             {
-                response = await HttpClient.SendAsync(httpRequestMessage, completionOption, linkedCts.Token).ConfigureAwait(false);
+                response = await HttpClient.SendAsync(httpRequestMessage, completionOption, linkedCts.Token);
             }
             catch (OperationCanceledException) when (responseTimeoutCts.IsCancellationRequested && !cancellationToken.Value.IsCancellationRequested)
             {
@@ -170,8 +184,9 @@ public class WithoutProxyClient : IWebAPIClient
         }
         finally
         {
-            // КРИТИЧНО: Освобождаем CancellationTokenSource если создали его
-            defaultCts?.Dispose();
+            // КРИТИЧНО: Освобождаем CancellationTokenSource'ы которые создали
+            timeoutLinkedCts?.Dispose();
+            timeoutCts?.Dispose();
         }
     }
 
