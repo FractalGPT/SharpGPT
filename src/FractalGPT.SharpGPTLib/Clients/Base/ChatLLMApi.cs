@@ -85,7 +85,7 @@ public class ChatLLMApi
     /// <param name="messages">Запрос</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
+    public virtual async Task<int> TokenizeAsync(IEnumerable<LLMMessage> messages, CancellationToken cancellationToken = default)
     {
         SendDataLLM sendData = new SendDataLLM(ModelName);
         sendData.SetMessages(messages);
