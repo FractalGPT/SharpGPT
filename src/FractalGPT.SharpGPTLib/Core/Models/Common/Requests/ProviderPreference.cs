@@ -18,7 +18,7 @@ public class ProviderPreference
     /// Разрешить fallback на другие провайдеры если указанный недоступен
     /// </summary>
     [JsonPropertyName("allow_fallbacks")]
-    public bool? AllowFallbacks { get; set; }
+    public bool? AllowFallbacks { get; set; } = false;
 
     /// <summary>
     /// Фильтр по уровню квантования (например: "fp16", "fp8", "fp4")
@@ -434,6 +434,22 @@ public static class OpenRouterProviders
             Groq,
             GoogleVertex,
             SambaNova
+        ];
+    }
+
+    public static class KimiK2Thinking
+    {
+        /// <summary>
+        /// Throughput: 218,5tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (топ-5 по throughput - пропускной способности)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleVertex
         ];
     }
 }
