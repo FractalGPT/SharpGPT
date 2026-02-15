@@ -91,7 +91,7 @@ public class GenerateSettings
         double? topP = 0.95,
         int? topK = 20,
         int? minTokens = 8,
-        int? maxTokens = 2500,
+        int? maxTokens = 3012,
         string streamId = null,
         string reasoningEffort = null,
         string streamMethod = "StreamMessage")

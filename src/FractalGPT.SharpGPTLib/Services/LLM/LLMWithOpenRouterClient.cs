@@ -14,7 +14,8 @@ public class LLMWithOpenRouterClient : LLMBase
     /// </summary>
     /// <param name="settingsLLM">Настройки LLM</param>
     /// <param name="streamHandler">Обработчик потоковой передачи</param>
-    public LLMWithOpenRouterClient(LLMOptions settingsLLM, IStreamHandler streamHandler = null) : base(Init(settingsLLM, streamHandler)) { }
+    public LLMWithOpenRouterClient(LLMOptions settingsLLM, IStreamHandler streamHandler = null) 
+        : base(Init(settingsLLM, streamHandler), settingsLLM) { }
 
     // Инициализация для конструктора
     private static ChatLLMApi Init(LLMOptions openRouterSettings, IStreamHandler streamHandler)
