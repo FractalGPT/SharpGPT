@@ -96,6 +96,38 @@ public static class OpenRouterProviders
     }
 
     /// <summary>
+    /// Провайдеры для Claude Sonnet 4.6 (отсортировано по throughput - пропускной способности)
+    /// 18.02.2026
+    /// </summary>
+    public static class ClaudeSonnet46
+    {
+        /// <summary>
+        /// Throughput: 59tps
+        /// </summary>
+        public const string AmazonBedrock = "amazon-bedrock";
+
+        /// <summary>
+        /// Throughput: 59tps
+        /// </summary>
+        public const string Anthropic = "anthropic";
+
+        /// <summary>
+        /// Throughput: 55tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            Anthropic,
+            AmazonBedrock,
+            GoogleVertex
+        ];
+    }
+
+    /// <summary>
     /// Провайдеры для Claude Sonnet 4.5 (отсортировано по throughput - пропускной способности)
     /// 12.12.2025
     /// </summary>
