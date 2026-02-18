@@ -12,8 +12,10 @@ public class LLMWithVLLMClient : LLMBase
     /// <summary>
     /// LLM на базе vLLM клиента
     /// </summary>
-    /// <param name="vLLNHost">Где размещена модель (адрес сервера)</param>
-    public LLMWithVLLMClient(LLMOptions settingsLLM, IStreamHandler streamHandler = null) : base(Init(settingsLLM, streamHandler)) { }
+    /// <param name="settingsLLM">Настройки LLM</param>
+    /// <param name="streamHandler">Обработчик стриминга</param>
+    public LLMWithVLLMClient(LLMOptions settingsLLM, IStreamHandler streamHandler = null) 
+        : base(Init(settingsLLM, streamHandler), settingsLLM) { }
 
     // Инициализация для конструктора
     private static ChatLLMApi Init(LLMOptions vLLMSettings, IStreamHandler streamHandler)

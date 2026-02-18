@@ -10,14 +10,43 @@ namespace FractalGPT.SharpGPTLib.Services.LLM;
 public class LLMBase
 {
     private readonly ChatLLMApi _chatLLMApi;
+    protected readonly LLMOptions _llmOptions;
 
     /// <summary>
     /// Базовая логика работы с LLM
     /// </summary>
     /// <param name="chatLLMApi">Общий класс для работы с LLM</param>
-    public LLMBase(ChatLLMApi chatLLMApi)
+    /// <param name="llmOptions">Настройки LLM (опционально)</param>
+    public LLMBase(ChatLLMApi chatLLMApi, LLMOptions llmOptions = null)
     {
         _chatLLMApi = chatLLMApi;
+        _llmOptions = llmOptions;
+    }
+
+    /// <summary>
+    /// Создает GenerateSettings с учетом reasoning параметров из LLMOptions
+    /// </summary>
+    /// <param name="baseSettings">Базовые настройки генерации</param>
+    /// <returns>GenerateSettings с примененными reasoning параметрами</returns>
+    protected GenerateSettings ApplyReasoningSettings(GenerateSettings baseSettings)
+    {
+        if (_llmOptions == null || !_llmOptions.EnableReasoning)
+            return baseSettings ?? new GenerateSettings();
+
+        var settings = baseSettings ?? new GenerateSettings();
+        
+        // Создаем ReasoningSettings если reasoning включен
+        if (_llmOptions.EnableReasoning)
+        {
+            settings.ReasoningSettings = new ReasoningSettings(
+                effort: _llmOptions.ReasoningEffort,
+                maxTokens: _llmOptions.ReasoningMaxTokens,
+                exclude: _llmOptions.ReasoningExclude,
+                enabled: true
+            );
+        }
+
+        return settings;
     }
 
     /// <summary>
@@ -30,6 +59,9 @@ public class LLMBase
     {
         if (string.IsNullOrWhiteSpace(text))
             throw new ArgumentException("Текст запроса не может быть пустым.", nameof(text));
+
+        // Применяем reasoning настройки
+        generateSettings = ApplyReasoningSettings(generateSettings);
 
         // Используем ConfigureAwait для библиотечного кода.
         return await _chatLLMApi.SendWithoutContextTextAsync(text, generateSettings, cancellationToken).ConfigureAwait(false);
@@ -45,6 +77,9 @@ public class LLMBase
     {
         if (messages == null)
             throw new ArgumentNullException(nameof(messages));
+
+        // Применяем reasoning настройки
+        generateSettings = ApplyReasoningSettings(generateSettings);
 
         // Передаём запрос через клиент _chatLLMApi с поддержкой контекста
         return await _chatLLMApi.SendWithContextTextAsync(messages, generateSettings, cancellationToken).ConfigureAwait(false);

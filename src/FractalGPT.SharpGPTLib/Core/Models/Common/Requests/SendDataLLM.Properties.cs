@@ -113,6 +113,13 @@ public partial class SendDataLLM
     [JsonPropertyName("reasoning_effort")]
     public string ReasoningEffort { get; set; }
 
+    /// <summary>
+    /// Максимальное количество токенов для reasoning (VLLM совместимость).
+    /// VLLM ожидает max_reasoning_tokens на верхнем уровне JSON.
+    /// </summary>
+    [JsonPropertyName("max_reasoning_tokens")]
+    public int? MaxReasoningTokens { get; set; }
+
     #endregion
 
     #region Параметры маршрутизации (OpenRouter)

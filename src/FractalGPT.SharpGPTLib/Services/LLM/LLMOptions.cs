@@ -30,4 +30,24 @@ public class LLMOptions
     /// Расположение vllm сервера
     /// </summary>
     public string Host { get; set; }
+
+    /// <summary>
+    /// Включить ли режим reasoning (для мыслительных моделей)
+    /// </summary>
+    public bool EnableReasoning { get; set; }
+
+    /// <summary>
+    /// Максимальное количество токенов для процесса рассуждений
+    /// </summary>
+    public int? ReasoningMaxTokens { get; set; }
+
+    /// <summary>
+    /// Уровень усилий для рассуждений: "high", "medium" или "low"
+    /// </summary>
+    public string ReasoningEffort { get; set; }
+
+    /// <summary>
+    /// Исключить ли токены рассуждений из ответа (по умолчанию false)
+    /// </summary>
+    public bool ReasoningExclude { get; set; }
 }

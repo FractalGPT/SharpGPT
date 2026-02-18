@@ -37,6 +37,10 @@ public partial class SendDataLLM
         TopLogprobs = generateSettings.TopLogprobs;
         ReasoningEffort = generateSettings.ReasoningEffort;
         Messages = new List<LLMMessage>();
+
+        // VLLM совместимость: пробрасываем max_reasoning_tokens на верхний уровень JSON
+        if (generateSettings.ReasoningSettings?.MaxTokens != null)
+            MaxReasoningTokens = generateSettings.ReasoningSettings.MaxTokens;
     }
 
     /// <summary>
