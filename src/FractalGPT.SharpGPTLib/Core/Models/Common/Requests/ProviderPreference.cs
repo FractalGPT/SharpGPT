@@ -197,6 +197,31 @@ public static class OpenRouterProviders
         ];
     }
 
+    /// <summary>
+    /// Провайдеры для Gemini 3.1 Pro (отсортировано по throughput - пропускной способности)
+    /// 12.12.2025
+    /// </summary>
+    public static class Gemini31Pro
+    {
+        /// <summary>
+        /// Throughput: 71,49tps
+        /// </summary>
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        /// <summary>
+        /// Throughput: 51,95tps
+        /// </summary>
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (отсортировано по throughput - скорости генерации)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
+    }
 
 
     /// <summary>
