@@ -1,4 +1,6 @@
-﻿namespace FractalGPT.SharpGPTLib.Services.LLM;
+﻿using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
+
+namespace FractalGPT.SharpGPTLib.Services.LLM;
 
 /// <summary>
 /// Настройки для LLM клиента
@@ -50,4 +52,10 @@ public class LLMOptions
     /// Исключить ли токены рассуждений из ответа (по умолчанию false)
     /// </summary>
     public bool ReasoningExclude { get; set; }
+
+    /// <summary>
+    /// Предпочтительный провайдер OpenRouter (используется если ProviderType = OpenRouter).
+    /// Если null — OpenRouter сам выбирает провайдера.
+    /// </summary>
+    public ProviderPreference PreferredProvider { get; set; }
 }

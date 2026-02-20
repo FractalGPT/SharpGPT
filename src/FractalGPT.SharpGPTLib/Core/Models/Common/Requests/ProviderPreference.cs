@@ -452,5 +452,24 @@ public static class OpenRouterProviders
             GoogleVertex
         ];
     }
+
+    /// <summary>
+    /// Провайдеры для openai/gpt-oss-20b
+    /// </summary>
+    public static class OpenAIGptOss20b
+    {
+        /// <summary>
+        /// Parasail fp4 — единственный доступный провайдер для этой модели
+        /// </summary>
+        public const string ParasailFp4 = "parasail/fp4";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            ParasailFp4
+        ];
+    }
 }
 

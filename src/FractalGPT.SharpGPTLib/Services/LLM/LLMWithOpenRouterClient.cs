@@ -27,6 +27,10 @@ public class LLMWithOpenRouterClient : LLMBase
             prompt: openRouterSettings.SystemPrompt
             );
 
+        // Применяем провайдера если указан
+        if (openRouterSettings.PreferredProvider != null)
+            client.PreferredProvider = openRouterSettings.PreferredProvider;
+
         return client;
     }
 }
