@@ -210,6 +210,7 @@ public class ChatLLMApi
                 ReasoningSettings = generateSettings.ReasoningSettings,
                 LogProbs = generateSettings.LogProbs,
                 TopLogprobs = generateSettings.TopLogprobs,
+                ResponseFormat = generateSettings.ResponseFormat,
             };
         }
 

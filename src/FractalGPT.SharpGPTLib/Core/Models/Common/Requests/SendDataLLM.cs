@@ -36,6 +36,7 @@ public partial class SendDataLLM
         LogProbs = generateSettings.LogProbs;
         TopLogprobs = generateSettings.TopLogprobs;
         ReasoningEffort = generateSettings.ReasoningEffort;
+        ResponseFormat = generateSettings.ResponseFormat;
         Messages = new List<LLMMessage>();
 
         // VLLM совместимость: пробрасываем max_reasoning_tokens на верхний уровень JSON

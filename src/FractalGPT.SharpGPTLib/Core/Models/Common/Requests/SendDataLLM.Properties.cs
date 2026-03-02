@@ -1,5 +1,6 @@
 ﻿using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace FractalGPT.SharpGPTLib.API.LLMAPI;
@@ -130,6 +131,17 @@ public partial class SendDataLLM
     /// </summary>
     [JsonPropertyName("provider")]
     public ProviderPreference Provider { get; set; }
+
+    #endregion
+
+    #region Structured Output
+
+    /// <summary>
+    /// Формат ответа (Structured Output). Гарантирует JSON по указанной схеме.
+    /// Поддерживается OpenAI, Gemini, OpenRouter.
+    /// </summary>
+    [JsonPropertyName("response_format")]
+    public ResponseFormat ResponseFormat { get; set; }
 
     #endregion
 }

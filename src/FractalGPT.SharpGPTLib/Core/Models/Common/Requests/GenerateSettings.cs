@@ -81,6 +81,12 @@ public class GenerateSettings
     /// </summary>
     public string ReasoningEffort { get; set; }
 
+    /// <summary>
+    /// Формат ответа (Structured Output). Если задан — LLM гарантированно вернёт JSON по указанной схеме.
+    /// Поддерживается OpenAI, Gemini, OpenRouter.
+    /// </summary>
+    public ResponseFormat ResponseFormat { get; set; }
+
     #endregion
 
     #region Конструктор
