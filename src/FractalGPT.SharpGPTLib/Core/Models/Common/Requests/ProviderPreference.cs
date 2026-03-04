@@ -47,24 +47,34 @@ public class ProviderPreference
     /// <summary>
     /// Создает настройки провайдера с одним предпочтительным провайдером
     /// </summary>
-    public static ProviderPreference Create(string provider, bool allowFallbacks = true)
+    /// <param name="provider">Имя провайдера</param>
+    /// <param name="allowFallbacks">Разрешить fallback на других провайдеров</param>
+    /// <param name="requireParameters">Выбирать только провайдеров, поддерживающих ВСЕ параметры запроса
+    /// (например response_format: json_schema). Критично для Structured Output с Claude через OpenRouter.</param>
+    public static ProviderPreference Create(string provider, bool allowFallbacks = true, bool requireParameters = false)
     {
         return new ProviderPreference
         {
             Order = new List<string> { provider },
-            AllowFallbacks = allowFallbacks
+            AllowFallbacks = allowFallbacks,
+            RequireParameters = requireParameters ? true : null
         };
     }
 
     /// <summary>
     /// Создает настройки провайдера с несколькими провайдерами по приоритету
     /// </summary>
-    public static ProviderPreference Create(List<string> providers, bool allowFallbacks = true)
+    /// <param name="providers">Список провайдеров в порядке приоритета</param>
+    /// <param name="allowFallbacks">Разрешить fallback на других провайдеров</param>
+    /// <param name="requireParameters">Выбирать только провайдеров, поддерживающих ВСЕ параметры запроса
+    /// (например response_format: json_schema). Критично для Structured Output с Claude через OpenRouter.</param>
+    public static ProviderPreference Create(List<string> providers, bool allowFallbacks = true, bool requireParameters = false)
     {
         return new ProviderPreference
         {
             Order = providers,
-            AllowFallbacks = allowFallbacks
+            AllowFallbacks = allowFallbacks,
+            RequireParameters = requireParameters ? true : null
         };
     }
 }
