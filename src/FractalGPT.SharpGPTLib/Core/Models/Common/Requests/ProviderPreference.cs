@@ -283,6 +283,25 @@ public static class OpenRouterProviders
     }
 
     /// <summary>
+    /// Провайдеры для Gemini 3.1 Flash Lite (OpenRouter)
+    /// </summary>
+    public static class Gemini31FlashLite
+    {
+        public const string GoogleAIStudio = "google-ai-studio";
+
+        public const string GoogleVertex = "google-vertex";
+
+        /// <summary>
+        /// Рекомендуемый список провайдеров (приоритет: AI Studio, затем Vertex)
+        /// </summary>
+        public static List<string> RecommendedOrder =>
+        [
+            GoogleAIStudio,
+            GoogleVertex
+        ];
+    }
+
+    /// <summary>
     /// Провайдеры для Gemini 2.5 Pro (отсортировано по throughput - пропускной способности)
     /// 12.12.2025
     /// </summary>
