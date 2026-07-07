@@ -191,6 +191,8 @@ public class ChatLLMApi
 
         // ВАЖНО: Принудительно включаем streaming для раннего обнаружения зависших запросов!
         // Даже если пользователь не указал streamId, мы создаем временный для внутреннего использования
+        var shouldPublishStream = !string.IsNullOrEmpty(generateSettings.StreamId) && _streamSender != null;
+
         if (string.IsNullOrEmpty(generateSettings.StreamId))
         {
             // Создаем временный streamId для включения streaming
@@ -256,7 +258,7 @@ public class ChatLLMApi
 
                 // ВСЕГДА обрабатываем как streaming (т.к. мы принудительно его включили)
                 // Но используем внутренний метод, не требующий IStreamHandler
-                return await ProcessStreamResponseInternal(response, cancellationToken);
+                return await ProcessStreamResponseInternal(generateSettings, shouldPublishStream, response, cancellationToken);
             }
             //catch (TimeoutException timeoutEx)
             //{
@@ -399,6 +401,8 @@ public class ChatLLMApi
     /// Читает SSE stream, накапливает токены и возвращает полный ответ.
     /// </summary>
     private async Task<ChatCompletionsResponse> ProcessStreamResponseInternal(
+        GenerateSettings generateSettings,
+        bool publishStream,
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
@@ -432,6 +436,7 @@ public class ChatLLMApi
             using var reader = new StreamReader(stream);
             var fullContent = new StringBuilder();
             var fullReasoning = new StringBuilder();
+            var publishBuffer = new StringBuilder();
             
             // Поддержка Vision моделей - собираем изображения
             var collectedImages = new List<ImageInfo>();
@@ -582,6 +587,9 @@ public class ChatLLMApi
                             
                             fullContent.Append(content);
                             chunksWithContent++;
+
+                            if (publishStream)
+                                await PublishStreamContentAsync(generateSettings, publishBuffer, content, flush: false);
                         }
                     }
                     
@@ -759,6 +767,12 @@ public class ChatLLMApi
             {
                 resultMessage.Images = collectedImages;
             }
+
+            if (publishStream)
+            {
+                await PublishStreamContentAsync(generateSettings, publishBuffer, string.Empty, flush: true);
+                await _streamSender.SendAsync(generateSettings.StreamId, "<<END_OF_MESSAGE>>", generateSettings.StreamMethod);
+            }
             
             return new ChatCompletionsResponse
             {
@@ -790,6 +804,29 @@ public class ChatLLMApi
     /// <summary>
     /// Обрабатывает стандартный ответ
     /// </summary>
+    private async Task PublishStreamContentAsync(
+        GenerateSettings generateSettings,
+        StringBuilder buffer,
+        string content,
+        bool flush)
+    {
+        if (!string.IsNullOrEmpty(content))
+            buffer.Append(content);
+
+        buffer.Replace("===", string.Empty);
+
+        var retainLength = flush ? 0 : 2;
+        if (buffer.Length <= retainLength)
+            return;
+
+        var publishLength = buffer.Length - retainLength;
+        var message = buffer.ToString(0, publishLength);
+        buffer.Remove(0, publishLength);
+
+        if (!string.IsNullOrEmpty(message))
+            await _streamSender.SendAsync(generateSettings.StreamId, message, generateSettings.StreamMethod);
+    }
+
     private async Task<ChatCompletionsResponse> ProcessStandardResponse(
         HttpResponseMessage response,
         CancellationToken cancellationToken)
