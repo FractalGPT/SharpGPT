@@ -191,7 +191,7 @@ public class ChatLLMApi
 
         // ВАЖНО: Принудительно включаем streaming для раннего обнаружения зависших запросов!
         // Даже если пользователь не указал streamId, мы создаем временный для внутреннего использования
-        var shouldPublishStream = !string.IsNullOrEmpty(generateSettings.StreamId) && _streamSender != null;
+        var stream = !string.IsNullOrEmpty(generateSettings.StreamId) && _streamSender != null;
 
         if (string.IsNullOrEmpty(generateSettings.StreamId))
         {
@@ -258,7 +258,7 @@ public class ChatLLMApi
 
                 // ВСЕГДА обрабатываем как streaming (т.к. мы принудительно его включили)
                 // Но используем внутренний метод, не требующий IStreamHandler
-                return await ProcessStreamResponseInternal(generateSettings, shouldPublishStream, response, cancellationToken);
+                return await ProcessStreamResponseInternal(generateSettings, stream, response, cancellationToken);
             }
             //catch (TimeoutException timeoutEx)
             //{
@@ -402,7 +402,7 @@ public class ChatLLMApi
     /// </summary>
     private async Task<ChatCompletionsResponse> ProcessStreamResponseInternal(
         GenerateSettings generateSettings,
-        bool publishStream,
+        bool stream,
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
@@ -412,7 +412,7 @@ public class ChatLLMApi
         using var methodTimeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(18));
         using var methodLinkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, methodTimeoutCts.Token);
         
-        Stream stream = null;
+        Stream responseStream = null;
         try
         {
             // Таймаут 80 секунд на получение stream
@@ -425,15 +425,15 @@ public class ChatLLMApi
             if (IdleTimeoutSettings != null && IdleTimeoutSettings.Enabled)
             {
                 Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Включаем мониторинг idle timeout ({IdleTimeoutSettings.IdleTimeout.TotalSeconds} сек)");
-                stream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, methodLinkedCts.Token);
+                responseStream = new StreamWithTimeoutMonitor(baseStream, IdleTimeoutSettings.IdleTimeout, methodLinkedCts.Token);
             }
             else
             {
                 Log.Debug($"ChatLLMApi ProcessStreamResponseInternal: Idle timeout ОТКЛЮЧЕН или не настроен");
-                stream = baseStream;
+                responseStream = baseStream;
             }
 
-            using var reader = new StreamReader(stream);
+            using var reader = new StreamReader(responseStream);
             var fullContent = new StringBuilder();
             var fullReasoning = new StringBuilder();
             var publishBuffer = new StringBuilder();
@@ -588,7 +588,7 @@ public class ChatLLMApi
                             fullContent.Append(content);
                             chunksWithContent++;
 
-                            if (publishStream)
+                            if (stream)
                                 await PublishStreamContentAsync(generateSettings, publishBuffer, content, flush: false);
                         }
                     }
@@ -768,7 +768,7 @@ public class ChatLLMApi
                 resultMessage.Images = collectedImages;
             }
 
-            if (publishStream)
+            if (stream)
             {
                 await PublishStreamContentAsync(generateSettings, publishBuffer, string.Empty, flush: true);
                 await _streamSender.SendAsync(generateSettings.StreamId, "<<END_OF_MESSAGE>>", generateSettings.StreamMethod);
@@ -797,7 +797,7 @@ public class ChatLLMApi
         }
         finally
         {
-            stream?.Dispose();
+            responseStream?.Dispose();
         }
     }
 
@@ -812,8 +812,6 @@ public class ChatLLMApi
     {
         if (!string.IsNullOrEmpty(content))
             buffer.Append(content);
-
-        buffer.Replace("===", string.Empty);
 
         var retainLength = flush ? 0 : 2;
         if (buffer.Length <= retainLength)
