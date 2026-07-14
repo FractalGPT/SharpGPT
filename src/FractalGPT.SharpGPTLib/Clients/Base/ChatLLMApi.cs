@@ -813,13 +813,11 @@ public class ChatLLMApi
         if (!string.IsNullOrEmpty(content))
             buffer.Append(content);
 
-        var retainLength = flush ? 0 : 2;
-        if (buffer.Length <= retainLength)
+        if (buffer.Length == 0)
             return;
 
-        var publishLength = buffer.Length - retainLength;
-        var message = buffer.ToString(0, publishLength);
-        buffer.Remove(0, publishLength);
+        var message = buffer.ToString();
+        buffer.Clear();
 
         if (!string.IsNullOrEmpty(message))
             await _streamSender.SendAsync(generateSettings.StreamId, message, generateSettings.StreamMethod);
