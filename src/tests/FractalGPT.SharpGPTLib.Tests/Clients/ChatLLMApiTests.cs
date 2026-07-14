@@ -1,7 +1,13 @@
 using FluentAssertions;
+using FractalGPT.SharpGPTLib.API.LLMAPI;
 using FractalGPT.SharpGPTLib.Clients.Base;
+using FractalGPT.SharpGPTLib.Core.Abstractions;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Messages;
 using FractalGPT.SharpGPTLib.Core.Models.Common.Requests;
+using FractalGPT.SharpGPTLib.Infrastructure.Http;
+using NSubstitute;
+using System.Net;
+using System.Reflection;
 
 namespace FractalGPT.SharpGPTLib.Tests.Clients;
 
@@ -147,6 +153,47 @@ public class ChatLLMApiTests
 
         // Assert
         act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public async Task SendWithContextAsync_WithStreamId_ShouldPublishEverySseContentChunk()
+    {
+        var streamHandler = Substitute.For<IStreamHandler>();
+        var publishedMessages = new List<string>();
+        streamHandler.SendAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>())
+            .Returns(callInfo =>
+            {
+                publishedMessages.Add(callInfo.ArgAt<string>(1));
+                return Task.FromResult(true);
+            });
+
+        var webApi = Substitute.For<IWebAPIClient>();
+        webApi.PostAsJsonAsync(Arg.Any<string>(), Arg.Any<SendDataLLM>(), Arg.Any<CancellationToken?>())
+            .Returns(Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                    data: {"choices":[{"delta":{"content":"Hel"}}]}
+
+                    data: {"choices":[{"delta":{"content":"lo"}}]}
+
+                    data: [DONE]
+                    """)
+            }));
+
+        var api = new ChatLLMApi("test", "test-model", "prompt", streamHandler)
+        {
+            ApiUrl = "https://llm.example.test/v1/chat/completions"
+        };
+        typeof(ChatLLMApi)
+            .GetField("_webApi", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .SetValue(api, webApi);
+
+        var response = await api.SendWithContextAsync(
+            [LLMMessage.CreateMessage(Roles.User, "Hello")],
+            new GenerateSettings(streamId: "stream-id"));
+
+        response.Choices[0].Message.Content.ToString().Should().Be("Hello");
+        publishedMessages.Should().Equal("Hel", "lo", "<<END_OF_MESSAGE>>");
     }
 }
 

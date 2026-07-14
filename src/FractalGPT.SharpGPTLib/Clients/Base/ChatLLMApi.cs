@@ -589,7 +589,7 @@ public class ChatLLMApi
                             chunksWithContent++;
 
                             if (stream)
-                                await PublishStreamContentAsync(generateSettings, publishBuffer, content, flush: false);
+                                await PublishStreamContentAsync(generateSettings, publishBuffer, content);
                         }
                     }
                     
@@ -770,7 +770,6 @@ public class ChatLLMApi
 
             if (stream)
             {
-                await PublishStreamContentAsync(generateSettings, publishBuffer, string.Empty, flush: true);
                 await _streamSender.SendAsync(generateSettings.StreamId, "<<END_OF_MESSAGE>>", generateSettings.StreamMethod);
             }
             
@@ -807,8 +806,7 @@ public class ChatLLMApi
     private async Task PublishStreamContentAsync(
         GenerateSettings generateSettings,
         StringBuilder buffer,
-        string content,
-        bool flush)
+        string content)
     {
         if (!string.IsNullOrEmpty(content))
             buffer.Append(content);
