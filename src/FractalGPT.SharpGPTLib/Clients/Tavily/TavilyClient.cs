@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using FractalGPT.SharpGPTLib.Clients.Tavily.Models;
 using FractalGPT.SharpGPTLib.Infrastructure.Extensions;
+using Serilog;
 
 namespace FractalGPT.SharpGPTLib.Clients.Tavily;
 
@@ -18,6 +19,12 @@ public class TavilyClient : IDisposable
 
     public TavilyClient(string apiKey, WebProxy proxy = null)
     {
+        // Trim обязателен для обоих мест использования ключа:
+        // - тело запроса: Tavily не триммит api_key сам, "key\n" дает 401,
+        //   при этом api_key из тела имеет приоритет над заголовком (проверено live);
+        // - заголовок: .NET бросает исключение на перенос строки в значении заголовка.
+        apiKey = apiKey?.Trim();
+
         _apiKey = apiKey;
         if (string.IsNullOrEmpty(apiKey))
             throw new ArgumentException($"{nameof(apiKey)} is missing");
@@ -33,6 +40,12 @@ public class TavilyClient : IDisposable
             BaseAddress = new Uri(Host),
             Timeout = TimeSpan.FromSeconds(60),
         };
+
+        // Актуальный способ аутентификации Tavily - заголовок Authorization: Bearer <key>.
+        // Поле api_key в теле запроса осталось для обратной совместимости и в документации больше не значится,
+        // поэтому передаем ключ обоими способами (ключ уже триммлен выше).
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
     }
 
     public async Task<SearchResult> SearchAsync(string query, int maxResults = 5, bool includeRawContent = true, bool includeAnswer = false, bool includeImages = false,
@@ -78,7 +91,11 @@ public class TavilyClient : IDisposable
                 response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<SearchResult>(cancellationToken: linkedCts.Token);
 
-                result.Results = result.Results
+                // Ответ внешнего API может оказаться пустым - не роняем вызывающий код NullReferenceException
+                if (result == null)
+                    throw new HttpRequestException("Tavily search вернул пустой ответ");
+
+                result.Results = (result.Results ?? [])
                     .Where(result => !ContainsForbiddenContent(url: result.Url, rawContent: result.RawContent, excludeDomains: excludeDomains))
                     .ToArray();
 
@@ -91,6 +108,9 @@ public class TavilyClient : IDisposable
             catch (Exception ex)
             {
                 lastException = ex;
+                Log.Warning(ex, "TavilyClient SearchAsync attempt {Attempt}/{MaxAttempts} failed, Query={Query}",
+                    attempt + 1, maxAttempts, query);
+
                 if (attempt < maxAttempts - 1) // Только для первой попытки
                 {
                     try { await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken); }
@@ -105,17 +125,18 @@ public class TavilyClient : IDisposable
     public async Task<ExtractResult> ExtractAsync(IEnumerable<string> urls, bool includeImages = false, ExtractDepth extractDepth = ExtractDepth.Basic, FormatType format = FormatType.Markdown, CancellationToken cancellationToken = default)
     {
         ExtractResult result = null;
+        Exception lastException = null;
         const int maxAttempts = 4;
         for (int attempt = 0; attempt < maxAttempts; attempt++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             try
             {
                 // Локальный таймаут 60 секунд для ReadFromJsonAsync
                 using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
                 using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
-                
+
                 using var response = await _httpClient.PostAsJsonAsync("/extract", new ExtractArgs
                 {
                     ApiKey = _apiKey,
@@ -126,21 +147,40 @@ public class TavilyClient : IDisposable
                 }, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 result = await response.Content.ReadFromJsonAsync<ExtractResult>(cancellationToken: linkedCts.Token);
-                if (!result?.FailedResults?.Any() ?? false) 
+
+                // ВАЖНО: успех - это наличие извлеченного контента.
+                // Раньше здесь было `!result?.FailedResults?.Any() ?? false`, что из-за приоритета операторов
+                // давало null ?? false == false для успешного ответа без секции failed_results,
+                // поэтому даже удачный extract всегда прогонялся 4 раза с задержками 2+4+6 секунд.
+                if (result?.Results?.Any() ?? false)
                     return result;
             }
             catch (Exception) when (cancellationToken.IsCancellationRequested)
             {
                 throw; // Глобальная отмена - не делаем retry
             }
-            catch (Exception ex) { }
+            catch (Exception ex)
+            {
+                lastException = ex;
+                Log.Warning(ex, "TavilyClient ExtractAsync attempt {Attempt}/{MaxAttempts} failed, Urls={Urls}",
+                    attempt + 1, maxAttempts, string.Join(", ", urls));
+            }
 
             if (attempt != maxAttempts - 1)
                 await Task.Delay(TimeSpan.FromSeconds(2 * (attempt+1)), cancellationToken); // 2, 4, 6
         }
 
-
-        return result;
+        // Никогда не возвращаем null: вызывающий код не должен падать с NullReferenceException.
+        // Причину неудачи отдаем через FailedResults, чтобы она дошла до агента.
+        return result ?? new ExtractResult
+        {
+            Results = [],
+            FailedResults = urls.Select(url => new ExtractItemFailedResult
+            {
+                Url = url,
+                Error = lastException?.Message ?? $"Tavily extract не вернул результат за {maxAttempts} попытки",
+            }).ToArray(),
+        };
     }
 
     /// <summary>
